@@ -36,7 +36,7 @@ setup(
         'console_scripts': [
             'vision_node = tennis_bot.vision_node:main',
             'control_node = tennis_bot.control_node:main',
-            'tracker = tennis_bot.tracker:main',
+            'patrol_node = tennis_bot.patrol_node:main',
         ],
     },
 )

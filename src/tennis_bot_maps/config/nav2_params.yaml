@@ -18,9 +18,13 @@ controller_server:
     controller_plugins: ["FollowPath"]
 
     progress_checker:
-      plugin: "nav2_controller::SimpleProgressChecker"
+      # 弓字型巡邏轉彎多是原地大角度轉向，SimpleProgressChecker 只看位移，
+      # 轉向時位置幾乎不變會被誤判成"沒進度"而觸發 recovery 迴圈。
+      # PoseProgressChecker 轉向也算進度，比較符合這台差速驅動車的巡邏模式。
+      plugin: "nav2_controller::PoseProgressChecker"
       required_movement_radius: 0.5
-      movement_time_allowance: 10.0
+      required_movement_angle: 0.5
+      movement_time_allowance: 15.0
 
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
@@ -29,7 +33,16 @@ controller_server:
       stateful: True
 
     FollowPath:
-      plugin: "dwb_core::DWBLocalPlanner"
+      # DWB 本身不擅長處理起始朝向誤差很大的情況（弓字型巡邏轉彎常常要轉
+      # 100多度），單獨用 DWB 會卡住原地打轉不收斂。RotationShimController
+      # 包在外層：朝向誤差夠大時先原地轉向對齊，再交給 DWB 做真正的路徑追蹤。
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      primary_controller: "dwb_core::DWBLocalPlanner"
+      angular_dist_threshold: 0.785
+      forward_sampling_distance: 0.5
+      rotate_to_heading_angular_vel: 0.6
+      max_angular_accel: 1.5
+      simulate_ahead_time: 1.0
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
