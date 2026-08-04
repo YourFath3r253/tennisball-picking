@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<robot name="tennis_bot">
+
+  <!-- 註解方式 -->
+  <link name="base_link">
+  </link>
+
+  <joint name="base_to_chassis" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_chassis"/>
+    <origin xyz="0 0 0.02" rpy="0 0 -1.5708"/>  
+  </joint>
+  <joint name="base_to_rear" type="fixed">
+    <parent link="base_link"/>
+    <child link="rear_basket"/>
+    <origin xyz="0 -0.01 0" rpy="0 0 -1.5708"/> 
+  </joint>
+  
+  <!-- 前車體 -->
+  <link name="front_chassis">
+    <visual>
+      <geometry>
+        <mesh filename="package://tennis_bot/urdf/meshes/front_chassis.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+  </link>
+  
+  <!-- 後車體 -->
+  <link name="rear_basket">
+    <visual>
+      <geometry>
+        <mesh filename="package://tennis_bot/urdf/meshes/rear_basket.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://tennis_bot/urdf/meshes/rear_basket.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.05" ixy="0.05" ixz="0.05" iyy="0.05" iyz="0.05" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- 左滾輪 -->
+  <link name="left_roller">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+      <material name="blue"><color rgba="0.8 0.8 0 1"/></material>
+    </visual>
+    <visual>
+      <origin xyz="0.045 0 0" rpy="0 0 0"/> <geometry><box size="0.01 0.01 0.01"/></geometry>
+      <material name="red"><color rgba="1 0 0 1"/></material>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.045" length="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.0005" ixy="0.0" ixz="0.0" iyy="0.0005" iyz="0.0" izz="0.0005"/>
+    </inertial>
+  </link>
+
+  <joint name="left_roller_joint" type="continuous">
+    <parent link="front_chassis"/>
+    <child link="left_roller"/>
+    <!--origin xyz="0.065 0.15 0.03" rpy="-0.785398 0 0"/-->
+    <origin xyz="0.065 0.102322 0.045104" rpy="-0.785398 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- 右滾輪 -->
+  <link name="right_roller">
+    <visual>
+      <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+      <material name="blue"><color rgba="0.8 0.8 0 1"/></material>
+    </visual>
+    <visual>
+      <origin xyz="0.045 0 0" rpy="0 0 0"/> <geometry><box size="0.01 0.01 0.01"/></geometry>
+      <material name="red"><color rgba="1 0 0 1"/></material>
+    </visual>
+    <collision>
+      <geometry><cylinder radius="0.045" length="0.04"/></geometry>
+    </collision>
+    <inertial>
+      <mass value="0.5"/>
+      <inertia ixx="0.0005" ixy="0.0" ixz="0.0" iyy="0.0005" iyz="0.0" izz="0.0005"/>
+    </inertial>
+  </link>
+
+  <joint name="right_roller_joint" type="continuous">
+    <parent link="front_chassis"/>
+    <child link="right_roller"/>
+    <!--origin xyz="0.205 0.15 0.03" rpy="-0.785398 0 0"/-->
+    <origin xyz="0.205 0.102322 0.045104" rpy="-0.785398 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- 左驅動輪 -->
+  <link name="left_drive_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.02"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.2"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="front_chassis"/>
+    <child link="left_drive_wheel"/>
+    <origin xyz="-0.01 0.08 0.02" rpy="0 1.5708 0"/>
+    <axis xyz="0 0 -1"/> 
+  </joint>
+
+  <!-- 右驅動輪 -->
+  <link name="right_drive_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.02"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.04" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.2"/>
+      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+    </inertial>
+  </link>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="front_chassis"/>
+    <child link="right_drive_wheel"/>
+    <origin xyz="0.28 0.08 0.02" rpy="0 1.5708 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <!-- 後車體左萬象輪 -->
+  <link name="rear_left_caster">
+    <visual>
+      <geometry><sphere radius="0.015"/></geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry><sphere radius="0.015"/></geometry>
+      <surface><friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction></surface>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="rear_left_caster_joint" type="fixed">
+    <parent link="rear_basket"/>
+    <child link="rear_left_caster"/>
+    <origin xyz="0.028 -0.349 0.015" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 後車體右萬象輪 -->
+  <link name="rear_right_caster">
+    <visual>
+      <geometry><sphere radius="0.015"/></geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <geometry><sphere radius="0.015"/></geometry>
+      <surface><friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction></surface>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="rear_right_caster_joint" type="fixed">
+    <parent link="rear_basket"/>
+    <child link="rear_right_caster"/>
+    <origin xyz="0.222 -0.349 0.015" rpy="0 0 0"/>
+  </joint>
+
+
+
+  <!-- gazebo 滾輪 -->
+  <gazebo reference="left_roller">
+    <material>Gazebo/Blue</material>
+    <mu1>1.5</mu1>
+    <mu2>1.5</mu2>
+    <kp>150</kp>
+    <kd>4.2</kd>
+    <min_depth>0.001</min_depth>
+    <max_vel>10</max_vel>
+  </gazebo>
+  <gazebo reference="right_roller">
+    <material>Gazebo/Blue</material>
+    <mu1>1.5</mu1>
+    <mu2>1.5</mu2>
+    <kp>150</kp>
+    <kd>4.2</kd>
+    <min_depth>0.001</min_depth>
+    <max_vel>10</max_vel>
+  </gazebo>
+  
+    <gazebo>
+    <plugin name="roller_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=roller_cmd</remapping>
+        <remapping>odom:=roller_odom_dump</remapping>
+      </ros>
+      <left_joint>left_roller_joint</left_joint>
+      <right_joint>right_roller_joint</right_joint>
+      <wheel_separation>0.14</wheel_separation>
+      <wheel_diameter>0.09</wheel_diameter>
+      <max_wheel_torque>50.0</max_wheel_torque>
+      <max_wheel_acceleration>10.0</max_wheel_acceleration>
+      <publish_odom>false</publish_odom>
+      <publish_odom_tf>false</publish_odom_tf>
+      <publish_wheel_tf>false</publish_wheel_tf>
+    </plugin>
+  </gazebo>
+
+  <!-- gazebo 驅動倫 -->
+  <gazebo reference="left_drive_wheel">
+    <mu1>200.0</mu1>
+    <mu2>200.0</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="right_drive_wheel">
+    <mu1>200.0</mu1>
+    <mu2>200.0</mu2>
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=cmd_vel</remapping>
+        <remapping>odom:=odom</remapping>
+      </ros>
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>0.27</wheel_separation>
+      <wheel_diameter>0.08</wheel_diameter>
+      <max_wheel_torque>2.0</max_wheel_torque>
+      <max_wheel_acceleration>1.0</max_wheel_acceleration>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo> 
+
+<link name="camera_link">
+    <visual>
+      <geometry><box size="0.02 0.05 0.03"/></geometry>
+      <material name="black"><color rgba="0.1 0.1 0.1 1"/></material>
+    </visual>
+    <inertial>
+      <mass value="0.005"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+</link>
+
+<joint name="camera_joint" type="fixed">
+    <parent link="front_chassis"/>
+    <child link="camera_link"/>
+    <origin xyz="0.135 0.1 0.13" rpy="0 0 1.5708"/> 
+</joint>
+
+<gazebo reference="camera_link">
+    <sensor type="camera" name="tennis_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.396</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/image_raw:=tennis_camera/image_raw</remapping>
+        </ros>
+        <camera_name>tennis_camera</camera_name>
+        <frame_name>camera_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ================= LiDAR Link ================= -->
+  <link name="lidar_link">
+    <inertial>
+      <!-- 極小質量，避免改變現有底盤的重心與轉動慣量 -->
+      <mass value="0.01"/> 
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <!-- 簡單的圓柱體代表光達外觀 -->
+        <cylinder radius="0.03" length="0.04"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.03" length="0.04"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- ================= LiDAR Joint ================= -->
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/> <!-- 請確認你的車體主座標名稱是否為 base_link -->
+    <child link="lidar_link"/>
+    <!-- XYZ 高度請根據你目前的車高微調，確保高於其他機構 -->
+    <origin xyz="0.1 -0.135 0.2" rpy="0 0 1.5708"/> 
+  </joint>
+
+  <!-- ================= Gazebo LiDAR Plugin ================= -->
+  <gazebo reference="lidar_link">
+    <!-- 設定外觀顏色 -->
+    <material>Gazebo/Yellow</material>
+    <sensor type="ray" name="lidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <!-- 開啟可視化，在 Gazebo 中會顯示藍色的雷射掃描射線 -->
+      <visualize>true</visualize> 
+      <!-- 掃描更新率，10 Hz 符合多數 2D 光達實體規格 -->
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <!-- 掃描點數與角度範圍 (360度) -->
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <!-- 最小距離：需大於光達中心到車體邊緣的距離 -->
+          <min>0.5</min> 
+          <!-- 最大距離：網球場單邊約 12m，設定 15m 確保能打到對向圍網 -->
+          <max>15.0</max> 
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <!-- ROS 2 溝通橋樑 -->
+      <plugin name="gazebo_ros_lidar_controller" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <!-- 將預設輸出的 topic 重新映射為標準的 /scan -->
+          <remapping>~/out:=scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>lidar_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+</robot>

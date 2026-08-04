@@ -1,0 +1,8 @@
+5/13 
+
+close front_chassis
+1. change roller xyz="0.205 0.102322 0.045104" -> xyz="0.205 0.2 0.03"
+2. change <max_wheel_torque> 0.05 -> 50.0
+-> 成功拋起 但是不夠高＆遠 -> 先處理拋不夠高
+3. change <max_vel> 2 -> 10
+4. change mass of tennis_ball 0.058 -> 0.024 < m < 0.030 -> success!
