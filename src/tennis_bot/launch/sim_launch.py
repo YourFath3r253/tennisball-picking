@@ -24,17 +24,19 @@ def generate_launch_description():
         SetEnvironmentVariable(name='GAZEBO_MODEL_PATH', value=new_model_path),
         
         # 2. 啟動 Gazebo，並在指令最後面加上 world_file 路徑
+        # libgazebo_ros_init.so 負責發布 /clock，沒有它 use_sim_time 會卡在 0，
+        # AMCL / RViz2 的 TF 對不上時間軸就會斷鏈
         ExecuteProcess(
-            cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so', world_file],
+            cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so', world_file],
             output='screen'
         ),
-        
+
         # 3. 啟動 Robot State Publisher
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             output='screen',
-            parameters=[{'robot_description': robot_desc}]
+            parameters=[{'robot_description': robot_desc, 'use_sim_time': True}]
         ),
         
         # 4. 啟動 Spawn Entity (負責把機器人放進剛開好的網球場裡)
