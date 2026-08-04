@@ -1,27 +1,50 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point, Twist
+from std_msgs.msg import Bool, String
 
 class ControlNode(Node):
     def __init__(self):
         super().__init__('control_node')
         self.subscription = self.create_subscription(Point, '/target_position', self.target_callback, 10)
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
-        
+
+        # patrol_supervisor 用這個開關把車的控制權從 Nav2 巡邏切到這裡（追球/盲抓），
+        # 沒被啟用時完全不動作，避免跟 Nav2 的 velocity_smoother 搶著發 /cmd_vel
+        self.enabled = False
+        self.enable_subscription = self.create_subscription(Bool, '/capture_mode', self.capture_mode_callback, 10)
+        self.state_pub = self.create_publisher(String, '/control_node/state', 10)
+
         self.kp = 0.005
         self.max_omega = 0.6  # 降到 0.6 讓轉向更平滑，減少急煞偏航
-        
+
         # 狀態機變數
         self.state = 'SEARCH' # 初始狀態：SEARCH, TRACK, BLIND_CAPTURE
         self.last_state_change_time = self.get_clock().now().nanoseconds / 1e9
-        
+
         # 盲抓設定參數
         self.blind_duration = 0.8 # 盲抓強制直行時間 (秒)
         self.blind_speed = 0.3   # 盲抓時的推進速度 (稍微比最低速 0.1 快一點，確保能把球塞進去)
 
         self.get_logger().info('Control Node 最終版(平滑減速+盲抓接管)已啟動.')
 
+    def capture_mode_callback(self, msg):
+        newly_enabled = msg.data and not self.enabled
+        self.enabled = msg.data
+        if newly_enabled:
+            # 每次被喚醒接管都從乾淨的 SEARCH 狀態開始，不要沿用上次殘留的狀態
+            self.state = 'SEARCH'
+            self.last_state_change_time = self.get_clock().now().nanoseconds / 1e9
+
+    def _publish_state(self):
+        msg = String()
+        msg.data = self.state
+        self.state_pub.publish(msg)
+
     def target_callback(self, msg):
+        if not self.enabled:
+            return
+
         twist = Twist()
         current_time = self.get_clock().now().nanoseconds / 1e9
 
@@ -35,6 +58,7 @@ class ControlNode(Node):
                 twist.linear.x = self.blind_speed
                 twist.angular.z = 0.0
                 self.get_logger().info(f'!!! BLIND CAPTURE !!! - {elapsed_blind:.2f}s / {self.blind_duration}s')
+                self._publish_state()
                 self.publisher_.publish(twist)
                 return  # 直接 return，略過底下所有的相機邏輯
             else:
@@ -69,6 +93,7 @@ class ControlNode(Node):
                     twist.linear.x = self.blind_speed
                     twist.angular.z = 0.0
                     self.get_logger().info('>>> Triggering BLIND CAPTURE <<<')
+                    self._publish_state()
                     self.publisher_.publish(twist)
                     return
                 else:
@@ -105,6 +130,7 @@ class ControlNode(Node):
                 twist.angular.z = 0.0
                 self.get_logger().info(f'Search (MOVE) - {cycle_time:.1f}s')
 
+        self._publish_state()
         self.publisher_.publish(twist)
 
 def main(args=None):
