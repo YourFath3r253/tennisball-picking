@@ -9,11 +9,9 @@ ros2 launch tennis_bot sim_launch.py
 # 2 強制啟動 Robot State Publisher
 # ros2 run robot_state_publisher robot_state_publisher /home/sean/ros2_ws/src/tennis_bot/urdf/simple_bot.urdf
 
-# 3 啟動 AMCL 與地圖
-# ros2 launch ~/ros2_ws/src/tennis_bot_maps/launch/localization.launch.py
-
-# 4 以正確的系統時間參數啟動 RViz2
-# ros2 run rviz2 rviz2 --ros-args -p use_sim_time:=true
+# 3 啟動 AMCL 與地圖 (現在 tennis_bot_maps 是正式 package，RViz2 也內建在裡面一起啟動了)
+# colcon build --packages-select tennis_bot_maps && source install/setup.bash
+# ros2 launch tennis_bot_maps localization.launch.py
 
 # 前後旋轉按鍵  si (前進)、, (後退)、j (左轉)、l (右轉)、k (停止)
 '''

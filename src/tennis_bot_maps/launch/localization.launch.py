@@ -1,11 +1,12 @@
 import os
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    # 請將這裡的絕對路徑換成你實際的使用者名稱 (假設為 user)
-    map_yaml_file = '/home/sean/ros2_ws/src/tennis_bot_maps/maps/tennis_court_map.yaml'
-    rviz_config_file = '/home/sean/ros2_ws/src/tennis_bot_maps/rviz/localization.rviz'
+    pkg_share = get_package_share_directory('tennis_bot_maps')
+    map_yaml_file = os.path.join(pkg_share, 'maps', 'tennis_court_map.yaml')
+    rviz_config_file = os.path.join(pkg_share, 'rviz', 'localization.rviz')
 
     return LaunchDescription([
         # 1. 啟動 Map Server
