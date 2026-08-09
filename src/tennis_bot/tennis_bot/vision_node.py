@@ -31,17 +31,26 @@ class VisionNode(Node):
         lower_yellow = np.array([20, 100, 100])
         upper_yellow = np.array([40, 255, 255])
         mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        # 遠處的球在畫面上只有幾個像素，容易因為單一像素的雜訊斷裂成好幾塊碎片、
+        # 各自都小於面積門檻而被濾掉。做一次形態學閉運算 (先膨脹再侵蝕) 把鄰近的
+        # 碎片黏合成一塊完整輪廓，遠距離偵測才不會整團漏掉。
+        kernel = np.ones((3, 3), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        
+
         target_msg = Point()
         ball_found = False
         cx, cy = -1.0, -1.0
         best_contour = None
 
-        # 篩選出大於 100 像素的有效輪廓
+        # 篩選有效輪廓：網球實際直徑 6.6cm、相機水平視角 80 度、640px 寬換算焦距
+        # 約 381px，3m 外的球影像面積理論值只剩約 55px^2，原本 100px 的門檻在這個
+        # 距離會直接濾掉；門檻降到 12px^2 讓有效偵測距離延伸到約 3m (對應現實硬體
+        # 的偵測極限)，同時還是遠高於雜訊等級的一兩個像素。
+        MIN_CONTOUR_AREA = 12
         valid_contours = []
         for cnt in contours:
-            if cv2.contourArea(cnt) > 100:
+            if cv2.contourArea(cnt) > MIN_CONTOUR_AREA:
                 valid_contours.append(cnt)
 
         if len(valid_contours) > 0:
