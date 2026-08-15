@@ -38,6 +38,7 @@ setup(
             'control_node = tennis_bot.control_node:main',
             'patrol_node = tennis_bot.patrol_node:main',
             'patrol_supervisor = tennis_bot.patrol_supervisor:main',
+            'ball_toucher = tennis_bot.ball_toucher:main',
         ],
     },
 )

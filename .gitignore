@@ -10,3 +10,6 @@ __pycache__/
 # editor/OS junk
 .vscode/
 *.swp
+
+# runtime debug logs from manual test runs
+/*.log
