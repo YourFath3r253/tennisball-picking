@@ -32,7 +32,7 @@
     </model>
 
     <model name="ball_1">
-      <pose>2.0 0.5 0.1 0 0 0</pose>
+      <pose>-3.876 -3.142 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -54,7 +54,7 @@
     </model>
 
     <model name="ball_2">
-      <pose>3.5 -1.0 0.1 0 0 0</pose>
+      <pose>3.321 -3.848 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -76,7 +76,7 @@
     </model>
 
     <model name="ball_3">
-      <pose>3.0 -0.125 0.1 0 0 0</pose>
+      <pose>0.789 -1.209 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -98,7 +98,7 @@
     </model>
 
     <model name="ball_4">
-      <pose>0.3 -0.125 0.1 0 0 0</pose>
+      <pose>-9.724 0.067 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -120,7 +120,7 @@
     </model>
 
     <model name="ball_5">
-      <pose>0.7 -0.125 0.1 0 0 0</pose>
+      <pose>-10.175 -0.597 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -142,7 +142,7 @@
     </model>
 
     <model name="ball_6">
-      <pose>0.125 3.0 0.1 0 0 0</pose>
+      <pose>-9.463 -3.684 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -164,7 +164,7 @@
     </model>
 
     <model name="ball_7">
-      <pose>0.125 1.0 0.1 0 0 0</pose>
+      <pose>-1.661 2.942 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -186,7 +186,7 @@
     </model>
 
     <model name="ball_8">
-      <pose>4.5 1.5 0.1 0 0 0</pose>
+      <pose>-8.276 -2.491 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -208,7 +208,7 @@
     </model>
 
     <model name="ball_9">
-      <pose>1.5 -2.0 0.1 0 0 0</pose>
+      <pose>2.804 4.029 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
@@ -230,7 +230,7 @@
     </model>
 
     <model name="ball_10">
-      <pose>5.0 -0.5 0.1 0 0 0</pose>
+      <pose>1.696 -0.93 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>

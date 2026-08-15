@@ -39,6 +39,7 @@ setup(
             'patrol_node = tennis_bot.patrol_node:main',
             'patrol_supervisor = tennis_bot.patrol_supervisor:main',
             'ball_toucher = tennis_bot.ball_toucher:main',
+            'grid_patrol_node = tennis_bot.grid_patrol_node:main',
         ],
     },
 )
