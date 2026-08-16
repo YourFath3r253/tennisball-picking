@@ -63,9 +63,6 @@
       <origin xyz="0.045 0 0" rpy="0 0 0"/> <geometry><box size="0.01 0.01 0.01"/></geometry>
       <material name="red"><color rgba="1 0 0 1"/></material>
     </visual>
-    <collision>
-      <geometry><cylinder radius="0.045" length="0.04"/></geometry>
-    </collision>
     <inertial>
       <mass value="0.5"/>
       <inertia ixx="0.0005" ixy="0.0" ixz="0.0" iyy="0.0005" iyz="0.0" izz="0.0005"/>
@@ -90,9 +87,6 @@
       <origin xyz="0.045 0 0" rpy="0 0 0"/> <geometry><box size="0.01 0.01 0.01"/></geometry>
       <material name="red"><color rgba="1 0 0 1"/></material>
     </visual>
-    <collision>
-      <geometry><cylinder radius="0.045" length="0.04"/></geometry>
-    </collision>
     <inertial>
       <mass value="0.5"/>
       <inertia ixx="0.0005" ixy="0.0" ixz="0.0" iyy="0.0005" iyz="0.0" izz="0.0005"/>
@@ -118,9 +112,7 @@
       </material>
     </visual>
     <collision>
-      <geometry>
-        <cylinder radius="0.04" length="0.02"/>
-      </geometry>
+      <geometry><cylinder radius="0.04" length="0.02"/></geometry>
     </collision>
     <inertial>
       <mass value="0.2"/>
@@ -144,9 +136,7 @@
       <material name="black"/>
     </visual>
     <collision>
-      <geometry>
-        <cylinder radius="0.04" length="0.02"/>
-      </geometry>
+      <geometry><cylinder radius="0.04" length="0.02"/></geometry>
     </collision>
     <inertial>
       <mass value="0.2"/>
@@ -333,5 +323,38 @@
     </sensor>
   </gazebo>
 
+  <!-- 理想陀螺儀 (IMU)：直接量測車體真實角速度，不經過輪子，不受打滑影響。
+       沒有加 <noise> 區塊 = 完美無誤差，先驗證「陀螺儀角速度取代輪速角速度」
+       這個方向本身有沒有用，之後如果要驗證現實可行性，再加雜訊/偏移模型。
+       base_link 完全是空的 (沒有 inertial)，感測器直接掛上去 Gazebo 沒有正確
+       產生 /imu topic，所以跟 camera_link 一樣另外開一個小 link 掛感測器。 -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 -0.135 0" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>50</update_rate>
+      <visualize>true</visualize>
+      <imu></imu>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/out:=imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+    </sensor>
+  </gazebo>
 
 </robot>

@@ -2,15 +2,24 @@
 
   A 巡邏 (PATROL)      沿 32 格弓字型路徑走，0.4 m/s、轉向角速度上限 0.6 rad/s
   B 對準 (ALIGN)       發現球，原地左右轉，P control 對準畫面中心 (kp=0.005)
-  C 接近 (APPROACH)    對準後直走，不邊走邊修正，一路走到相機看不到球為止
+  C 接近 (APPROACH)    對準後往前走，邊走邊用簡單PID修正方向 (球中心偏離畫面
+                        中心的像素誤差)，一路走到相機看不到球為止
   D 盲衝 (BLIND_DASH)  相機看不到球 (死角範圍) 後固定時間直衝，蓋過死角距離
+  E 原路倒車 (RETURNING) 追球 (B/C/D) 結束後，把追球期間送出的指令倒過來重播一遍，
+                        不靠里程計，直接原路退回巡邏路線再繼續 PATROL
 
-車體自身位置完全用輪速里程計算 (讀 /joint_states 拿左右驅動輪真實角速度，
-輪子半徑 0.04m、輪距 0.27m，標準差速驅動運動學積分)，不用 /odom、不用
-光達/AMCL。「有沒有真的碰到球」則是用 Gazebo 的真實座標判斷 (base_link
-座標+姿態，轉換球的世界座標到局部座標系，檢查是否落在 front_chassis 的
-實際範圍內)，這兩個是分開的：車體自己「以為」在哪裡 (拿去決定怎麼轉彎)，
+車體自身位置用輪速+陀螺儀算 (讀 /joint_states 拿左右驅動輪真實角速度算前進
+速度，輪子半徑 0.04m、輪距 0.29m；轉向角速度改用 /imu 陀螺儀直接量到的角速度，
+不再用左右輪速差推算，因為輪子在原地轉向 (ALIGN) 或撞到東西時容易打滑，輪速
+差算出來的角速度會跟車體真實轉動的角度對不上)，不用 /odom、不用光達/AMCL。
+陀螺儀目前是理想 sensor (URDF 裡沒有加 <noise>)，先驗證這個方向有沒有用。「有沒有真的碰到球」則是用 Gazebo 的真實座標判斷 (base_link
+座標+姿態，轉換球的世界座標到局部座標系，檢查有沒有跟左右滾輪的位置
+重疊)，這兩個是分開的：車體自己「以為」在哪裡 (拿去決定怎麼轉彎)，
 跟「有沒有真的碰到」(拿去判斷有沒有成功) 用的資料來源不同。
+左右滾輪 (left_roller/right_roller) 在 URDF 裡沒有開 collision，撿球判定
+全部是軟體幾何判定，不靠物理碰撞，避免滾輪真的輾過球時的碰撞力沒被輪速
+里程計記錄到卻讓車體有真實偏移。front_chassis 也沒有 collision (滾輪機構
+要能穿過球)；左右驅動輪維持原本的 collision (要滾地才能開)。
 
 會把整段軌跡、每顆球碰到的時間、總花費時間都記錄到 CSV，供之後畫圖/分析。
 """
@@ -22,8 +31,9 @@ from pathlib import Path
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point, Twist
-from sensor_msgs.msg import JointState
-from gazebo_msgs.srv import GetEntityState, DeleteEntity
+from sensor_msgs.msg import JointState, Imu
+from std_msgs.msg import Empty
+from gazebo_msgs.srv import GetEntityState, DeleteEntity, SetEntityState
 
 from tennis_bot.grid_waypoints import generate_grid_waypoints
 
@@ -34,9 +44,15 @@ GRID_COLS = 8
 GRID_ROWS = 4
 ARRIVE_TOLERANCE_M = 0.3
 
-# ---- 輪速里程計參數 (跟 URDF / diff_drive plugin 設定一致) ----
+# ---- 輪速里程計參數 ----
+# WHEEL_SEPARATION_M 原本抄 diff_drive plugin 裡的 0.27，但那是 plugin 自己換算
+# cmd_vel 用的假設值，不是真正的輪距。實際從 Gazebo 查 left/right_drive_wheel
+# 在 base_link 局部座標系的位置：左輪 y=0.01，右輪 y=-0.28，真實輪距是 0.29m。
+# 這個常數用在把「量到的左右輪速差」換算回「車體真實轉了多少角速度」，數字
+# 差 0.27 vs 0.29 (差約7.4%) 會讓每次轉向都被里程計系統性高估角度，多次累積
+# 起來就是我們看到的角度誤差越滾越大的主因。
 WHEEL_RADIUS_M = 0.04
-WHEEL_SEPARATION_M = 0.27
+WHEEL_SEPARATION_M = 0.29
 LEFT_WHEEL_JOINT = 'left_wheel_joint'
 RIGHT_WHEEL_JOINT = 'right_wheel_joint'
 
@@ -45,6 +61,10 @@ PATROL_SPEED = 0.4
 PATROL_MAX_OMEGA = 0.6
 
 # ---- 狀態 B 對準 ----
+# 純 P 控制。曾經以為兩顆球角度接近時的擺盪是控制過衝，加了D項沒有效果——
+# 真正原因是 vision_node 那邊鎖定的目標本身在兩顆球之間切換，不是同一顆球的
+# 誤差訊號在震盪，D項對不連續跳動的訊號沒有意義。改用 vision 端更嚴格的鎖定
+# (鎖定期間完全不切換，除非真的超過2秒沒看到任何球) 才是對的方向。
 ALIGN_KP = 0.005
 ALIGN_MAX_OMEGA = 0.6
 PX_PER_RAD = 458.5  # 640px / 1.396rad 相機水平視角
@@ -53,6 +73,13 @@ ALIGN_THRESHOLD_PX = math.radians(5.0) * PX_PER_RAD  # ~40px，對應 5 度
 # ---- 狀態 C 接近 ----
 APPROACH_SPEED = 0.3
 LOST_BALL_GRACE_SEC = 0.3  # 單幀漏檢的寬限期，避免雜訊誤判成「已經看不到了」
+# 原本 APPROACH 是完全不修正方向的直走，ALIGN 交接時殘留的 ±5° 誤差在距離遠時
+# (接近3m偵測極限) 會被放大成明顯的橫向偏移。改成簡單 PID，邊走邊用同一個像素
+# 誤差(球中心離畫面中心多遠)修正角速度，先用一組保守的參數試試看。
+APPROACH_PID_KP = 0.0025
+APPROACH_PID_KI = 0.0
+APPROACH_PID_KD = 0.0008
+APPROACH_MAX_OMEGA = 0.3
 
 # ---- 狀態 D 盲衝 ----
 BLIND_DASH_SPEED = 0.3
@@ -64,9 +91,20 @@ STUCK_DISTANCE_THRESHOLD_M = 0.15
 RECOVER_DURATION_SEC = 1.2
 RECOVER_SPEED = -0.2
 
-# ---- 前車體觸碰範圍 (base_link 局部座標系, 從 front_chassis.stl 量出來) ----
-FRONT_TOUCH_X_RANGE = (-0.05, 0.35)
-FRONT_TOUCH_Y_RANGE = (-0.35, 0.08)
+# ---- 撿球判定：用左右滾輪的位置判斷 ----
+# 前車體 (front_chassis) 跟左右驅動輪都保留原本的 collision (驅動輪要滾地才能跑，
+# 前車體是刻意設計沒有 collision 讓滾輪撿球機構能穿過球)。左右滾輪 (left_roller/
+# right_roller) 的 collision 拿掉，改用軟體幾何判定，避免滾輪真的輾過球時的碰撞力
+# 沒被輪速里程計記錄到、卻讓車體有真實偏移。座標從 Gazebo 實際查出來 (base_link
+# 局部座標系)：左滾輪 (0.1023, -0.065)，右滾輪 (0.1023, -0.205)，滾輪半徑 0.05m。
+# 判定範圍 = 滾輪半徑 + 球半徑(0.033m)，球只要跟任一滾輪的圓形範圍有一點點重疊
+# 就算碰到，不用整顆球都進去。
+LEFT_ROLLER_TOUCH_LOCAL = (0.1023, -0.065)
+RIGHT_ROLLER_TOUCH_LOCAL = (0.1023, -0.205)
+ROLLER_TOUCH_RADIUS_M = 0.05 + 0.033
+
+# run8 只測滾輪判定、run9 才加上原路倒車，兩個改動分開測試看各自的效果
+RETURN_REPLAY_ENABLED = False
 
 NUM_BALLS = 10
 BALL_NAME_PREFIX = 'ball_'
@@ -114,10 +152,12 @@ class GridPatrolNode(Node):
         )
         self.get_logger().info(f'{GRID_COLS}x{GRID_ROWS}={len(self.waypoints)} 格，每格 {cw:.2f} x {ch:.2f} m')
 
-        # 從格 1 開始，不是從世界原點開始。車體要先被實際傳送到格 1 的座標
-        # (跑之前用 reset_run.py)，這裡把里程計的起始值也設成一樣，這樣車體
-        # 「自己以為的位置」從第一刻就跟真實位置對得上，不會一開始就有落差。
+        # 從格 1 開始，不是從世界原點開始。車體實際位置跟里程計起始值必須對得上，
+        # 不然會整趟路線平移掉 (曾經忘記傳送車體，跑出完全不對的巡邏路線)。
+        # 所以這裡自己呼叫 /set_entity_state 把車體傳送到格 1，不依賴外部先手動
+        # 跑 reset_run.py。
         start_x, start_y = self.waypoints[0]
+        self._teleport_to_start(start_x, start_y)
         self.x = start_x
         self.y = start_y
         self.yaw = 0.0
@@ -128,16 +168,32 @@ class GridPatrolNode(Node):
         self._last_odom_time = None
         self._wheel_vel = {LEFT_WHEEL_JOINT: 0.0, RIGHT_WHEEL_JOINT: 0.0}
 
+        # ---- 陀螺儀：yaw 角速度改用這個，不再用左右輪速差算 ----
+        self._imu_angular_z = 0.0
+
+        # ---- debug：追蹤中的目標球是幾號 (用真實座標反推，不是 vision_node 自己
+        # 知道的，vision_node 只有像素座標，沒有球的身分) ----
+        self._ball_real_positions = {}
+
+        # ---- 狀態 C PID (邊接近邊修正方向) ----
+        self._approach_integral = 0.0
+        self._approach_prev_error = 0.0
+        self._approach_prev_time = None
+
         # ---- 視覺 ----
         self.last_target = None
         self.last_seen_time = None
 
         # ---- 狀態機 ----
-        self.state = 'PATROL'  # PATROL / ALIGN / APPROACH / BLIND_DASH / RECOVER
+        self.state = 'PATROL'  # PATROL / ALIGN / APPROACH / BLIND_DASH / RETURNING / RECOVER
         self.blind_dash_until = None
         self.recover_until = None
         self.stuck_check_pos = None
         self.stuck_check_time = None
+
+        # ---- 追球動作紀錄，追完後原路倒車回去 (不靠里程計，直接反轉重播) ----
+        self.chase_cmd_log = []
+        self.return_index = 0
 
         # ---- 球 ----
         self.remaining_balls = [f'{BALL_NAME_PREFIX}{i + 1}' for i in range(NUM_BALLS)]
@@ -149,25 +205,60 @@ class GridPatrolNode(Node):
         self.get_logger().info(f'這次執行的資料會存到 {self.run_dir}')
         self.traj_file = open(self.run_dir / 'trajectory.csv', 'w', newline='')
         self.traj_writer = csv.writer(self.traj_file)
-        self.traj_writer.writerow(['t', 'x', 'y', 'yaw', 'state', 'wp_index', 'cell_number'])
+        self.traj_writer.writerow([
+            't', 'x', 'y', 'yaw', 'state', 'wp_index', 'cell_number',
+            'real_x', 'real_y', 'real_yaw', 'target_ball_guess',
+        ])
         self.touch_file = open(self.run_dir / 'ball_touches.csv', 'w', newline='')
         self.touch_writer = csv.writer(self.touch_file)
         self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch'])
 
         self.start_time = time.time()
+        with open(self.run_dir / 'meta.txt', 'w') as f:
+            f.write(f'start_epoch={self.start_time}\n')
         self.done = False
 
         self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.vision_reset_pub = self.create_publisher(Empty, '/vision_reset_lock', 10)
         self.create_subscription(JointState, '/joint_states', self._joint_state_cb, 10)
+        self.create_subscription(Imu, '/imu', self._imu_cb, 10)
         self.create_subscription(Point, '/target_position', self._target_cb, 10)
 
         self.get_entity_cli = self.create_client(GetEntityState, '/get_entity_state')
         self.delete_entity_cli = self.create_client(DeleteEntity, '/delete_entity')
 
+        # debug 用：定期查 Gazebo 真實座標，跟里程計「以為的」位置分開記錄，
+        # 這樣才看得出來里程計什麼時候開始跟真實位置對不上 (追球轉彎、撞牆時最容易飄)。
+        self.real_x = None
+        self.real_y = None
+        self.real_yaw = None
+        self._real_pose_pending = False
+        self.real_pose_timer = self.create_timer(0.2, self._poll_real_pose)
+
         self.control_timer = self.create_timer(0.1, self._control_loop)
         self.log_timer = self.create_timer(0.5, self._log_trajectory)
 
         self.get_logger().info('開始巡邏。')
+
+    def _teleport_to_start(self, x, y):
+        cli = self.create_client(SetEntityState, '/set_entity_state')
+        if not cli.wait_for_service(timeout_sec=10.0):
+            self.get_logger().error('/set_entity_state 服務沒回應，車體傳送失敗，Gazebo 有在跑嗎？')
+            return
+        req = SetEntityState.Request()
+        req.state.name = 'tennis_bot'
+        req.state.pose.position.x = x
+        req.state.pose.position.y = y
+        req.state.pose.position.z = 0.05
+        req.state.pose.orientation.w = 1.0
+        future = cli.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=5.0)
+        result = future.result()
+        self.get_logger().info(f'車體傳送到格 1 ({x:.3f}, {y:.3f})：{result.success if result else False}')
+
+    # ---------------- 陀螺儀 ----------------
+    def _imu_cb(self, msg):
+        self._imu_angular_z = msg.angular_velocity.z
 
     # ---------------- 輪速里程計 ----------------
     def _joint_state_cb(self, msg):
@@ -184,7 +275,7 @@ class GridPatrolNode(Node):
                 v_left = WHEEL_RADIUS_M * self._wheel_vel[LEFT_WHEEL_JOINT]
                 v_right = WHEEL_RADIUS_M * self._wheel_vel[RIGHT_WHEEL_JOINT]
                 v = (v_left + v_right) / 2.0
-                omega = (v_right - v_left) / WHEEL_SEPARATION_M
+                omega = self._imu_angular_z  # 改用陀螺儀量到的真實角速度，不再用輪速差算
                 self.yaw += omega * dt
                 self.x += v * math.cos(self.yaw) * dt
                 self.y += v * math.sin(self.yaw) * dt
@@ -198,9 +289,12 @@ class GridPatrolNode(Node):
             self.last_seen_time = self.get_clock().now().nanoseconds / 1e9
             if self.state == 'PATROL':
                 self.state = 'ALIGN'
-                self.get_logger().info(f'發現網球 -> 對準 (目前在往格 {self.cell_numbers[self.wp_index]} 的路上)')
+                self.chase_cmd_log = []
+                guess = self._estimate_target_ball()
+                self.get_logger().info(
+                    f'發現網球 -> 對準 (猜是{guess or "?"}，目前在往格 {self.cell_numbers[self.wp_index]} 的路上)')
 
-    # ---------------- 觸碰判定 (前車體，用真實座標) ----------------
+    # ---------------- 觸碰判定 (左右滾輪，用真實座標) ----------------
     def _check_touch(self):
         if not self.remaining_balls or self.touch_check_in_progress:
             return
@@ -246,18 +340,21 @@ class GridPatrolNode(Node):
         if resp is None or not resp.success or name not in self.remaining_balls:
             return
 
-        (rx, ry, rz), (qx, qy, qz, qw) = robot_pose
         p = resp.state.pose.position
+        self._ball_real_positions[name] = (p.x, p.y)  # debug 用，猜目前追蹤的是幾號球
+
+        (rx, ry, rz), (qx, qy, qz, qw) = robot_pose
         dx, dy, dz = p.x - rx, p.y - ry, p.z - rz
         lx, ly, lz = quat_rotate_inverse(qx, qy, qz, qw, dx, dy, dz)
 
-        in_front = (FRONT_TOUCH_X_RANGE[0] <= lx <= FRONT_TOUCH_X_RANGE[1]
-                    and FRONT_TOUCH_Y_RANGE[0] <= ly <= FRONT_TOUCH_Y_RANGE[1])
+        dist_left = math.hypot(lx - LEFT_ROLLER_TOUCH_LOCAL[0], ly - LEFT_ROLLER_TOUCH_LOCAL[1])
+        dist_right = math.hypot(lx - RIGHT_ROLLER_TOUCH_LOCAL[0], ly - RIGHT_ROLLER_TOUCH_LOCAL[1])
+        in_front = dist_left <= ROLLER_TOUCH_RADIUS_M or dist_right <= ROLLER_TOUCH_RADIUS_M
         if in_front and name in self.remaining_balls:
             self.remaining_balls.remove(name)
             self.touched_count += 1
             elapsed = time.time() - self.start_time
-            self.get_logger().info(f'前車體碰到 {name}！({self.touched_count}/{NUM_BALLS}) t={elapsed:.1f}s')
+            self.get_logger().info(f'滾輪碰到 {name}！({self.touched_count}/{NUM_BALLS}) t={elapsed:.1f}s')
             if not self.done:  # 非同步 callback，結束後才回來的話檔案已經關了，不要再寫
                 self.touch_writer.writerow([name, f'{elapsed:.2f}', self.wp_index, self._current_cell_number()])
                 self.touch_file.flush()
@@ -267,12 +364,61 @@ class GridPatrolNode(Node):
             self.delete_entity_cli.call_async(del_req)
 
             if self.state in ('ALIGN', 'APPROACH', 'BLIND_DASH'):
-                self.state = 'PATROL'
+                self._start_return()
+
+    # ---------------- debug：真實座標 ----------------
+    def _poll_real_pose(self):
+        if self.done or self._real_pose_pending or not self.get_entity_cli.service_is_ready():
+            return
+        self._real_pose_pending = True
+        req = GetEntityState.Request()
+        req.name = 'tennis_bot::base_link'
+        future = self.get_entity_cli.call_async(req)
+        future.add_done_callback(self._on_real_pose)
+
+    def _on_real_pose(self, future):
+        self._real_pose_pending = False
+        try:
+            resp = future.result()
+        except Exception:
+            return
+        if resp is None or not resp.success:
+            return
+        p, o = resp.state.pose.position, resp.state.pose.orientation
+        self.real_x = p.x
+        self.real_y = p.y
+        self.real_yaw = math.atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))
 
     def _current_cell_number(self):
         if 0 <= self.wp_index < len(self.cell_numbers):
             return self.cell_numbers[self.wp_index]
         return ''
+
+    # ---------------- debug：猜目前 vision 追蹤的是幾號球 ----------------
+    # vision_node 只知道像素座標 (cx,cy)，不知道那是哪一顆球。這裡反過來用真實
+    # 座標 (機器人真實位置/朝向 + 每顆球真實位置) 算出每顆球「應該在畫面哪個角度」，
+    # 跟 vision 回報的像素位置換算出的角度比對，哪顆最接近就猜是那顆。
+    # 是近似值 (用 base_link 的位置/朝向，沒有扣掉相機本身 0.135m 的左右偏移)，
+    # 只用來debug，不是精確判定。
+    def _estimate_target_ball(self):
+        if (self.last_target is None or self.last_target.z != 1.0
+                or self.real_x is None or self.real_yaw is None):
+            return ''
+        implied_bearing = (320.0 - self.last_target.x) / PX_PER_RAD
+        best_name, best_diff = '', None
+        for name, (bx, by) in self._ball_real_positions.items():
+            if name not in self.remaining_balls:
+                continue
+            dx, dy = bx - self.real_x, by - self.real_y
+            local_x = dx * math.cos(-self.real_yaw) - dy * math.sin(-self.real_yaw)
+            local_y = dx * math.sin(-self.real_yaw) + dy * math.cos(-self.real_yaw)
+            if local_x <= 0:
+                continue  # 在車體後面，不可能是畫面裡看到的
+            bearing = math.atan2(local_y, local_x)
+            diff = abs(bearing - implied_bearing)
+            if best_diff is None or diff < best_diff:
+                best_diff, best_name = diff, name
+        return best_name
 
     # ---------------- 記錄軌跡 ----------------
     def _log_trajectory(self):
@@ -283,8 +429,12 @@ class GridPatrolNode(Node):
         if self.done or not self._have_odom:
             return
         elapsed = time.time() - self.start_time
+        real_x = f'{self.real_x:.3f}' if self.real_x is not None else ''
+        real_y = f'{self.real_y:.3f}' if self.real_y is not None else ''
+        real_yaw = f'{self.real_yaw:.3f}' if self.real_yaw is not None else ''
         self.traj_writer.writerow([f'{elapsed:.2f}', f'{self.x:.3f}', f'{self.y:.3f}',
-                                    f'{self.yaw:.3f}', self.state, self.wp_index, self._current_cell_number()])
+                                    f'{self.yaw:.3f}', self.state, self.wp_index, self._current_cell_number(),
+                                    real_x, real_y, real_yaw, self._estimate_target_ball()])
         self.traj_file.flush()
 
     # ---------------- 控制迴圈 ----------------
@@ -301,6 +451,7 @@ class GridPatrolNode(Node):
                 f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
             )
             self.log_timer.cancel()
+            self.real_pose_timer.cancel()
             self.traj_file.close()
             self.touch_file.close()
             return
@@ -348,6 +499,8 @@ class GridPatrolNode(Node):
             self._do_approach(now)
         elif self.state == 'BLIND_DASH':
             self._do_blind_dash(now)
+        elif self.state == 'RETURNING':
+            self._do_return()
 
     # ---- 狀態 A ----
     def _do_patrol(self):
@@ -370,8 +523,9 @@ class GridPatrolNode(Node):
             # 對準階段還沒開始靠近，看丟目標不是進了死角，是真的沒有目標了
             # (雜訊或球本來就不在那)，放棄追這顆球，回去巡邏
             if self._ball_truly_lost(now):
-                self.get_logger().info('對準時看丟目標 -> 放棄，回到巡邏')
-                self.state = 'PATROL'
+                how = '原路倒車回去' if RETURN_REPLAY_ENABLED else '直接走回巡邏路徑'
+                self.get_logger().info(f'對準時看丟目標 -> 放棄，{how}')
+                self._start_return()
             return
         error_x = 320.0 - self.last_target.x
         twist = Twist()
@@ -380,16 +534,33 @@ class GridPatrolNode(Node):
             twist.angular.z = omega
             twist.linear.x = 0.0
             self.cmd_pub.publish(twist)
+            self.chase_cmd_log.append((twist.linear.x, twist.angular.z))
         else:
             self.state = 'APPROACH'
+            self._approach_integral = 0.0
+            self._approach_prev_error = 0.0
+            self._approach_prev_time = None
 
     # ---- 狀態 C ----
     def _do_approach(self, now):
         if self.last_target is not None and self.last_target.z == 1.0:
+            error_x = 320.0 - self.last_target.x
+            dt = now - self._approach_prev_time if self._approach_prev_time is not None else 0.1
+            dt = dt if 0 < dt < 0.5 else 0.1
+            self._approach_integral += error_x * dt
+            derivative = (error_x - self._approach_prev_error) / dt
+            omega = (APPROACH_PID_KP * error_x
+                     + APPROACH_PID_KI * self._approach_integral
+                     + APPROACH_PID_KD * derivative)
+            omega = max(-APPROACH_MAX_OMEGA, min(APPROACH_MAX_OMEGA, omega))
+            self._approach_prev_error = error_x
+            self._approach_prev_time = now
+
             twist = Twist()
             twist.linear.x = APPROACH_SPEED
-            twist.angular.z = 0.0
+            twist.angular.z = omega
             self.cmd_pub.publish(twist)
+            self.chase_cmd_log.append((twist.linear.x, twist.angular.z))
         elif self._ball_truly_lost(now):
             # 已經在直走接近了，看不到了 = 進了相機死角，交給盲衝蓋過去
             self.state = 'BLIND_DASH'
@@ -407,8 +578,36 @@ class GridPatrolNode(Node):
             twist.linear.x = BLIND_DASH_SPEED
             twist.angular.z = 0.0
             self.cmd_pub.publish(twist)
+            self.chase_cmd_log.append((twist.linear.x, twist.angular.z))
         else:
+            self.vision_reset_pub.publish(Empty())  # 盲衝結束才放開視覺的目標鎖定
+            self._start_return()
+
+    # ---- 狀態 E：原路倒車 ----
+    # 追球 (ALIGN/APPROACH/BLIND_DASH) 期間車體會偏離巡邏路線，而輪速里程計在這幾個
+    # 狀態特別容易飄 (原地轉向、盲衝時滑動比較大)，飄了之後直接回去 PATROL 只會照著
+    # 不準的里程計亂衝，可能撞牆。改成把追球期間送出的每個指令記下來，追完後原封不動
+    # 反過來重播一次 (方向相反、順序倒過來)，不管里程計準不準，物理上大致就能退回追球
+    # 之前的位置跟朝向，才切回 PATROL。
+    def _start_return(self):
+        if not RETURN_REPLAY_ENABLED:
+            self.chase_cmd_log = []
             self.state = 'PATROL'
+            return
+        self.state = 'RETURNING'
+        self.return_index = len(self.chase_cmd_log) - 1
+
+    def _do_return(self):
+        if self.return_index < 0:
+            self.chase_cmd_log = []
+            self.state = 'PATROL'
+            return
+        linear_x, angular_z = self.chase_cmd_log[self.return_index]
+        self.return_index -= 1
+        twist = Twist()
+        twist.linear.x = -linear_x
+        twist.angular.z = -angular_z
+        self.cmd_pub.publish(twist)
 
 
 def main(args=None):
