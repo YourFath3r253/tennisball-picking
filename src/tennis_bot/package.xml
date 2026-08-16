@@ -12,6 +12,7 @@
   <depend>sensor_msgs</depend>
   <depend>gazebo_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>rosgraph_msgs</depend>
   <depend>nav2_simple_commander</depend>
 
   <test_depend>ament_copyright</test_depend>

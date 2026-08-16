@@ -30,9 +30,11 @@ from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 from geometry_msgs.msg import Point, Twist
 from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Empty
+from rosgraph_msgs.msg import Clock
 from gazebo_msgs.srv import GetEntityState, DeleteEntity, SetEntityState
 
 from tennis_bot.grid_waypoints import generate_grid_waypoints
@@ -106,6 +108,12 @@ ROLLER_TOUCH_RADIUS_M = 0.05 + 0.033
 # run8 只測滾輪判定、run9 才加上原路倒車，兩個改動分開測試看各自的效果
 RETURN_REPLAY_ENABLED = False
 
+# 里程計積分用的 dt 改用模擬時間 (/clock) 還是真實時鐘 (wall clock)。懷疑 Gazebo
+# GUI渲染+密集非同步查詢同時搶資源時，模擬即時率會掉下去，這時真實時鐘算出來的dt
+# 可能超過 0.5 秒防呆門檻、整段積分被跳過；改用模擬時間應該就不會受即時率影響。
+# 先關著跑一次收集 wall_dt vs sim_dt 的對照數據，確認真的是這個問題後再打開。
+USE_SIM_TIME_FOR_DT = False
+
 NUM_BALLS = 10
 BALL_NAME_PREFIX = 'ball_'
 
@@ -165,7 +173,9 @@ class GridPatrolNode(Node):
 
         # ---- 輪速里程計 (car 自己以為的位置，拿去決定怎麼開) ----
         self._have_odom = False
-        self._last_odom_time = None
+        self._last_odom_time = None  # wall clock，debug 對照用
+        self._last_sim_time = None
+        self._sim_time = None
         self._wheel_vel = {LEFT_WHEEL_JOINT: 0.0, RIGHT_WHEEL_JOINT: 0.0}
 
         # ---- 陀螺儀：yaw 角速度改用這個，不再用左右輪速差算 ----
@@ -213,6 +223,12 @@ class GridPatrolNode(Node):
         self.touch_writer = csv.writer(self.touch_file)
         self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch'])
 
+        # ---- debug：每次 _joint_state_cb 觸發時記錄 wall_dt vs sim_dt，確認
+        # 「真實時鐘算出來的dt超過0.5秒防呆」是不是因為模擬即時率掉下去造成的 ----
+        self.dt_debug_file = open(self.run_dir / 'dt_debug.csv', 'w', newline='')
+        self.dt_debug_writer = csv.writer(self.dt_debug_file)
+        self.dt_debug_writer.writerow(['t', 'wall_dt', 'sim_dt', 'state', 'dropped'])
+
         self.start_time = time.time()
         with open(self.run_dir / 'meta.txt', 'w') as f:
             f.write(f'start_epoch={self.start_time}\n')
@@ -223,6 +239,7 @@ class GridPatrolNode(Node):
         self.create_subscription(JointState, '/joint_states', self._joint_state_cb, 10)
         self.create_subscription(Imu, '/imu', self._imu_cb, 10)
         self.create_subscription(Point, '/target_position', self._target_cb, 10)
+        self.create_subscription(Clock, '/clock', self._clock_cb, qos_profile_sensor_data)
 
         self.get_entity_cli = self.create_client(GetEntityState, '/get_entity_state')
         self.delete_entity_cli = self.create_client(DeleteEntity, '/delete_entity')
@@ -260,6 +277,10 @@ class GridPatrolNode(Node):
     def _imu_cb(self, msg):
         self._imu_angular_z = msg.angular_velocity.z
 
+    # ---------------- 模擬時鐘 (debug: 確認即時率有沒有掉) ----------------
+    def _clock_cb(self, msg):
+        self._sim_time = msg.clock.sec + msg.clock.nanosec / 1e9
+
     # ---------------- 輪速里程計 ----------------
     def _joint_state_cb(self, msg):
         now = self.get_clock().now().nanoseconds / 1e9
@@ -269,8 +290,14 @@ class GridPatrolNode(Node):
                 if idx < len(msg.velocity):
                     self._wheel_vel[name] = msg.velocity[idx]
 
-        if self._last_odom_time is not None:
-            dt = now - self._last_odom_time
+        wall_dt = (now - self._last_odom_time) if self._last_odom_time is not None else None
+        sim_dt = None
+        if self._sim_time is not None and self._last_sim_time is not None:
+            sim_dt = self._sim_time - self._last_sim_time
+
+        dt = sim_dt if (USE_SIM_TIME_FOR_DT and sim_dt is not None) else wall_dt
+        dropped = False
+        if dt is not None:
             if 0 < dt < 0.5:
                 v_left = WHEEL_RADIUS_M * self._wheel_vel[LEFT_WHEEL_JOINT]
                 v_right = WHEEL_RADIUS_M * self._wheel_vel[RIGHT_WHEEL_JOINT]
@@ -280,7 +307,20 @@ class GridPatrolNode(Node):
                 self.x += v * math.cos(self.yaw) * dt
                 self.y += v * math.sin(self.yaw) * dt
                 self._have_odom = True
+            else:
+                dropped = True
+
+        if wall_dt is not None and not self.done:
+            elapsed = time.time() - self.start_time
+            self.dt_debug_writer.writerow([
+                f'{elapsed:.3f}', f'{wall_dt:.4f}',
+                f'{sim_dt:.4f}' if sim_dt is not None else '',
+                self.state, int(dropped),
+            ])
+
         self._last_odom_time = now
+        if self._sim_time is not None:
+            self._last_sim_time = self._sim_time
 
     # ---------------- 視覺 ----------------
     def _target_cb(self, msg):
@@ -454,6 +494,7 @@ class GridPatrolNode(Node):
             self.real_pose_timer.cancel()
             self.traj_file.close()
             self.touch_file.close()
+            self.dt_debug_file.close()
             return
 
         now = self.get_clock().now().nanoseconds / 1e9
