@@ -42,6 +42,14 @@ from tennis_bot.grid_waypoints import generate_grid_waypoints
 # ---- 網格設定 ----
 X_RANGE = (-11.0, 11.0)
 Y_RANGE = (-4.5, 4.5)
+
+# 真牆的實際座標 (tennis_court.world 的 court_walls，跟 X_RANGE/Y_RANGE 那個
+# 1公尺安全邊界不是同一件事，牆在更外面): x=±12, y=±5.5。撞牆判定直接用
+# Gazebo 真實座標算「離牆多近」，不像實體車那樣需要額外裝光達才能知道——
+# 這是模擬才有的優勢，判定準確、不會像里程計那樣被感測器雜訊誤導。
+WALL_X_M = 12.0
+WALL_Y_M = 5.5
+WALL_CRASH_MARGIN_M = 0.2
 GRID_COLS = 8
 GRID_ROWS = 4
 ARRIVE_TOLERANCE_M = 0.3
@@ -87,12 +95,6 @@ APPROACH_MAX_OMEGA = 0.3
 BLIND_DASH_SPEED = 0.3
 BLIND_DASH_DURATION_SEC = 2.0
 
-# ---- 卡住偵測安全網 ----
-STUCK_CHECK_INTERVAL_SEC = 5.0
-STUCK_DISTANCE_THRESHOLD_M = 0.15
-RECOVER_DURATION_SEC = 1.2
-RECOVER_SPEED = -0.2
-
 # ---- 撿球判定：用左右滾輪的位置判斷 ----
 # 前車體 (front_chassis) 跟左右驅動輪都保留原本的 collision (驅動輪要滾地才能跑，
 # 前車體是刻意設計沒有 collision 讓滾輪撿球機構能穿過球)。左右滾輪 (left_roller/
@@ -114,8 +116,11 @@ RETURN_REPLAY_ENABLED = False
 # 先關著跑一次收集 wall_dt vs sim_dt 的對照數據，確認真的是這個問題後再打開。
 USE_SIM_TIME_FOR_DT = False
 
-NUM_BALLS = 10
-BALL_NAME_PREFIX = 'ball_'
+# ball_6 從 tennis_court.world 移除了 (一開場就會馬上撿到，測試不到東西，
+# 而且之前出現過一次奇怪的碰撞行為)，場上現在固定是這 9 顆。
+BALL_NAMES = ['ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5',
+              'ball_7', 'ball_8', 'ball_9', 'ball_10']
+NUM_BALLS = len(BALL_NAMES)
 
 DATA_ROOT = Path('/home/sean/ros2_ws/experiments/實驗數據')
 
@@ -195,18 +200,15 @@ class GridPatrolNode(Node):
         self.last_seen_time = None
 
         # ---- 狀態機 ----
-        self.state = 'PATROL'  # PATROL / ALIGN / APPROACH / BLIND_DASH / RETURNING / RECOVER
+        self.state = 'PATROL'  # PATROL / ALIGN / APPROACH / BLIND_DASH / RETURNING
         self.blind_dash_until = None
-        self.recover_until = None
-        self.stuck_check_pos = None
-        self.stuck_check_time = None
 
         # ---- 追球動作紀錄，追完後原路倒車回去 (不靠里程計，直接反轉重播) ----
         self.chase_cmd_log = []
         self.return_index = 0
 
         # ---- 球 ----
-        self.remaining_balls = [f'{BALL_NAME_PREFIX}{i + 1}' for i in range(NUM_BALLS)]
+        self.remaining_balls = list(BALL_NAMES)
         self.touched_count = 0
         self.touch_check_in_progress = False
 
@@ -429,6 +431,14 @@ class GridPatrolNode(Node):
         self.real_y = p.y
         self.real_yaw = math.atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))
 
+        if not self.done:
+            near_wall = (
+                abs(self.real_x) >= WALL_X_M - WALL_CRASH_MARGIN_M
+                or abs(self.real_y) >= WALL_Y_M - WALL_CRASH_MARGIN_M
+            )
+            if near_wall:
+                self._finish_run('撞牆')
+
     def _current_cell_number(self):
         if 0 <= self.wp_index < len(self.cell_numbers):
             return self.cell_numbers[self.wp_index]
@@ -477,58 +487,33 @@ class GridPatrolNode(Node):
                                     real_x, real_y, real_yaw, self._estimate_target_ball()])
         self.traj_file.flush()
 
+    def _finish_run(self, reason):
+        self.done = True
+        self.cmd_pub.publish(Twist())
+        elapsed = time.time() - self.start_time
+        self.get_logger().info(
+            f'結束({reason})：碰到 {self.touched_count}/{NUM_BALLS} 顆球，'
+            f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
+        )
+        self.log_timer.cancel()
+        self.real_pose_timer.cancel()
+        self.traj_file.close()
+        self.touch_file.close()
+        self.dt_debug_file.close()
+
     # ---------------- 控制迴圈 ----------------
     def _control_loop(self):
         if not self._have_odom or self.done:
             return
 
-        if not self.remaining_balls or self.wp_index >= len(self.waypoints):
-            self.done = True
-            self.cmd_pub.publish(Twist())
-            elapsed = time.time() - self.start_time
-            self.get_logger().info(
-                f'結束：碰到 {self.touched_count}/{NUM_BALLS} 顆球，'
-                f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
-            )
-            self.log_timer.cancel()
-            self.real_pose_timer.cancel()
-            self.traj_file.close()
-            self.touch_file.close()
-            self.dt_debug_file.close()
+        if not self.remaining_balls:
+            self._finish_run('撿滿')
+            return
+        if self.wp_index >= len(self.waypoints):
+            self._finish_run('走完弓字路徑')
             return
 
         now = self.get_clock().now().nanoseconds / 1e9
-
-        # ---- 卡住偵測安全網 ----
-        if self.state == 'RECOVER':
-            if now < self.recover_until:
-                twist = Twist()
-                twist.linear.x = RECOVER_SPEED
-                twist.angular.z = 0.4
-                self.cmd_pub.publish(twist)
-                return
-            self.state = 'PATROL'
-            self.stuck_check_pos = (self.x, self.y)
-            self.stuck_check_time = now
-
-        if self.state != 'PATROL':
-            self.stuck_check_pos = None
-        elif self.stuck_check_pos is None:
-            self.stuck_check_pos = (self.x, self.y)
-            self.stuck_check_time = now
-        elif now - self.stuck_check_time > STUCK_CHECK_INTERVAL_SEC:
-            moved = math.hypot(self.x - self.stuck_check_pos[0], self.y - self.stuck_check_pos[1])
-            if moved < STUCK_DISTANCE_THRESHOLD_M:
-                self.get_logger().warn('卡住了，倒車重新來')
-                self.state = 'RECOVER'
-                self.recover_until = now + RECOVER_DURATION_SEC
-                twist = Twist()
-                twist.linear.x = RECOVER_SPEED
-                twist.angular.z = 0.4
-                self.cmd_pub.publish(twist)
-                return
-            self.stuck_check_pos = (self.x, self.y)
-            self.stuck_check_time = now
 
         self._check_touch()
 

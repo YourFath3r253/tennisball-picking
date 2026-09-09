@@ -36,7 +36,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -58,7 +58,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -80,7 +80,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -102,7 +102,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -124,29 +124,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
-        </inertial>
-        <collision name="collision">
-          <geometry><sphere><radius>0.033</radius></sphere></geometry>
-          <surface>
-            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
-            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
-          </surface>
-        </collision>
-        <visual name="visual">
-          <geometry><sphere><radius>0.033</radius></sphere></geometry>
-          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
-        </visual>
-      </link>
-    </model>
-
-    <model name="ball_6">
-      <pose>-9.463 -3.684 0.1 0 0 0</pose>
-      <link name="link">
-        <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -168,7 +146,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -190,7 +168,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -212,7 +190,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
@@ -234,7 +212,7 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>4.2e-05</ixx><iyy>4.2e-05</iyy><izz>4.2e-05</izz></inertia>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
         </inertial>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>

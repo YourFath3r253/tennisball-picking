@@ -1,0 +1,110 @@
+"""產生隨機9顆球佈局，寫進 tennis_court.world (改 pose/mass/inertia)。
+
+用法:
+  python3 gen_ball_layout.py --mass 0.027 --seed 1 --save layouts/run1.json
+      -> 隨機產生新的9個位置，存到 layouts/run1.json，同時寫進 world 檔案 (mass=0.027)
+  python3 gen_ball_layout.py --mass 10.0 --load layouts/run1.json
+      -> 讀 run1.json 的位置 (不重新隨機)，只是把 mass 換成 10.0，寫進 world 檔案
+
+限制條件：離牆(X_RANGE/Y_RANGE)至少1公尺、不能落在格1範圍內、球跟球至少間隔0.5公尺。
+"""
+import argparse
+import json
+import random
+import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'tennis_bot'))
+from grid_waypoints import generate_grid_waypoints  # noqa: E402
+
+X_RANGE = (-11.0, 11.0)
+Y_RANGE = (-4.5, 4.5)
+GRID_COLS = 8
+GRID_ROWS = 4
+WALL_MARGIN_M = 1.0
+MIN_BALL_SPACING_M = 0.5
+
+BALL_NAMES = ['ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5',
+              'ball_7', 'ball_8', 'ball_9', 'ball_10']
+
+WORLD_PATH = Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'worlds' / 'tennis_court.world'
+
+
+def cell1_bounds():
+    _, _, cw, ch = generate_grid_waypoints(X_RANGE, Y_RANGE, GRID_COLS, GRID_ROWS)
+    x0, y0 = X_RANGE[0], Y_RANGE[0]
+    return (x0, x0 + cw), (y0, y0 + ch)
+
+
+def in_cell1(x, y, c1x, c1y):
+    return c1x[0] <= x <= c1x[1] and c1y[0] <= y <= c1y[1]
+
+
+def random_positions(rng):
+    c1x, c1y = cell1_bounds()
+    lo_x, hi_x = X_RANGE[0] + WALL_MARGIN_M, X_RANGE[1] - WALL_MARGIN_M
+    lo_y, hi_y = Y_RANGE[0] + WALL_MARGIN_M, Y_RANGE[1] - WALL_MARGIN_M
+    positions = []
+    attempts = 0
+    while len(positions) < len(BALL_NAMES):
+        attempts += 1
+        if attempts > 100000:
+            raise RuntimeError('產生球位置太多次失敗，限制條件可能太嚴格')
+        x = rng.uniform(lo_x, hi_x)
+        y = rng.uniform(lo_y, hi_y)
+        if in_cell1(x, y, c1x, c1y):
+            continue
+        if any((x - px) ** 2 + (y - py) ** 2 < MIN_BALL_SPACING_M ** 2 for px, py in positions):
+            continue
+        positions.append((round(x, 3), round(y, 3)))
+    return dict(zip(BALL_NAMES, positions))
+
+
+def write_world(positions, mass):
+    inertia = round(0.4 * mass * 0.033 ** 2, 8)  # 實心球 I = 2/5 m r^2
+    if mass <= 0.03:
+        kp, kd = 100000.0, 1.0
+    else:
+        kp, kd = 100000000.0, 10.0
+
+    content = WORLD_PATH.read_text()
+    for name, (x, y) in positions.items():
+        pattern = re.compile(
+            r'(<model name="' + re.escape(name) + r'">\s*<pose>)[^<]+(</pose>.*?<mass>)[^<]+(</mass>\s*'
+            r'<inertia><ixx>)[^<]+(</ixx><iyy>)[^<]+(</iyy><izz>)[^<]+(</izz></inertia>.*?'
+            r'<kp>)[^<]+(</kp><kd>)[^<]+(</kd>)',
+            re.S,
+        )
+        replacement = (
+            rf'\g<1>{x} {y} 0.1 0 0 0\g<2>{mass}\g<3>{inertia}\g<4>{inertia}\g<5>{inertia}\g<6>{kp}\g<7>{kd}\g<8>'
+        )
+        content, n = pattern.subn(replacement, content)
+        if n != 1:
+            raise RuntimeError(f'{name} 的區塊沒有剛好比對到一次 (比對到{n}次)，檢查world檔案格式')
+    WORLD_PATH.write_text(content)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--mass', type=float, required=True)
+    ap.add_argument('--seed', type=int, default=None)
+    ap.add_argument('--save', type=str, default=None, help='隨機產生新位置後存到這個json檔')
+    ap.add_argument('--load', type=str, default=None, help='從這個json檔讀位置，不重新隨機')
+    args = ap.parse_args()
+
+    if args.load:
+        positions = json.loads(Path(args.load).read_text())
+    else:
+        rng = random.Random(args.seed)
+        positions = random_positions(rng)
+        if args.save:
+            Path(args.save).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.save).write_text(json.dumps(positions, indent=2, ensure_ascii=False))
+
+    write_world(positions, args.mass)
+    print(json.dumps({'positions': positions, 'mass': args.mass}, ensure_ascii=False))
+
+
+if __name__ == '__main__':
+    main()

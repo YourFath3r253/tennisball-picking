@@ -25,7 +25,7 @@ GRID_ROWS = 4
 
 ALL_BALLS = {
     'ball_1': (-3.88, -3.14), 'ball_2': (3.32, -3.85), 'ball_3': (0.79, -1.21),
-    'ball_4': (-9.72, 0.07), 'ball_5': (-10.18, -0.60), 'ball_6': (-9.46, -3.68),
+    'ball_4': (-9.72, 0.07), 'ball_5': (-10.18, -0.60),
     'ball_7': (-1.66, 2.94), 'ball_8': (-8.28, -2.49), 'ball_9': (2.80, 4.03),
     'ball_10': (1.70, -0.93),
 }
@@ -34,7 +34,11 @@ STATE_COLORS = {'PATROL': 'tab:blue', 'ALIGN': 'orange', 'APPROACH': 'red',
                  'BLIND_DASH': 'purple', 'RECOVER': 'brown'}
 
 
-def plot_run(run_dir):
+def plot_run(run_dir, extra_markers=None, balls=None):
+    """extra_markers: 額外要標在圖上的點，例如死鎖保護觸發的位置。
+    格式: [(x, y, label), ...]
+    balls: 覆蓋預設的 ALL_BALLS，用在每個 run 球佈局不同的情況 (批次測試)。"""
+    balls = balls if balls is not None else ALL_BALLS
     run_dir = Path(run_dir)
     traj_path = run_dir / 'trajectory.csv'
     touch_path = run_dir / 'ball_touches.csv'
@@ -119,7 +123,7 @@ def plot_run(run_dir):
             next_target += arrow_spacing_m
 
     first_t, first_m = True, True
-    for name, (bx, by) in ALL_BALLS.items():
+    for name, (bx, by) in balls.items():
         if name in touched_names:
             ax.scatter([bx], [by], marker='o', s=120, facecolors='lime', edgecolors='black',
                        linewidths=1.5, zorder=6, label='Ball - touched' if first_t else None)
@@ -132,9 +136,16 @@ def plot_run(run_dir):
             ax.annotate(name, (bx, by), textcoords="offset points", xytext=(8, 8), fontsize=8)
             first_m = False
 
+    if extra_markers:
+        for i, (mx, my, mlabel) in enumerate(extra_markers):
+            ax.scatter([mx], [my], marker='X', s=220, facecolors='cyan', edgecolors='black',
+                       linewidths=1.5, zorder=7, label='Livelock trigger' if i == 0 else None)
+            ax.annotate(mlabel, (mx, my), textcoords="offset points", xytext=(8, -14),
+                        fontsize=8, color='darkslategray', fontweight='bold')
+
     ax.set_xlabel('x (m)')
     ax.set_ylabel('y (m)')
-    ax.set_title(f'{run_dir.name} - Real Trajectory + Balls ({len(touched_names)}/{len(ALL_BALLS)} touched)')
+    ax.set_title(f'{run_dir.name} - Real Trajectory + Balls ({len(touched_names)}/{len(balls)} touched)')
     ax.set_xlim(-13, 13)
     ax.set_ylim(-6.5, 6.5)
     ax.set_aspect('equal')
@@ -150,7 +161,7 @@ def plot_run(run_dir):
         ((xs[i] - xs[i - 1]) ** 2 + (ys[i] - ys[i - 1]) ** 2) ** 0.5
         for i in range(1, len(xs))
     )
-    print(f'touched: {len(touched_names)}/{len(ALL_BALLS)}')
+    print(f'touched: {len(touched_names)}/{len(balls)}')
     print(f'total real distance: {total_dist:.1f} m')
     print(f'total time (last logged t): {rows[-1]["t"]} s')
 

@@ -21,6 +21,15 @@ DEBUG_LOG_MIN_INTERVAL_SEC = 0.1
 # 就立刻放開鎖定，允許重新抓。
 SAME_BALL_PX = 150
 
+# 雙門檻 (hysteresis)：球剛好停在偵測距離邊緣時，輪廓面積會在門檻附近抖動，
+# 用同一個門檻判斷「有效/看丟」會一幀有一幀沒有，反覆觸發對準/放棄。改成
+# 「新抓目標」用嚴格門檻 55px^2 (對應理論3m)，但「已經鎖定的球，只要沒掉到
+# 40px^2 以下都還算同一顆」，中間留緩衝帶，減少單純因為面積抖動造成的閃爍。
+# 這個做法在真實相機上也適用 (YOLOv8信心值分數用同樣的雙門檻邏輯一樣成立)，
+# 不是只有模擬用的招。
+ENTER_CONTOUR_AREA = 55   # 新抓目標的門檻 (跟原本 MIN_CONTOUR_AREA 一樣)
+LOCKED_CONTOUR_AREA = 15  # 已鎖定目標，面積掉到這以下才算真的看丟
+
 class VisionNode(Node):
     def __init__(self):
         super().__init__('vision_node')
@@ -77,19 +86,23 @@ class VisionNode(Node):
         # 之前門檻是 12px^2 (理論上會偵測到更遠，但實測因為抗鋸齒邊緣像素被稀釋，
         # 實際只穩定到 1.3~1.5m)。改成 55px^2，讓「判定成球」直接對應理論3m，
         # 不再放寬到理論範圍以外。
-        MIN_CONTOUR_AREA = 55
-        valid_contours = []
+        valid_contours = []       # 嚴格門檻 (55px^2)：抓新目標用
+        locked_ok_contours = []   # 寬鬆門檻 (40px^2)：判斷已鎖定的球還在不在用
         for cnt in contours:
-            if cv2.contourArea(cnt) > MIN_CONTOUR_AREA:
+            area = cv2.contourArea(cnt)
+            if area > ENTER_CONTOUR_AREA:
                 valid_contours.append(cnt)
+            if area > LOCKED_CONTOUR_AREA:
+                locked_ok_contours.append(cnt)
 
         found_same_ball = False
-        if self.locked_cx is not None and len(valid_contours) > 0:
+        if self.locked_cx is not None and len(locked_ok_contours) > 0:
             # 只問「這一幀有沒有候選夠接近，算同一顆球在移動」，不跟其他候選比較，
-            # 不會因為別顆球比較大/比較近就搶走鎖定
+            # 不會因為別顆球比較大/比較近就搶走鎖定。這裡用寬鬆門檻 (40px^2)，
+            # 讓已經鎖定的球在面積抖動到55px^2以下時還能撐住，不會馬上被判定看丟。
             min_dist = float('inf')
             nearest_cnt = None
-            for cnt in valid_contours:
+            for cnt in locked_ok_contours:
                 M = cv2.moments(cnt)
                 if M["m00"] > 0:
                     temp_cx = float(M["m10"] / M["m00"])
@@ -102,13 +115,13 @@ class VisionNode(Node):
                 best_contour = nearest_cnt
                 found_same_ball = True
         elif self.locked_cx is None and len(valid_contours) > 0:
-            # 還沒有鎖定任何東西 (剛開始，或剛被放開)，直接找最大的
+            # 還沒有鎖定任何東西 (剛開始，或剛被放開)，直接找最大的 (嚴格門檻)
             best_contour = max(valid_contours, key=cv2.contourArea)
             found_same_ball = True
 
         if self.locked_cx is not None and not found_same_ball:
-            # 這一幀沒有任何候選算同一顆球，立刻放開鎖定 (不再等待/凍結)，
-            # 有候選的話馬上重新抓
+            # 這一幀連寬鬆門檻的候選都沒有，才真的判定看丟，立刻放開鎖定
+            # (不再等待/凍結)，有新候選 (嚴格門檻) 的話馬上重新抓
             self.locked_cx, self.locked_cy = None, None
             if len(valid_contours) > 0:
                 best_contour = max(valid_contours, key=cv2.contourArea)
