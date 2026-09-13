@@ -98,6 +98,11 @@ def plot_run(run_dir, extra_markers=None, balls=None):
 
     ax.plot(odo_xs, odo_ys, '--', color='black', linewidth=1.0, zorder=2,
             label='Odometry (gyro+wheel, believed)')
+    # 舊做法 (真實時鐘 dt) 的影子里程計，有這欄才畫
+    if rows[0].get('x_wall'):
+        ax.plot([float(r['x_wall']) for r in rows], [float(r['y_wall']) for r in rows],
+                ':', color='magenta', linewidth=1.0, zorder=2,
+                label='Odometry w/ wall-clock dt (old, debug only)')
 
     ax.scatter([xs[0]], [ys[0]], marker='*', s=300, c='black', label='Start', zorder=5)
     ax.scatter([xs[-1]], [ys[-1]], marker='X', s=200, c='black', label='End', zorder=5)

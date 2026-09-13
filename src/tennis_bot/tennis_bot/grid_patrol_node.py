@@ -30,11 +30,9 @@ from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
 from geometry_msgs.msg import Point, Twist
 from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Empty
-from rosgraph_msgs.msg import Clock
 from gazebo_msgs.srv import GetEntityState, DeleteEntity, SetEntityState
 
 from tennis_bot.grid_waypoints import generate_grid_waypoints
@@ -63,6 +61,11 @@ ARRIVE_TOLERANCE_M = 0.3
 # 起來就是我們看到的角度誤差越滾越大的主因。
 WHEEL_RADIUS_M = 0.04
 WHEEL_SEPARATION_M = 0.29
+# 里程計算的是「兩個驅動輪軸心中點」的運動，但 Gazebo GetEntityState 回報的是
+# base_link 原點，兩者在車體座標差 (+0.080, -0.135) m (實測 left/right_drive_wheel
+# 與 base_link 的世界座標算出來的)。原地轉的時候軸心不動、base_link 卻繞 0.157m
+# 半徑畫圓，不換算的話會憑空多出最多 0.31m 的「誤差」。
+AXLE_MID_IN_BASE = (0.080, -0.135)
 LEFT_WHEEL_JOINT = 'left_wheel_joint'
 RIGHT_WHEEL_JOINT = 'right_wheel_joint'
 
@@ -110,11 +113,11 @@ ROLLER_TOUCH_RADIUS_M = 0.05 + 0.033
 # run8 只測滾輪判定、run9 才加上原路倒車，兩個改動分開測試看各自的效果
 RETURN_REPLAY_ENABLED = False
 
-# 里程計積分用的 dt 改用模擬時間 (/clock) 還是真實時鐘 (wall clock)。懷疑 Gazebo
-# GUI渲染+密集非同步查詢同時搶資源時，模擬即時率會掉下去，這時真實時鐘算出來的dt
-# 可能超過 0.5 秒防呆門檻、整段積分被跳過；改用模擬時間應該就不會受即時率影響。
-# 先關著跑一次收集 wall_dt vs sim_dt 的對照數據，確認真的是這個問題後再打開。
-USE_SIM_TIME_FOR_DT = False
+# 里程計積分的 dt 用 /joint_states 封包自帶的時間戳 (Gazebo 模擬時間) 相減。
+# run63~70 實測模擬即時率只有 0.91~0.93，之前用真實時鐘算 dt，里程計走的距離
+# 天生就多 7~10%，跟量到的 odom/real 距離比例幾乎一樣。實體車也是一樣的做法：
+# 用編碼器封包上的時間戳，不用收到封包的電腦時間。
+# 之前試過用 /clock 算 dt，但 /clock 只有 10Hz、/joint_states 30Hz，大半 dt 會是 0。
 
 # ball_6 從 tennis_court.world 移除了 (一開場就會馬上撿到，測試不到東西，
 # 而且之前出現過一次奇怪的碰撞行為)，場上現在固定是這 9 顆。
@@ -171,20 +174,27 @@ class GridPatrolNode(Node):
         # 跑 reset_run.py。
         start_x, start_y = self.waypoints[0]
         self._teleport_to_start(start_x, start_y)
-        self.x = start_x
-        self.y = start_y
+        # 傳送的是 base_link，里程計起點要放在軸心中點 (起始朝向 0，直接加偏移)
+        self.x = start_x + AXLE_MID_IN_BASE[0]
+        self.y = start_y + AXLE_MID_IN_BASE[1]
         self.yaw = 0.0
         self.wp_index = 0
 
         # ---- 輪速里程計 (car 自己以為的位置，拿去決定怎麼開) ----
         self._have_odom = False
-        self._last_odom_time = None  # wall clock，debug 對照用
-        self._last_sim_time = None
-        self._sim_time = None
+        self._last_stamp = None  # /joint_states 封包的模擬時間戳
         self._wheel_vel = {LEFT_WHEEL_JOINT: 0.0, RIGHT_WHEEL_JOINT: 0.0}
 
-        # ---- 陀螺儀：yaw 角速度改用這個，不再用左右輪速差算 ----
-        self._imu_angular_z = 0.0
+        # ---- debug 對照組：同一份輪速+陀螺儀，但用真實時鐘的 dt 積分 (舊做法)，
+        # 只寫進 trajectory.csv 比對，不拿去控制 ----
+        self._last_odom_time = None
+        self.x_wall = self.x
+        self.y_wall = self.y
+        self.yaw_wall = 0.0
+
+        # ---- 陀螺儀：yaw 在 _imu_cb 裡直接積分，不用左右輪速差算 ----
+        self._last_imu_stamp = None
+        self._last_imu_time = None
 
         # ---- debug：追蹤中的目標球是幾號 (用真實座標反推，不是 vision_node 自己
         # 知道的，vision_node 只有像素座標，沒有球的身分) ----
@@ -220,13 +230,14 @@ class GridPatrolNode(Node):
         self.traj_writer.writerow([
             't', 'x', 'y', 'yaw', 'state', 'wp_index', 'cell_number',
             'real_x', 'real_y', 'real_yaw', 'target_ball_guess',
+            'x_wall', 'y_wall', 'yaw_wall',
         ])
         self.touch_file = open(self.run_dir / 'ball_touches.csv', 'w', newline='')
         self.touch_writer = csv.writer(self.touch_file)
         self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch'])
 
-        # ---- debug：每次 _joint_state_cb 觸發時記錄 wall_dt vs sim_dt，確認
-        # 「真實時鐘算出來的dt超過0.5秒防呆」是不是因為模擬即時率掉下去造成的 ----
+        # ---- debug：每次 _joint_state_cb 觸發時記錄 wall_dt vs sim_dt (封包時間戳)，
+        # 累加起來的比值就是這次 run 的平均即時率 ----
         self.dt_debug_file = open(self.run_dir / 'dt_debug.csv', 'w', newline='')
         self.dt_debug_writer = csv.writer(self.dt_debug_file)
         self.dt_debug_writer.writerow(['t', 'wall_dt', 'sim_dt', 'state', 'dropped'])
@@ -241,7 +252,6 @@ class GridPatrolNode(Node):
         self.create_subscription(JointState, '/joint_states', self._joint_state_cb, 10)
         self.create_subscription(Imu, '/imu', self._imu_cb, 10)
         self.create_subscription(Point, '/target_position', self._target_cb, 10)
-        self.create_subscription(Clock, '/clock', self._clock_cb, qos_profile_sensor_data)
 
         self.get_entity_cli = self.create_client(GetEntityState, '/get_entity_state')
         self.delete_entity_cli = self.create_client(DeleteEntity, '/delete_entity')
@@ -252,10 +262,9 @@ class GridPatrolNode(Node):
         self.real_y = None
         self.real_yaw = None
         self._real_pose_pending = False
-        self.real_pose_timer = self.create_timer(0.2, self._poll_real_pose)
+        self.real_pose_timer = self.create_timer(0.2, self._poll_real_pose)  # 每次回來就寫一筆 trajectory
 
         self.control_timer = self.create_timer(0.1, self._control_loop)
-        self.log_timer = self.create_timer(0.5, self._log_trajectory)
 
         self.get_logger().info('開始巡邏。')
 
@@ -277,15 +286,26 @@ class GridPatrolNode(Node):
 
     # ---------------- 陀螺儀 ----------------
     def _imu_cb(self, msg):
-        self._imu_angular_z = msg.angular_velocity.z
-
-    # ---------------- 模擬時鐘 (debug: 確認即時率有沒有掉) ----------------
-    def _clock_cb(self, msg):
-        self._sim_time = msg.clock.sec + msg.clock.nanosec / 1e9
+        # 航向在這裡用 IMU 自己的封包時間戳積分 (50Hz，每筆剛好算一次)。之前是在
+        # 30Hz 的 /joint_states callback 抓「最新一筆」角速度乘 dt，等於每秒有 20 筆
+        # 陀螺儀資料被跳過或重複算，run72 實測每次轉向會隨機差 ±1°。
+        now = self.get_clock().now().nanoseconds / 1e9
+        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
+        omega = msg.angular_velocity.z
+        if self._last_imu_stamp is not None:
+            dt = stamp - self._last_imu_stamp
+            if 0 < dt < 0.5:
+                self.yaw += omega * dt
+            wall_dt = now - self._last_imu_time
+            if 0 < wall_dt < 0.5:
+                self.yaw_wall += omega * wall_dt
+        self._last_imu_stamp = stamp
+        self._last_imu_time = now
 
     # ---------------- 輪速里程計 ----------------
     def _joint_state_cb(self, msg):
         now = self.get_clock().now().nanoseconds / 1e9
+        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
         for name in (LEFT_WHEEL_JOINT, RIGHT_WHEEL_JOINT):
             if name in msg.name:
                 idx = msg.name.index(name)
@@ -293,24 +313,24 @@ class GridPatrolNode(Node):
                     self._wheel_vel[name] = msg.velocity[idx]
 
         wall_dt = (now - self._last_odom_time) if self._last_odom_time is not None else None
-        sim_dt = None
-        if self._sim_time is not None and self._last_sim_time is not None:
-            sim_dt = self._sim_time - self._last_sim_time
+        sim_dt = (stamp - self._last_stamp) if self._last_stamp is not None else None
 
-        dt = sim_dt if (USE_SIM_TIME_FOR_DT and sim_dt is not None) else wall_dt
+        v_left = WHEEL_RADIUS_M * self._wheel_vel[LEFT_WHEEL_JOINT]
+        v_right = WHEEL_RADIUS_M * self._wheel_vel[RIGHT_WHEEL_JOINT]
+        v = (v_left + v_right) / 2.0
+
         dropped = False
-        if dt is not None:
-            if 0 < dt < 0.5:
-                v_left = WHEEL_RADIUS_M * self._wheel_vel[LEFT_WHEEL_JOINT]
-                v_right = WHEEL_RADIUS_M * self._wheel_vel[RIGHT_WHEEL_JOINT]
-                v = (v_left + v_right) / 2.0
-                omega = self._imu_angular_z  # 改用陀螺儀量到的真實角速度，不再用輪速差算
-                self.yaw += omega * dt
-                self.x += v * math.cos(self.yaw) * dt
-                self.y += v * math.sin(self.yaw) * dt
+        if sim_dt is not None:
+            if 0 < sim_dt < 0.5:
+                self.x += v * math.cos(self.yaw) * sim_dt
+                self.y += v * math.sin(self.yaw) * sim_dt
                 self._have_odom = True
             else:
                 dropped = True
+
+        if wall_dt is not None and 0 < wall_dt < 0.5:
+            self.x_wall += v * math.cos(self.yaw_wall) * wall_dt
+            self.y_wall += v * math.sin(self.yaw_wall) * wall_dt
 
         if wall_dt is not None and not self.done:
             elapsed = time.time() - self.start_time
@@ -321,8 +341,7 @@ class GridPatrolNode(Node):
             ])
 
         self._last_odom_time = now
-        if self._sim_time is not None:
-            self._last_sim_time = self._sim_time
+        self._last_stamp = stamp
 
     # ---------------- 視覺 ----------------
     def _target_cb(self, msg):
@@ -427,9 +446,11 @@ class GridPatrolNode(Node):
         if resp is None or not resp.success:
             return
         p, o = resp.state.pose.position, resp.state.pose.orientation
-        self.real_x = p.x
-        self.real_y = p.y
-        self.real_yaw = math.atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))
+        yaw = math.atan2(2.0 * (o.w * o.z + o.x * o.y), 1.0 - 2.0 * (o.y * o.y + o.z * o.z))
+        ox, oy = AXLE_MID_IN_BASE
+        self.real_x = p.x + ox * math.cos(yaw) - oy * math.sin(yaw)
+        self.real_y = p.y + ox * math.sin(yaw) + oy * math.cos(yaw)
+        self.real_yaw = yaw
 
         if not self.done:
             near_wall = (
@@ -438,6 +459,9 @@ class GridPatrolNode(Node):
             )
             if near_wall:
                 self._finish_run('撞牆')
+        # 真實座標一到手就立刻記錄，里程計跟真實位置才是同一瞬間的值
+        # (之前是另一個 0.5s timer 記錄，兩邊最多差 0.2~0.5 秒，車在動時會看起來像誤差)
+        self._log_trajectory()
 
     def _current_cell_number(self):
         if 0 <= self.wp_index < len(self.cell_numbers):
@@ -472,10 +496,7 @@ class GridPatrolNode(Node):
 
     # ---------------- 記錄軌跡 ----------------
     def _log_trajectory(self):
-        # _log_trajectory 是獨立的 0.5s timer，跟 _control_loop 的 done 判斷是分開的
-        # 兩條路徑。結束時 _control_loop 關掉了檔案，但這個 timer 還是會繼續按表
-        # 定時觸發，沒擋住的話下一次觸發就會對已關閉的檔案寫入而整個崩潰
-        # (實測真的發生過，表面上看起來像「卡住」，其實是巡邏正常跑完之後才炸的)。
+        # 結束後檔案已經關了，非同步回來的 callback 不能再寫 (實測真的炸過)
         if self.done or not self._have_odom:
             return
         elapsed = time.time() - self.start_time
@@ -484,7 +505,8 @@ class GridPatrolNode(Node):
         real_yaw = f'{self.real_yaw:.3f}' if self.real_yaw is not None else ''
         self.traj_writer.writerow([f'{elapsed:.2f}', f'{self.x:.3f}', f'{self.y:.3f}',
                                     f'{self.yaw:.3f}', self.state, self.wp_index, self._current_cell_number(),
-                                    real_x, real_y, real_yaw, self._estimate_target_ball()])
+                                    real_x, real_y, real_yaw, self._estimate_target_ball(),
+                                    f'{self.x_wall:.3f}', f'{self.y_wall:.3f}', f'{self.yaw_wall:.3f}'])
         self.traj_file.flush()
 
     def _finish_run(self, reason):
@@ -495,7 +517,6 @@ class GridPatrolNode(Node):
             f'結束({reason})：碰到 {self.touched_count}/{NUM_BALLS} 顆球，'
             f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
         )
-        self.log_timer.cancel()
         self.real_pose_timer.cancel()
         self.traj_file.close()
         self.touch_file.close()
