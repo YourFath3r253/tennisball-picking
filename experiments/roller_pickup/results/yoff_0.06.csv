@@ -1,0 +1,2 @@
+trial,omega_cmd,speed,dash_sec,roller_rad_s,result,ball_lx,ball_ly,ball_lz,ball_max_z,lx_at_max_z,min_lx,ball_world_x,ball_world_y,robot_x,robot_y,note
+1,30.0,0.3,2.67,"left_=-46.7, right=+46.7",STILL_AHEAD,1.089,-0.157,0.032,0.032,0.178,0.161,1.885,-0.156,0.796,0.001,

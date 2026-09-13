@@ -77,10 +77,7 @@
     <parent link="front_chassis"/>
     <child link="left_roller"/>
     <!--origin xyz="0.065 0.15 0.03" rpy="-0.785398 0 0"/-->
-    <!-- 滾輪位置用 tennis_bot/record (5/13) 驗證成功、影片 47.webm 同款的 (y=0.2, z=0.03)。
-         CAD 位置 (0.102322, 0.045104) 離後車廂 17.7cm 前擋牆只有 10cm，球被推到牆邊
-         只能垂直彈起、永遠進不了車廂 (experiments/roller_pickup 實測)。 -->
-    <origin xyz="0.065 0.2 0.03" rpy="-0.785398 0 0"/>
+    <origin xyz="0.065 0.102322 0.045104" rpy="-0.785398 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -108,7 +105,7 @@
     <parent link="front_chassis"/>
     <child link="right_roller"/>
     <!--origin xyz="0.205 0.15 0.03" rpy="-0.785398 0 0"/-->
-    <origin xyz="0.205 0.2 0.03" rpy="-0.785398 0 0"/>
+    <origin xyz="0.205 0.102322 0.045104" rpy="-0.785398 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 

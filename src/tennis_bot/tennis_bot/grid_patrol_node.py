@@ -33,7 +33,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Point, Twist
 from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Empty
-from gazebo_msgs.srv import GetEntityState, DeleteEntity, SetEntityState
+from gazebo_msgs.srv import GetEntityState, SetEntityState
 
 from tennis_bot.grid_waypoints import generate_grid_waypoints
 
@@ -98,17 +98,21 @@ APPROACH_MAX_OMEGA = 0.3
 BLIND_DASH_SPEED = 0.3
 BLIND_DASH_DURATION_SEC = 2.0
 
-# ---- 撿球判定：用左右滾輪的位置判斷 ----
-# 前車體 (front_chassis) 跟左右驅動輪都保留原本的 collision (驅動輪要滾地才能跑，
-# 前車體是刻意設計沒有 collision 讓滾輪撿球機構能穿過球)。左右滾輪 (left_roller/
-# right_roller) 的 collision 拿掉，改用軟體幾何判定，避免滾輪真的輾過球時的碰撞力
-# 沒被輪速里程計記錄到、卻讓車體有真實偏移。座標從 Gazebo 實際查出來 (base_link
-# 局部座標系)：左滾輪 (0.1023, -0.065)，右滾輪 (0.1023, -0.205)，滾輪半徑 0.05m。
-# 判定範圍 = 滾輪半徑 + 球半徑(0.033m)，球只要跟任一滾輪的圓形範圍有一點點重疊
-# 就算碰到，不用整顆球都進去。
-LEFT_ROLLER_TOUCH_LOCAL = (0.1023, -0.065)
-RIGHT_ROLLER_TOUCH_LOCAL = (0.1023, -0.205)
-ROLLER_TOUCH_RADIUS_M = 0.05 + 0.033
+# ---- 撿球：滾輪物理拋球進後車廂 (取代原本「碰到就刪除球」) ----
+# 滾輪常轉，/roller_cmd angular.z=W 讓左右滾輪反向各轉 1.556*W rad/s (diff_drive plugin，
+# 輪距 0.14 / 半徑 0.045)。experiments/roller_pickup 實測 (滾輪在 x=0.2, z=0.03，
+# 見 URDF 註解)：W=40~45 在盲衝速度 0.2~0.4 全部進車廂；W=35 邊緣；W>=50 拋過頭飛出
+# 車尾；W>=58 球卡住時滾輪關節會物理爆掉。取中間值 42.5 (約 66 rad/s)。
+ROLLER_CMD_W = 42.5
+# 「進後車廂」判定用 Gazebo 真實座標 (模擬才有的優勢)：球在 base_link 座標系
+# x 在車廂範圍 [-0.36, 0]、y 在車廂寬度內 (中心 -0.135 ± 0.11)、z 高於地面
+# (車廂地板 0.03 + 球半徑 0.033 = 0.063；地上的球 z=0.033)。
+BASKET_X_RANGE = (-0.36, 0.0)
+BASKET_Y_CENTER = -0.135
+BASKET_Y_HALF_WIDTH = 0.11
+BASKET_MIN_Z = 0.05
+BASKET_REST_MAX_Z = 0.15  # 球躺在車廂地板上 (z≈0.065)；飛過車廂上方時 z≈0.2 不算
+BASKET_CONFIRM_POLLS = 3  # 連續幾次查詢都在車廂裡才算撿到，避免彈出去的球被誤計
 
 # run8 只測滾輪判定、run9 才加上原路倒車，兩個改動分開測試看各自的效果
 RETURN_REPLAY_ENABLED = False
@@ -219,6 +223,7 @@ class GridPatrolNode(Node):
 
         # ---- 球 ----
         self.remaining_balls = list(BALL_NAMES)
+        self._basket_streak = {name: 0 for name in BALL_NAMES}
         self.touched_count = 0
         self.touch_check_in_progress = False
 
@@ -248,13 +253,14 @@ class GridPatrolNode(Node):
         self.done = False
 
         self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.roller_pub = self.create_publisher(Twist, '/roller_cmd', 10)
+        self.roller_timer = self.create_timer(0.1, self._publish_roller_cmd)  # 滾輪常轉
         self.vision_reset_pub = self.create_publisher(Empty, '/vision_reset_lock', 10)
         self.create_subscription(JointState, '/joint_states', self._joint_state_cb, 10)
         self.create_subscription(Imu, '/imu', self._imu_cb, 10)
         self.create_subscription(Point, '/target_position', self._target_cb, 10)
 
         self.get_entity_cli = self.create_client(GetEntityState, '/get_entity_state')
-        self.delete_entity_cli = self.create_client(DeleteEntity, '/delete_entity')
 
         # debug 用：定期查 Gazebo 真實座標，跟里程計「以為的」位置分開記錄，
         # 這樣才看得出來里程計什麼時候開始跟真實位置對不上 (追球轉彎、撞牆時最容易飄)。
@@ -285,6 +291,11 @@ class GridPatrolNode(Node):
         self.get_logger().info(f'車體傳送到格 1 ({x:.3f}, {y:.3f})：{result.success if result else False}')
 
     # ---------------- 陀螺儀 ----------------
+    def _publish_roller_cmd(self):
+        twist = Twist()
+        twist.angular.z = 0.0 if self.done else ROLLER_CMD_W
+        self.roller_pub.publish(twist)
+
     def _imu_cb(self, msg):
         # 航向在這裡用 IMU 自己的封包時間戳積分 (50Hz，每筆剛好算一次)。之前是在
         # 30Hz 的 /joint_states callback 抓「最新一筆」角速度乘 dt，等於每秒有 20 筆
@@ -408,21 +419,22 @@ class GridPatrolNode(Node):
         dx, dy, dz = p.x - rx, p.y - ry, p.z - rz
         lx, ly, lz = quat_rotate_inverse(qx, qy, qz, qw, dx, dy, dz)
 
-        dist_left = math.hypot(lx - LEFT_ROLLER_TOUCH_LOCAL[0], ly - LEFT_ROLLER_TOUCH_LOCAL[1])
-        dist_right = math.hypot(lx - RIGHT_ROLLER_TOUCH_LOCAL[0], ly - RIGHT_ROLLER_TOUCH_LOCAL[1])
-        in_front = dist_left <= ROLLER_TOUCH_RADIUS_M or dist_right <= ROLLER_TOUCH_RADIUS_M
-        if in_front and name in self.remaining_balls:
+        in_basket = (
+            BASKET_X_RANGE[0] <= lx <= BASKET_X_RANGE[1]
+            and abs(ly - BASKET_Y_CENTER) <= BASKET_Y_HALF_WIDTH
+            and BASKET_MIN_Z <= lz <= BASKET_REST_MAX_Z
+        )
+        self._basket_streak[name] = self._basket_streak[name] + 1 if in_basket else 0
+        if self._basket_streak[name] >= BASKET_CONFIRM_POLLS and name in self.remaining_balls:
             self.remaining_balls.remove(name)
             self.touched_count += 1
             elapsed = time.time() - self.start_time
-            self.get_logger().info(f'滾輪碰到 {name}！({self.touched_count}/{NUM_BALLS}) t={elapsed:.1f}s')
+            self.get_logger().info(
+                f'{name} 進後車廂！({self.touched_count}/{NUM_BALLS}) t={elapsed:.1f}s '
+                f'車廂內位置=({lx:.2f}, {ly:.2f}, {lz:.2f})')
             if not self.done:  # 非同步 callback，結束後才回來的話檔案已經關了，不要再寫
                 self.touch_writer.writerow([name, f'{elapsed:.2f}', self.wp_index, self._current_cell_number()])
                 self.touch_file.flush()
-
-            del_req = DeleteEntity.Request()
-            del_req.name = name
-            self.delete_entity_cli.call_async(del_req)
 
             if self.state in ('ALIGN', 'APPROACH', 'BLIND_DASH'):
                 self._start_return()
@@ -514,13 +526,48 @@ class GridPatrolNode(Node):
         self.cmd_pub.publish(Twist())
         elapsed = time.time() - self.start_time
         self.get_logger().info(
-            f'結束({reason})：碰到 {self.touched_count}/{NUM_BALLS} 顆球，'
+            f'結束({reason})：撿進後車廂 {self.touched_count}/{NUM_BALLS} 顆球，'
             f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
         )
         self.real_pose_timer.cancel()
         self.traj_file.close()
         self.touch_file.close()
         self.dt_debug_file.close()
+        self._final_basket_audit()
+
+    # 結束時把每顆球相對車體的最終位置印出來，稽核「撿到」的球是不是真的都還在車廂裡
+    def _final_basket_audit(self):
+        req = GetEntityState.Request()
+        req.name = 'tennis_bot::base_link'
+        self.get_entity_cli.call_async(req).add_done_callback(self._on_audit_robot_pose)
+
+    def _on_audit_robot_pose(self, future):
+        resp = future.result()
+        if resp is None or not resp.success:
+            return
+        p, o = resp.state.pose.position, resp.state.pose.orientation
+        robot_pose = ((p.x, p.y, p.z), (o.x, o.y, o.z, o.w))
+        for name in BALL_NAMES:
+            req = GetEntityState.Request()
+            req.name = name
+            self.get_entity_cli.call_async(req).add_done_callback(
+                lambda f, n=name, rp=robot_pose: self._on_audit_ball_pose(f, n, rp))
+
+    def _on_audit_ball_pose(self, future, name, robot_pose):
+        resp = future.result()
+        if resp is None or not resp.success:
+            self.get_logger().info(f'稽核 {name}：查不到')
+            return
+        p = resp.state.pose.position
+        (rx, ry, rz), (qx, qy, qz, qw) = robot_pose
+        lx, ly, lz = quat_rotate_inverse(qx, qy, qz, qw, p.x - rx, p.y - ry, p.z - rz)
+        in_basket = (
+            BASKET_X_RANGE[0] <= lx <= BASKET_X_RANGE[1]
+            and abs(ly - BASKET_Y_CENTER) <= BASKET_Y_HALF_WIDTH
+            and lz >= BASKET_MIN_Z
+        )
+        self.get_logger().info(
+            f'稽核 {name}：車體座標 ({lx:.2f}, {ly:.2f}, {lz:.2f}) -> {"在車廂裡" if in_basket else "不在車廂"}')
 
     # ---------------- 控制迴圈 ----------------
     def _control_loop(self):

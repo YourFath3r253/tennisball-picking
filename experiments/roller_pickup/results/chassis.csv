@@ -1,0 +1,5 @@
+trial,omega_cmd,speed,dash_sec,roller_rad_s,result,ball_lx,ball_ly,ball_lz,ball_max_z,lx_at_max_z,min_lx,ball_world_x,ball_world_y,robot_x,robot_y,note
+1,30.0,0.2,4.00,"left_=-46.7, right=+46.7",STILL_AHEAD,0.562,-0.138,0.032,0.032,0.136,0.136,1.359,-0.135,0.797,0.002,
+2,40.0,0.2,4.00,"left_=-62.2, right=+62.2",STILL_AHEAD,0.559,-0.136,0.032,0.032,0.136,0.136,1.358,-0.135,0.799,0.001,
+3,50.0,0.2,4.00,"left_=-77.8, right=+77.8",STILL_AHEAD,0.564,-0.136,0.032,0.032,0.136,0.136,1.361,-0.135,0.797,0.001,
+4,55.0,0.2,4.00,"left_=-85.6, right=+85.6",STILL_AHEAD,0.563,-0.138,0.032,0.032,0.136,0.136,1.358,-0.135,0.795,0.002,
