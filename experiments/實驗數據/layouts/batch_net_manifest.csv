@@ -1,0 +1,4 @@
+seed,run_dir,result,layout_json
+201,run82,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/net_seed201.json
+202,run83,結束(走完弓字路徑)：撿進後車廂,experiments/實驗數據/layouts/net_seed202.json
+203,run84,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/net_seed203.json

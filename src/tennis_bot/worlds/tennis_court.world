@@ -16,18 +16,28 @@
 
     <model name="court_walls">
       <static>true</static>
+      <!-- 開放式網球場：牆只留半透明視覺當邊界參考，沒有碰撞 (真實場地沒有牆) -->
       <link name="walls_link">
-        <collision name="front_c"><pose>12 0 0.5 0 0 0</pose><geometry><box><size>0.005 11 1</size></box></geometry></collision>
         <visual name="front_v"><pose>12 0 0.5 0 0 0</pose><geometry><box><size>0.005 11 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
-
-        <collision name="back_c"><pose>-12 0 0.5 0 0 0</pose><geometry><box><size>0.005 11 1</size></box></geometry></collision>
         <visual name="back_v"><pose>-12 0 0.5 0 0 0</pose><geometry><box><size>0.005 11 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
-
-        <collision name="left_c"><pose>0 5.5 0.5 0 0 0</pose><geometry><box><size>24 0.005 1</size></box></geometry></collision>
         <visual name="left_v"><pose>0 5.5 0.5 0 0 0</pose><geometry><box><size>24 0.005 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
-
-        <collision name="right_c"><pose>0 -5.5 0.5 0 0 0</pose><geometry><box><size>24 0.005 1</size></box></geometry></collision>
         <visual name="right_v"><pose>0 -5.5 0.5 0 0 0</pose><geometry><box><size>24 0.005 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- 網球網：ITF 規格中央高 0.914 m、網柱高 1.07 m，網柱在雙打邊線外 0.914 m
+         (雙打寬 10.97 m -> 網柱在 y=±6.4 m，全長 12.8 m)。深灰色 (視覺不會當成球)，
+         有碰撞；1 m 高的實心板會擋住相機看到另一個半場的球，對應現實 YOLO 隔著網子
+         辨識不可靠的情況。 -->
+    <model name="tennis_net">
+      <static>true</static>
+      <link name="net_link">
+        <collision name="net_c"><pose>0 0 0.5 0 0 0</pose><geometry><box><size>0.05 12.8 1.0</size></box></geometry></collision>
+        <visual name="net_v"><pose>0 0 0.5 0 0 0</pose><geometry><box><size>0.05 12.8 1.0</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
+        <collision name="post_l_c"><pose>0 6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry></collision>
+        <visual name="post_l_v"><pose>0 6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+        <collision name="post_r_c"><pose>0 -6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry></collision>
+        <visual name="post_r_v"><pose>0 -6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
       </link>
     </model>
 

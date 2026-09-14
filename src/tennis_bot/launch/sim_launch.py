@@ -43,7 +43,9 @@ def generate_launch_description():
         Node(
             package='gazebo_ros',
             executable='spawn_entity.py',
-            arguments=['-topic', 'robot_description', '-entity', 'tennis_bot'],
+            # 世界原點 x=0 是網子，車不能生在網子裡 (會被彈飛)，先放在我方半場中間，
+            # grid_patrol_node 開始時會再傳送到格 1
+            arguments=['-topic', 'robot_description', '-entity', 'tennis_bot', '-x', '-6.0', '-y', '0.0'],
             output='screen'
         )
     ])

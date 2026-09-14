@@ -20,6 +20,7 @@ BALL = 'ball_1'
 AXLE = (0.080, -0.135)  # 軸心中點在 base_link 座標
 BALL_AHEAD = 0.5        # 球放在軸心前方多遠 (m)
 BALL_Y_OFF = float(os.environ.get('BALL_Y_OFF', '0'))  # 球左右偏移 (m，+ 為車體左側)
+ROBOT_X = float(os.environ.get('ROBOT_X', '-6.0'))  # 車子重置的位置 (世界 x=0 有網子，要避開)
 SETTLE_SEC = 3.0        # 停車後再觀察多久
 
 
@@ -83,10 +84,10 @@ class T(Node):
         stop = Twist(); roller_off = Twist()
         self.spin_for(0.3, stop, roller_off)
         self.set_pose(BALL, 5.0, 5.0, 0.033)          # 先移開
-        self.set_pose('tennis_bot', 0.0, 0.0, 0.0, 0.0)
+        self.set_pose('tennis_bot', ROBOT_X, 0.0, 0.0, 0.0)
         self.spin_for(1.0, stop, roller_off)
         # 球放在軸心正前方 (車頭朝 +x)：世界座標 = base_link + (AXLE_x + BALL_AHEAD, AXLE_y)
-        self.set_pose(BALL, AXLE[0] + BALL_AHEAD, AXLE[1] + BALL_Y_OFF, 0.033)
+        self.set_pose(BALL, ROBOT_X + AXLE[0] + BALL_AHEAD, AXLE[1] + BALL_Y_OFF, 0.033)
         roller = Twist(); roller.angular.z = omega
         self.spin_for(3.0, stop, roller)               # 滾輪先轉到穩定 (max_wheel_acceleration=10)
         rv = dict(self.roller_vel)

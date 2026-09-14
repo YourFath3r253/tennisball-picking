@@ -1,0 +1,4 @@
+seed,run_dir,result,layout_json
+301,run85,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/net2_seed301.json
+302,run86,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/net2_seed302.json
+303,run87,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/net2_seed303.json

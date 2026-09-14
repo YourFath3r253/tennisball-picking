@@ -75,6 +75,14 @@ run_dir="run${after_n}"
 echo "[$TAG] 結束 run_dir=$run_dir reason=${reason:-逾時或異常} $(date '+%H:%M:%S')"
 kill_all
 if [ "$run_dir" != "unknown" ]; then
-    python3 experiments/plot_run.py "experiments/實驗數據/$run_dir"
+    if [ -n "$LAYOUT_JSON" ]; then
+        # 隨機佈局：畫圖時用該佈局的球位置，不用 plot_run 裡寫死的標準佈局
+        python3 -c "
+import json, sys; sys.path.insert(0, 'experiments')
+from plot_run import plot_run
+plot_run('experiments/實驗數據/$run_dir', balls={k: tuple(v) for k, v in json.load(open('$LAYOUT_JSON')).items()})"
+    else
+        python3 experiments/plot_run.py "experiments/實驗數據/$run_dir"
+    fi
 fi
 echo "RUN_ONCE_DONE $run_dir"

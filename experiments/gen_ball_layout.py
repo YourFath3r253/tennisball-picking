@@ -6,7 +6,8 @@
   python3 gen_ball_layout.py --mass 10.0 --load layouts/run1.json
       -> 讀 run1.json 的位置 (不重新隨機)，只是把 mass 換成 10.0，寫進 world 檔案
 
-限制條件：離牆(X_RANGE/Y_RANGE)至少1公尺、不能落在格1範圍內、球跟球至少間隔0.5公尺。
+限制條件：離場地邊線至少1公尺、不能落在格1範圍內、球跟球至少間隔0.5公尺、
+可選 --net-clearance 讓球離網子至少多遠。
 """
 import argparse
 import json
@@ -16,12 +17,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'tennis_bot'))
-from grid_waypoints import generate_grid_waypoints  # noqa: E402
+from grid_waypoints import court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, NET_X  # noqa: E402
 
-X_RANGE = (-11.0, 11.0)
-Y_RANGE = (-4.5, 4.5)
-GRID_COLS = 8
-GRID_ROWS = 4
+# 巡邏網格跟 grid_patrol_node 同一套 (開放式場地 24x11 m，格數由相機視野公式算)。
+# 球只放在場地內縮 1 公尺的範圍 (邊線附近的球現實上會滾出場外)。
+X_RANGE = COURT_X_RANGE
+Y_RANGE = COURT_Y_RANGE
 WALL_MARGIN_M = 1.0
 MIN_BALL_SPACING_M = 0.5
 
@@ -32,8 +33,8 @@ WORLD_PATH = Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'wo
 
 
 def cell1_bounds():
-    _, _, cw, ch = generate_grid_waypoints(X_RANGE, Y_RANGE, GRID_COLS, GRID_ROWS)
-    x0, y0 = X_RANGE[0], Y_RANGE[0]
+    _, _, cells = court_path_with_net()
+    x0, y0, cw, ch, _ = cells[0]  # 格 1 = 第一半場左下角，車的起點
     return (x0, x0 + cw), (y0, y0 + ch)
 
 
@@ -41,7 +42,7 @@ def in_cell1(x, y, c1x, c1y):
     return c1x[0] <= x <= c1x[1] and c1y[0] <= y <= c1y[1]
 
 
-def random_positions(rng):
+def random_positions(rng, net_clearance=0.0):
     c1x, c1y = cell1_bounds()
     lo_x, hi_x = X_RANGE[0] + WALL_MARGIN_M, X_RANGE[1] - WALL_MARGIN_M
     lo_y, hi_y = Y_RANGE[0] + WALL_MARGIN_M, Y_RANGE[1] - WALL_MARGIN_M
@@ -54,6 +55,8 @@ def random_positions(rng):
         x = rng.uniform(lo_x, hi_x)
         y = rng.uniform(lo_y, hi_y)
         if in_cell1(x, y, c1x, c1y):
+            continue
+        if abs(x - NET_X) < net_clearance:  # 球離網子太近車撿不到 (車身不能靠近網子 0.5 m)
             continue
         if any((x - px) ** 2 + (y - py) ** 2 < MIN_BALL_SPACING_M ** 2 for px, py in positions):
             continue
@@ -91,13 +94,14 @@ def main():
     ap.add_argument('--seed', type=int, default=None)
     ap.add_argument('--save', type=str, default=None, help='隨機產生新位置後存到這個json檔')
     ap.add_argument('--load', type=str, default=None, help='從這個json檔讀位置，不重新隨機')
+    ap.add_argument('--net-clearance', type=float, default=0.0, help='球離網子 (x=0) 至少多遠，0=不限制')
     args = ap.parse_args()
 
     if args.load:
         positions = json.loads(Path(args.load).read_text())
     else:
         rng = random.Random(args.seed)
-        positions = random_positions(rng)
+        positions = random_positions(rng, args.net_clearance)
         if args.save:
             Path(args.save).parent.mkdir(parents=True, exist_ok=True)
             Path(args.save).write_text(json.dumps(positions, indent=2, ensure_ascii=False))

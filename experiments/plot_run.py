@@ -16,12 +16,10 @@ import matplotlib.patches as patches
 from matplotlib.collections import LineCollection
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'tennis_bot'))
-from grid_waypoints import generate_grid_waypoints
+from grid_waypoints import court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, NET_X, NET_POST_Y
 
-X_RANGE = (-11.0, 11.0)
-Y_RANGE = (-4.5, 4.5)
-GRID_COLS = 8
-GRID_ROWS = 4
+X_RANGE = COURT_X_RANGE
+Y_RANGE = COURT_Y_RANGE
 
 ALL_BALLS = {
     'ball_1': (-3.88, -3.14), 'ball_2': (3.32, -3.85), 'ball_3': (0.79, -1.21),
@@ -70,21 +68,16 @@ def plot_run(run_dir, extra_markers=None, balls=None):
 
     fig, ax = plt.subplots(figsize=(14, 7))
 
-    ax.add_patch(patches.Rectangle((-12, -5.5), 24, 11, linewidth=2, edgecolor='green',
-                                    facecolor='none', label='Court wall'))
-    ax.add_patch(patches.Rectangle((-11, -4.5), 22, 9, linewidth=1, edgecolor='gray',
-                                    facecolor='none', linestyle='--', label='1m safety margin'))
+    ax.add_patch(patches.Rectangle((X_RANGE[0], Y_RANGE[0]), X_RANGE[1] - X_RANGE[0], Y_RANGE[1] - Y_RANGE[0],
+                                    linewidth=2, edgecolor='green', facecolor='none', label='Court (open, no wall)'))
+    ax.plot([NET_X, NET_X], [-NET_POST_Y, NET_POST_Y], color='black', linewidth=3, label='Net', zorder=1)
 
-    _, _, cell_w, cell_h = generate_grid_waypoints(X_RANGE, Y_RANGE, GRID_COLS, GRID_ROWS)
-    for r in range(GRID_ROWS):
-        for c in range(GRID_COLS):
-            cx0 = X_RANGE[0] + c * cell_w
-            cy0 = Y_RANGE[0] + r * cell_h
-            ax.add_patch(patches.Rectangle((cx0, cy0), cell_w, cell_h, linewidth=0.6,
-                                            edgecolor='silver', facecolor='none', zorder=0))
-            cell_num = r * GRID_COLS + c + 1
-            ax.text(cx0 + cell_w / 2, cy0 + cell_h / 2, str(cell_num),
-                    ha='center', va='center', fontsize=7, color='silver', zorder=0)
+    _, _, cells = court_path_with_net()
+    for cx0, cy0, cell_w, cell_h, cell_num in cells:
+        ax.add_patch(patches.Rectangle((cx0, cy0), cell_w, cell_h, linewidth=0.6,
+                                        edgecolor='silver', facecolor='none', zorder=0))
+        ax.text(cx0 + cell_w / 2, cy0 + cell_h / 2, str(cell_num),
+                ha='center', va='center', fontsize=7, color='silver', zorder=0)
 
     # 用線段連起來 (不是散點)，每一段依當下 state 上色，這樣狀態切換的地方顏色會
     # 自然轉換，又不會像分開畫散點那樣把不同時段的同一個 state 錯誤地連在一起。
@@ -152,7 +145,7 @@ def plot_run(run_dir, extra_markers=None, balls=None):
     ax.set_ylabel('y (m)')
     ax.set_title(f'{run_dir.name} - Real Trajectory + Balls ({len(touched_names)}/{len(balls)} touched)')
     ax.set_xlim(-13, 13)
-    ax.set_ylim(-6.5, 6.5)
+    ax.set_ylim(-9, 9)
     ax.set_aspect('equal')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.08), ncol=4, fontsize=9)
     ax.grid(True, alpha=0.3)

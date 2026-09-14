@@ -35,21 +35,26 @@ from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Empty
 from gazebo_msgs.srv import GetEntityState, SetEntityState
 
-from tennis_bot.grid_waypoints import generate_grid_waypoints
+from tennis_bot.grid_waypoints import (
+    court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, CELL_MAX_M,
+    NET_X, NET_CLEARANCE_M, NET_BYPASS_Y)
 
-# ---- 網格設定 ----
-X_RANGE = (-11.0, 11.0)
-Y_RANGE = (-4.5, 4.5)
+# ---- 路徑設定：開放式網球場 (牆沒有碰撞)，中間有網子 (x=0，有碰撞、擋住視線)。
+# 網子把場地切成兩個矩形，各自走弓字，中間繞網柱外側過去 (grid_waypoints.court_path_with_net，
+# 格邊長由相機視野公式 CELL_MAX_M 算出) ----
+X_RANGE = COURT_X_RANGE
+Y_RANGE = COURT_Y_RANGE
 
-# 真牆的實際座標 (tennis_court.world 的 court_walls，跟 X_RANGE/Y_RANGE 那個
-# 1公尺安全邊界不是同一件事，牆在更外面): x=±12, y=±5.5。撞牆判定直接用
-# Gazebo 真實座標算「離牆多近」，不像實體車那樣需要額外裝光達才能知道——
-# 這是模擬才有的優勢，判定準確、不會像里程計那樣被感測器雜訊誤導。
-WALL_X_M = 12.0
-WALL_Y_M = 5.5
-WALL_CRASH_MARGIN_M = 0.2
-GRID_COLS = 8
-GRID_ROWS = 4
+# 出界判定：場地是開放的沒有牆，車跑出場地外太遠就停止 (用 Gazebo 真實座標，
+# 模擬才有的優勢)。繞網柱時會走到 y=±7.5 (場外 2 m)，再加里程計誤差，所以留 3.5 公尺。
+OUT_OF_BOUNDS_MARGIN_M = 3.5
+
+# 追球時不能靠近網子：規則是車身離網 0.5 m，車頭在車體中心前方 0.263 m，所以車體中心
+# |x| 小於 0.763 又朝著網子開，就放棄這顆球，之後 NET_ABORT_IGNORE_VISION_SEC 秒內
+# 不理視覺 (不然同一顆球會一直重新觸發)。巡邏格子本身離網 NET_CLEARANCE_M=0.9 (更保守)。
+# run83 實測用 0.9 當放棄門檻太嚴：撿完上一顆球停在 x=-0.89，下一顆球在 -0.77 就被放棄了。
+NET_ABORT_CLEARANCE_M = 0.5 + 0.263
+NET_ABORT_IGNORE_VISION_SEC = 5.0
 ARRIVE_TOLERANCE_M = 0.3
 
 # ---- 輪速里程計參數 ----
@@ -152,6 +157,23 @@ def angle_diff(a, b):
     return d
 
 
+def quat_integrate(q, wx, wy, wz, dt):
+    """q (w,x,y,z) 用車體座標系角速度 (wx,wy,wz) 積分 dt 秒：q' = q ⊗ exp(ω dt / 2)。"""
+    angle = math.sqrt(wx * wx + wy * wy + wz * wz) * dt
+    if angle < 1e-12:
+        return q
+    ax, ay, az = wx * dt / angle, wy * dt / angle, wz * dt / angle
+    s, c = math.sin(angle / 2.0), math.cos(angle / 2.0)
+    dw, dx, dy, dz = c, ax * s, ay * s, az * s
+    w, x, y, z = q
+    nq = (w * dw - x * dx - y * dy - z * dz,
+          w * dx + x * dw + y * dz - z * dy,
+          w * dy - x * dz + y * dw + z * dx,
+          w * dz + x * dy - y * dx + z * dw)
+    n = math.sqrt(sum(v * v for v in nq))
+    return tuple(v / n for v in nq)
+
+
 def quat_rotate_inverse(qx, qy, qz, qw, vx, vy, vz):
     cx, cy, cz, cw = -qx, -qy, -qz, qw
     tx = 2.0 * (cy * vz - cz * vy)
@@ -167,10 +189,13 @@ class GridPatrolNode(Node):
     def __init__(self):
         super().__init__('grid_patrol_node')
 
-        self.waypoints, self.cell_numbers, cw, ch = generate_grid_waypoints(
-            X_RANGE, Y_RANGE, GRID_COLS, GRID_ROWS
-        )
-        self.get_logger().info(f'{GRID_COLS}x{GRID_ROWS}={len(self.waypoints)} 格，每格 {cw:.2f} x {ch:.2f} m')
+        self.waypoints, self.cell_numbers, cells = court_path_with_net()
+        n_cells = len(cells)
+        self.get_logger().info(
+            f'格邊長上限 {CELL_MAX_M:.2f} m (2*0.8*R*sinθ)，網子在 x={NET_X}，車體離網至少 {NET_CLEARANCE_M} m -> '
+            f'兩個半場各 {n_cells // 2} 格 (每格 {cells[0][2]:.2f} x {cells[0][3]:.2f} m)，'
+            f'共 {n_cells} 格 + 2 個繞網柱過渡點 (y=±{NET_BYPASS_Y})，{len(self.waypoints)} 個路徑點')
+        self._vision_ignore_until = None
 
         # 從格 1 開始，不是從世界原點開始。車體實際位置跟里程計起始值必須對得上，
         # 不然會整趟路線平移掉 (曾經忘記傳送車體，跑出完全不對的巡邏路線)。
@@ -196,9 +221,10 @@ class GridPatrolNode(Node):
         self.y_wall = self.y
         self.yaw_wall = 0.0
 
-        # ---- 陀螺儀：yaw 在 _imu_cb 裡直接積分，不用左右輪速差算 ----
+        # ---- 陀螺儀：yaw 在 _imu_cb 裡用三軸角速度做四元數積分，不用左右輪速差算 ----
         self._last_imu_stamp = None
         self._last_imu_time = None
+        self._gyro_q = (1.0, 0.0, 0.0, 0.0)  # (w, x, y, z)，起始朝向 0
 
         # ---- debug：追蹤中的目標球是幾號 (用真實座標反推，不是 vision_node 自己
         # 知道的，vision_node 只有像素座標，沒有球的身分) ----
@@ -300,16 +326,21 @@ class GridPatrolNode(Node):
         # 航向在這裡用 IMU 自己的封包時間戳積分 (50Hz，每筆剛好算一次)。之前是在
         # 30Hz 的 /joint_states callback 抓「最新一筆」角速度乘 dt，等於每秒有 20 筆
         # 陀螺儀資料被跳過或重複算，run72 實測每次轉向會隨機差 ±1°。
+        # 三軸陀螺儀做四元數積分再取 yaw，不是只積分 z 軸：run78/81 實測車體在原地轉時
+        # 若有傾斜 (滾輪擦地、傳送時被彈起)，只看 z 軸會少算 3~5% 的航向 (yaw率 =
+        # ω_z·cosφ + ω_y·sinφ ...)，一次就差 1~3°。實體車的 IMU 本來就是三軸的。
         now = self.get_clock().now().nanoseconds / 1e9
         stamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        omega = msg.angular_velocity.z
+        wx, wy, wz = msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z
         if self._last_imu_stamp is not None:
             dt = stamp - self._last_imu_stamp
             if 0 < dt < 0.5:
-                self.yaw += omega * dt
+                self._gyro_q = quat_integrate(self._gyro_q, wx, wy, wz, dt)
+                qw, qx, qy, qz = self._gyro_q
+                self.yaw = math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
             wall_dt = now - self._last_imu_time
             if 0 < wall_dt < 0.5:
-                self.yaw_wall += omega * wall_dt
+                self.yaw_wall += wz * wall_dt  # 對照組維持舊做法 (只積 z 軸、真實時鐘 dt)
         self._last_imu_stamp = stamp
         self._last_imu_time = now
 
@@ -359,6 +390,8 @@ class GridPatrolNode(Node):
         self.last_target = msg
         if msg.z == 1.0:
             self.last_seen_time = self.get_clock().now().nanoseconds / 1e9
+            if self._vision_ignore_until is not None and self.last_seen_time < self._vision_ignore_until:
+                return
             if self.state == 'PATROL':
                 self.state = 'ALIGN'
                 self.chase_cmd_log = []
@@ -465,12 +498,12 @@ class GridPatrolNode(Node):
         self.real_yaw = yaw
 
         if not self.done:
-            near_wall = (
-                abs(self.real_x) >= WALL_X_M - WALL_CRASH_MARGIN_M
-                or abs(self.real_y) >= WALL_Y_M - WALL_CRASH_MARGIN_M
+            out_of_bounds = (
+                not (X_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= self.real_x <= X_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
+                or not (Y_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= self.real_y <= Y_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
             )
-            if near_wall:
-                self._finish_run('撞牆')
+            if out_of_bounds:
+                self._finish_run('出界')
         # 真實座標一到手就立刻記錄，里程計跟真實位置才是同一瞬間的值
         # (之前是另一個 0.5s timer 記錄，兩邊最多差 0.2~0.5 秒，車在動時會看起來像誤差)
         self._log_trajectory()
@@ -585,6 +618,14 @@ class GridPatrolNode(Node):
 
         self._check_touch()
 
+        if self.state in ('ALIGN', 'APPROACH', 'BLIND_DASH') and self._heading_into_net():
+            self.get_logger().info(
+                f'離網子太近 (里程計 x={self.x:.2f}) 又朝著網子 -> 放棄追球，{NET_ABORT_IGNORE_VISION_SEC:.0f} 秒內不理視覺')
+            self._vision_ignore_until = now + NET_ABORT_IGNORE_VISION_SEC
+            self.vision_reset_pub.publish(Empty())
+            self._start_return()
+            return
+
         if self.state == 'PATROL':
             self._do_patrol()
         elif self.state == 'ALIGN':
@@ -595,6 +636,13 @@ class GridPatrolNode(Node):
             self._do_blind_dash(now)
         elif self.state == 'RETURNING':
             self._do_return()
+
+    def _heading_into_net(self):
+        # 車體中心離網子 (x=0) 太近，而且車頭朝向網子那一側 (在網子左邊朝 +x，或右邊朝 -x)
+        dx = self.x - NET_X
+        if abs(dx) >= NET_ABORT_CLEARANCE_M:
+            return False
+        return (dx < 0 and math.cos(self.yaw) > 0) or (dx > 0 and math.cos(self.yaw) < 0)
 
     # ---- 狀態 A ----
     def _do_patrol(self):
