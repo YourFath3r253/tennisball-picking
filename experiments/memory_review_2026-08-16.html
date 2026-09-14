@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>記憶存檔 - 2026/08/16</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card-bg: #ffffff;
+    --text: #1f1f1f;
+    --text-dim: #5b5b5b;
+    --border: #e3e2de;
+    --accent: #b5651d;
+    --accent-bg: #fbeee2;
+    --tag-project: #2f6f4f;
+    --tag-project-bg: #e7f3ec;
+    --tag-feedback: #7a4fb5;
+    --tag-feedback-bg: #f1eafb;
+    --tag-user: #1d6fb5;
+    --tag-user-bg: #e8f1fb;
+    --code-bg: #f0efec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    line-height: 1.7;
+    padding: 32px 16px 80px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 28px; }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 1.02rem;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tag.project { color: var(--tag-project); background: var(--tag-project-bg); }
+  .tag.feedback { color: var(--tag-feedback); background: var(--tag-feedback-bg); }
+  .tag.user { color: var(--tag-user); background: var(--tag-user-bg); }
+  .card p { margin: 6px 0; color: var(--text); font-size: 0.93rem; }
+  .card p.dim { color: var(--text-dim); font-size: 0.87rem; }
+  .card ul { margin: 8px 0; padding-left: 20px; font-size: 0.9rem; }
+  .card li { margin: 4px 0; }
+  code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  .why { border-left: 3px solid var(--accent); padding-left: 10px; margin-top: 8px; background: var(--accent-bg); border-radius: 0 6px 6px 0; padding: 6px 10px; }
+  .why b { color: var(--accent); }
+  section { margin-bottom: 34px; }
+  section > h3 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin: 0 0 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .filename { color: var(--text-dim); font-size: 0.75rem; }
+  .status-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 8px;
+  }
+  .status-table th, .status-table td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-table th { color: var(--text-dim); font-weight: 600; font-size: 0.78rem; }
+  .footer-note {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    margin-top: 40px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16161a;
+      --card-bg: #1f1f24;
+      --text: #ececec;
+      --text-dim: #a0a0a8;
+      --border: #303038;
+      --accent: #e0a458;
+      --accent-bg: #2c2418;
+      --tag-project: #7fd9a8;
+      --tag-project-bg: #1c2e24;
+      --tag-feedback: #c4a4f0;
+      --tag-feedback-bg: #2a2236;
+      --tag-user: #8ec2f2;
+      --tag-user-bg: #1c2732;
+      --code-bg: #2a2a30;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16161a;
+    --card-bg: #1f1f24;
+    --text: #ececec;
+    --text-dim: #a0a0a8;
+    --border: #303038;
+    --accent: #e0a458;
+    --accent-bg: #2c2418;
+    --tag-project: #7fd9a8;
+    --tag-project-bg: #1c2e24;
+    --tag-feedback: #c4a4f0;
+    --tag-feedback-bg: #2a2236;
+    --tag-user: #8ec2f2;
+    --tag-user-bg: #1c2732;
+    --code-bg: #2a2a30;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>記憶存檔 — 撿球機專案</h1>
+  <div class="subtitle">2026/08/16　準備壓縮對話前的主動記憶存檔</div>
+
+  <section>
+    <h3>本次新增/更新的記憶</h3>
+
+    <div class="card">
+      <h2><span class="tag project">project</span> 導航/里程計除錯詳細狀態 (8/16)</h2>
+      <p class="filename">project_tennisbot_nav_debug_2026-08-16.md</p>
+      <p>整理今天一整天從「輪距校正」到「模擬凍結」的完整除錯脈絡，包含：</p>
+      <ul>
+        <li>已確認並修好：輪距 0.27→0.29m、改用陀螺儀算yaw、撿球判定改滾輪、APPROACH加PID</li>
+        <li>視覺目標鎖定試過的方案（門檻縮小、margin機制、2秒凍結）都沒有真正解決兩顆球互搶目標的問題，最後改成「找不到同一顆就立刻放開」</li>
+        <li><code>_estimate_target_ball()</code> debug猜測功能有已知漏洞：沒有距離過濾，曾經讓我誤判ball_7/ball_9是問題所在（其實距離5公尺，不可能）</li>
+        <li><b>今天最大發現</b>：0.5秒dt防呆丟棄的根因不是「即時率漂移」，是<b>整個模擬會不定期真的凍結</b>（wall time跟sim time一起卡住），而且卡頓頻率會隨執行時間惡化，懷疑跟長時間執行/密集delete_entity有關，尚未證實</li>
+        <li>目前設定：<code>USE_SIM_TIME_FOR_DT=False</code>（改用模擬時間的版本有自己的bug，比較結果好可能只是運氣，未證實是真正解法）</li>
+      </ul>
+      <div class="why"><b>為什麼重要：</b>下次要改 grid_patrol_node.py 或 vision_node.py 之前，先讀這份，不然會重複踩過的坑。</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tag feedback">feedback</span> 一次只改一個變因</h2>
+      <p class="filename">feedback_one_variable_at_a_time.md</p>
+      <p>「我要你一次做一件事 這樣比較好debug」——多次明確要求改動要拆開測試，不要同時堆疊多個修正。</p>
+      <div class="why"><b>為什麼：</b>系統互相牽動的部件太多（輪速、陀螺儀、視覺鎖定、PID、物理碰撞、模擬時間），同時改好幾個東西沒辦法歸因是哪個造成的改變——PD阻尼那次「完全沒效果」就是靠拆開測試才發現真正原因是別的。</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tag feedback">feedback</span> 沒實測過就不要當作事實講</h2>
+      <p class="filename">feedback_empirical_rigor.md</p>
+      <p>用戶會直接挑戰沒有數據支撐的推論（「你怎麼測出1.3-1.5公尺的」、「這是模擬耶應該沒有延遲」），而且用戶自己的直覺常常是對的。</p>
+      <div class="why"><b>為什麼：</b>好幾次我用「聽起來合理」的解釋帶過，被追問之後才發現推論方向錯了（0.5秒延遲那次，真正原因是模擬整個凍結，不是通訊延遲）。以後要先分清楚「這是量出來的」還是「這是我推測的」，講不清楚就老實說沒測過。</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tag user">user</span> Sean 背景更新</h2>
+      <p class="filename">user_role_tennisbot.md（更新）</p>
+      <p>補充：Sean 本科是<b>機械系</b>，不是資工/軟體背景——這解釋了一些問題角度（例如對「軟體通訊延遲」這種說法會直覺懷疑，習慣用物理/幾何直覺去想bug，例如配重、PID的阻尼類比）。</p>
+      <p>也修正了「低投入」的印象——一旦真的深入這個除錯過程，Sean 其實查得非常細（逐行看dt log、自己推算像素對應公尺數、質疑PID參數），「低投入」講的是時間預算，不是要求隨便交差。</p>
+    </div>
+  </section>
+
+  <section>
+    <h3>目前完整記憶索引</h3>
+    <table class="status-table">
+      <tr><th>類型</th><th>標題</th><th>一句話</th></tr>
+      <tr><td>user</td><td>Sean 的角色</td><td>ME背景、非低標準只是時間有限、要求精準有依據</td></tr>
+      <tr><td>feedback</td><td>討論 vs 動手</td><td>「討論」= 不改程式；回報問題前先查log再信</td></tr>
+      <tr><td>project</td><td>tennisbot轉向（歷史）</td><td>捨棄Nav2/AMCL/光達，改輪速里程計格點巡邏</td></tr>
+      <tr><td>project</td><td>導航除錯詳細狀態(8/16)</td><td>今天完整除錯脈絡，見上方</td></tr>
+      <tr><td>reference</td><td>tennisbot GitHub</td><td>repo網址，SSH已設定好</td></tr>
+      <tr><td>feedback</td><td>繁體中文回覆</td><td>所有對話一律用繁體中文</td></tr>
+      <tr><td>feedback</td><td>一次一個變因</td><td>拆開測試，不要同時改好幾個</td></tr>
+      <tr><td>feedback</td><td>實證嚴謹</td><td>沒測過的推論要講清楚是推測</td></tr>
+    </table>
+  </section>
+
+  <div class="footer-note">這份是本地review用的檔案，沒有發佈成公開連結。</div>
+</div>
+</body>
+</html>

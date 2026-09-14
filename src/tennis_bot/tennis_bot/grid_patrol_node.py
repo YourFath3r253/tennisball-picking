@@ -25,6 +25,7 @@
 """
 import csv
 import math
+import os
 import time
 from pathlib import Path
 
@@ -130,8 +131,10 @@ RETURN_REPLAY_ENABLED = False
 
 # ball_6 從 tennis_court.world 移除了 (一開場就會馬上撿到，測試不到東西，
 # 而且之前出現過一次奇怪的碰撞行為)，場上現在固定是這 9 顆。
-BALL_NAMES = ['ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5',
-              'ball_7', 'ball_8', 'ball_9', 'ball_10']
+# 批次實驗會用 gen_ball_layout.py --count N 產生任意顆球，run_once.sh 會把球名放進
+# 環境變數 TENNISBOT_BALL_NAMES (逗號分隔)；沒設就是預設的這 9 顆。
+BALL_NAMES = (os.environ['TENNISBOT_BALL_NAMES'].split(',') if os.environ.get('TENNISBOT_BALL_NAMES')
+              else ['ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5', 'ball_7', 'ball_8', 'ball_9', 'ball_10'])
 NUM_BALLS = len(BALL_NAMES)
 
 DATA_ROOT = Path('/home/sean/ros2_ws/experiments/實驗數據')
@@ -252,6 +255,8 @@ class GridPatrolNode(Node):
         self._basket_streak = {name: 0 for name in BALL_NAMES}
         self.touched_count = 0
         self.touch_check_in_progress = False
+        self._touch_check_started = 0.0
+        self._ball_poll_index = -1
 
         # ---- 記錄 ----
         self.run_dir = next_run_dir()
@@ -399,13 +404,22 @@ class GridPatrolNode(Node):
                 self.get_logger().info(
                     f'發現網球 -> 對準 (猜是{guess or "?"}，目前在往格 {self.cell_numbers[self.wp_index]} 的路上)')
 
-    # ---------------- 觸碰判定 (左右滾輪，用真實座標) ----------------
+    # ---------------- 撿球判定 (球有沒有躺在後車廂裡，用真實座標) ----------------
+    # 每個 tick 只查「一顆」球 (輪流)，不是一次查全部：之前每 0.1 秒對每顆球各發一次
+    # GetEntityState，15 顆球 = 每秒 150 次服務請求，節點/DDS 被塞爆，run94 的 /joint_states
+    # 訂閱直接斷掉 (里程計凍結、車直線出界)、run95 模擬中途停滯 34 秒。輪流查每秒只有 20 次。
     def _check_touch(self):
-        if not self.remaining_balls or self.touch_check_in_progress:
+        if not self.remaining_balls:
             return
+        now = self.get_clock().now().nanoseconds / 1e9
+        if self.touch_check_in_progress:
+            if now - self._touch_check_started < 1.0:
+                return
+            self.touch_check_in_progress = False  # 回覆遺失，不要永遠卡住
         if not self.get_entity_cli.service_is_ready():
             return
         self.touch_check_in_progress = True
+        self._touch_check_started = now
         req = GetEntityState.Request()
         req.name = 'tennis_bot::base_link'
         future = self.get_entity_cli.call_async(req)
@@ -417,27 +431,21 @@ class GridPatrolNode(Node):
         except Exception:
             self.touch_check_in_progress = False
             return
-        if resp is None or not resp.success:
+        if resp is None or not resp.success or not self.remaining_balls:
             self.touch_check_in_progress = False
             return
         p, o = resp.state.pose.position, resp.state.pose.orientation
         robot_pose = ((p.x, p.y, p.z), (o.x, o.y, o.z, o.w))
 
-        balls = list(self.remaining_balls)
-        self._pending_ball_replies = len(balls)
-        if self._pending_ball_replies == 0:
-            self.touch_check_in_progress = False
-            return
-        for name in balls:
-            req = GetEntityState.Request()
-            req.name = name
-            future = self.get_entity_cli.call_async(req)
-            future.add_done_callback(lambda f, n=name, rp=robot_pose: self._on_ball_pose(f, n, rp))
+        self._ball_poll_index = (self._ball_poll_index + 1) % len(self.remaining_balls)
+        name = self.remaining_balls[self._ball_poll_index]
+        req = GetEntityState.Request()
+        req.name = name
+        future = self.get_entity_cli.call_async(req)
+        future.add_done_callback(lambda f, n=name, rp=robot_pose: self._on_ball_pose(f, n, rp))
 
     def _on_ball_pose(self, future, name, robot_pose):
-        self._pending_ball_replies -= 1
-        if self._pending_ball_replies <= 0:
-            self.touch_check_in_progress = False
+        self.touch_check_in_progress = False
         try:
             resp = future.result()
         except Exception:

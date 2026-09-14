@@ -9,7 +9,7 @@ source /home/sean/ros2_ws/install/setup.bash
 TAG=${1:-once}
 SCRATCH=/tmp/claude-1000/-home-sean-ros2-ws/cfdbfabc-f4d0-4155-bb10-100d98577b2d/scratchpad
 mkdir -p "$SCRATCH"
-RUN_TIMEOUT_SEC=700
+RUN_TIMEOUT_SEC=1500
 
 kill_all() {
     pkill -TERM -f "[g]zserver"
@@ -47,6 +47,10 @@ if [ -n "$GZ_UPDATE_RATE" ]; then
 fi
 nohup ros2 run tennis_bot vision_node > "$SCRATCH/vision_${TAG}.log" 2>&1 &
 sleep 3
+if [ -n "$LAYOUT_JSON" ]; then
+    # 隨機佈局 (球數可能不是 9)：把球名交給 grid_patrol_node
+    export TENNISBOT_BALL_NAMES=$(python3 -c "import json,sys; print(','.join(json.load(open(sys.argv[1])).keys()))" "$LAYOUT_JSON")
+fi
 nohup ros2 run tennis_bot grid_patrol_node > "$SCRATCH/grid_${TAG}.log" 2>&1 &
 
 node_up=0

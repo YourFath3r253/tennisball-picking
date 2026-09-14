@@ -1,0 +1,6 @@
+seed,run_dir,result,layout_json
+2001,run108,,experiments/實驗數據/layouts/data20_seed2001.json
+2002,run109,結束(走完弓字路徑)：撿進後車廂,experiments/實驗數據/layouts/data20_seed2002.json
+2003,run110,結束(走完弓字路徑)：撿進後車廂,experiments/實驗數據/layouts/data20_seed2003.json
+2004,run111,結束(走完弓字路徑)：撿進後車廂,experiments/實驗數據/layouts/data20_seed2004.json
+2005,run112,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/data20_seed2005.json
