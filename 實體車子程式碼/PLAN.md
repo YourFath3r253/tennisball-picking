@@ -129,16 +129,59 @@ Jetson 一旦能 SSH（或至少連網），建議比照現在模擬端 `run113/
 `experiments/` 底下），確認同步成功後才刪本機那份。加一個簡單的容量檢查（開始新測試前跑一下 `df`），
 超過門檻（例如 26GB）就先警告、暫停產生新 log，而不是等到滿了才發現。
 
+## Jetson 視覺程式分析（`realtime_camera_trt_distance_angle_uart.py`，2026-09-18 讀取記錄）
+
+- 用 TensorRT engine (`best_fold1_opset9_sim_512x384.engine`) 做球偵測，輸入 512x384，相機抓 640x480 @30fps
+- **UART 埠是 `/dev/ttyACM0`**（USB 虛擬序列埠，不是傳統 TX/RX 接線）→ 強烈佐證 STM32 是 Nucleo 內建 ST-Link 板：
+  Nucleo 的 ST-Link 子板本身就是一個 USB CDC 虛擬 COM port，在 Linux 上會長這樣。也就是說 **Jetson↔STM32 現在已經是「一條 USB 線」在接**，
+  跟 Sean 問的「Jetson↔筆電要不要插 USB-C」是完全不同的兩條線、兩個目的，不要搞混。
+- **距離/角度傳送頻率是 5Hz**（每 0.2 秒送一次 `BALL,<dist>,<angle>`），不是每幀都送（相機是 30fps）
+- 角度值在送出前已經做過 **EMA 平滑**（α=0.35），代表 STM32 收到的角度本身就已經有一段平滑延遲，
+  之後設計外環轉向 PID 的時候，這個延遲要算進去（微分項especially容易被這種延遲搞得更抖）
+- 角度正負號：**正值 = 球在畫面右側，負值 = 左側**，跟 STM32 那邊 `angle>0 → SpinRight` 的判斷一致，沒有反向問題
+- 已經有「連續看到2幀才算偵測到、連續5幀沒看到才算真的丟球」的 hysteresis，跟模擬端做過的視覺雙門檻邏輯是同一個精神
+- 這支程式本身就會存 CSV（每幀存 `bearing_deg` 等欄位），**這個 CSV 已經可以直接拿來當「角度 vs 時間」的資料來源**，
+  不用另外寫記錄工具，測試時把 `TEST_NAME` 環境變數設好、跑完把 CSV 抓回來就有圖可以畫
+- [待確認/次要] `.engine` 檔是針對特定 GPU/TensorRT 版本編譯出來的，不能跨機器直接搬，如果之後 Jetson 系統版本有更動需要重新從 ONNX 轉換，先記著，現階段不影響 PID 工作
+
+## Jetson 免螢幕連線方式（2026-09-18 討論）
+
+Sean 問「能不能直接 USB 線接 Jetson 跟筆電」——可以試，這是跟教室 WiFi 方案平行的另一條路，
+在家就能試、完全不用出門，如果成功就不一定要去教室了：
+
+- Jetson Nano 板子上有一個 **Micro-USB 孔**（如果 Jetson 現在不是靠這個孔供電，而是用另一個圓形電源孔供電），
+  可以切換成「USB 裝置模式」，插上電腦後 Jetson 會偽裝成一張虛擬網路卡，自己會有固定 IP（通常 `192.168.55.1`），
+  接上就能直接 SSH 進去，完全不需要 WiFi、不需要路由器、不需要去教室
+- 需要一條**支援傳輸資料**的 Micro-USB 對 Type-C 連接線（很多線只能充電不能傳資料，先拿去手機上測試過比較保險）
+- 這功能是否已經開啟不確定（重灌過系統，原廠預設可能被改掉），要實際試才知道
+- 這條線的作用跟前面說的 `/dev/ttyACM0`（Jetson↔STM32）是兩回事，不要搞混
+- 如果這招沒反應，退回教室 WiFi+螢幕方案（上次已經決定的備案）
+
 ## 待確認事項（需要 Sean 回答，才能往下走）
 
-1. STM32 那邊除了 `main.c`，有沒有完整 STM32CubeIDE 專案（`Core/`、`Drivers/`、`.ioc`、連結腳本、Makefile）？
-   還是目前真的只有這一份 main.c 是從 IDE 複製貼上出來的？
-2. Jetson 目前的系統版本？（`cat /etc/nv_tegra_release` 或 `head -n1 /etc/os-release` 可以查）
-3. Jetson 現在有沒有 WiFi 網卡或接網路線？有沒有開過 SSH？
-4. 燒錄用的 ST-Link 是 Nucleo 板內建的，還是另外一顆獨立的 ST-Link/V2 燒錄器？
-5. 同學說的「70rpm/49rpm」量測，是在現在這版（有編碼器 PID）上測的，還是更早的版本？
+1. **[Sean 表示不想問同學，交給 Claude 自己想辦法]** STM32 那邊除了 `main.c`，有沒有完整 STM32CubeIDE 專案
+   （`Core/`、`Drivers/`、`.ioc`、連結腳本、Makefile）？→ **處理方式**：先檢查 Jetson 上、以及當初燒錄用的那台電腦
+   （不管是誰的筆電或教室電腦）上有沒有殘留專案資料夾；如果真的完全找不到，退回方案是由 Claude 重新用
+   STM32CubeMX 對應的標準檔案重建一個可編譯專案 —— 從 `main.c` 的時脈設定（HSI, PLLM=16, PLLN=336, PLLP=4 → 84MHz）
+   加上 `B1_Pin`/`LD2_Pin` 命名慣例，高信心判斷這片板子是 **NUCLEO-F401RE**，週邊清單（TIM1/TIM4 encoder、
+   TIM2/TIM3 PWM、TIM6 base+IT、USART2）也已經從程式碼讀出來了，重建專案是可行的，不需要問同學。
+2. ~~Jetson 目前的系統版本~~ → **已確認：Ubuntu 18.04**（這代表新版 Node.js 相容性風險是真的存在，但反正 Claude Code
+   決定跑在筆電端 SSH 遙控，這台 Jetson 完全不用裝 Node/Claude Code，這個風險已經不用擔心了）
+3. ~~Jetson 現在有沒有 WiFi 網卡或接網路線？~~ → **已確認：有看到網路線，但幾乎確定沒開過 SSH**（重灌過，裡面基本是空的）
+   → 這代表教室那趟或 USB 直連那趟，很可能需要先完成 Jetson 的「第一次開機設定精靈」（建立帳號密碼），
+   這步驟過去很可能已經在某次重灌後做過一次（Jetson 開機精靈需要螢幕才能過），代表帳號密碼應該已經存在，
+   只是 Sean 不一定記得 → 這個帳密还是要 Sean 自己想辦法找到/想起來，Claude 沒辦法用猜的
+4. **[Sean 表示不想問同學，Claude 自己判斷]** 燒錄用的 ST-Link 是內建還是獨立？→ **高信心判斷：Nucleo 板內建 ST-Link**。
+   證據：`/dev/ttyACM0`（Nucleo ST-Link 的 USB 虛擬序列埠特徵）+ `B1_Pin`/`LD2_Pin` 命名 + 84MHz 時脈剛好是
+   CubeMX 對 F401RE 的預設配置。且**現在 Jetson↔STM32 那條 USB 線，很可能同一條就能拿來燒錄**
+   （Nucleo 的 ST-Link 一條 USB 線同時提供虛擬序列埠跟 SWD 燒錄介面），不用另外找線或拆線。
+   之後接上就能用 `lsusb` 看到 `STMicroelectronics ST-LINK` 字樣來雙重確認。
+5. **[Sean 表示不想問同學]** 同學說的「70rpm/49rpm」是哪個版本測的？→ **不追究，直接用 PLAN 裡第9點的方法重新實測**，
+   不管舊數字怎麼來的，反正都要重新校正編碼器常數，舊數字不影響現在的判斷。
 
 ## 版本紀錄
 
 - 2026-09-18：初版。由 Claude 讀取 `main.c` 分析後與 Sean 討論撰寫，`main.c` 從
   `USER CODE BEGIN Header.txt`（原始檔名，STM32CubeIDE 匯出時貼錯檔名）改名而來。
+- 2026-09-18（同日更新）：加入 Jetson 視覺程式 `realtime_camera_trt_distance_angle_uart.py` 分析、
+  Jetson USB 裝置模式免螢幕連線方案，並整理待確認事項的處理方式（Sean 不想問同學，改由 Claude 自行判斷/驗證）。
