@@ -16,6 +16,18 @@
 - **教室行程**：直接去教室接螢幕+鍵盤，把 Jetson 的 WiFi/SSH 環境一次設定好，之後開發不用再帶螢幕。
 - **STM32 baseline**：`main.c`（改名前是 `USER CODE BEGIN Header.txt`）+ 這份 `PLAN.md` 已做 git baseline commit，之後改 PID 前後都能對比這個版本。
 
+## 遠端存取設定（2026-09-18 已完成，教室現場做的）
+
+- **SSH 金鑰登入已設定完成**，Jetson 帳號 `hp`（主機名稱顯示為 `123`），不用再打密碼
+- 筆電 `~/.ssh/config` 已加好捷徑：
+  - `ssh jetson` → 走 **Tailscale**（`100.104.92.104`），不管兩台在不在同個網路都能連，**平常請用這個**
+  - `ssh jetson-lan` → 走教室 WiFi 直連 IP（`172.16.2.163`），這個 IP 離開教室後大概率會變，只是備用/除錯用
+- **Tailscale 已裝好並登入**（筆電、Jetson 都用同一個帳號 `y31724005@`），兩邊互通已實測成功
+- `hp` 帳號已設定 **passwordless sudo**（`/etc/sudoers.d/hp-nopasswd`），這樣 Claude Code 才能透過 SSH 直接執行需要 root 權限的指令（裝套件、燒錄等），不用每次手動輸密碼。
+  取捨：這代表「能用 SSH 金鑰登入這台機器」=「能做任何系統層級操作」。因為本來就只有金鑰能登入（沒開密碼登入），對單人使用的機器人開發板來說這個風險可接受，但**這台以後不要拿來給不信任的人共用登入**。
+- **已經把 sleep/suspend/hibernate 全部 mask 掉**（`systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target`），Jetson 系統層級不會再真的進入待機，不管是螢幕保護程式、電源管理設定還是什麼東西觸發都一樣被擋下來。真正的系統待機（跟螢幕變黑不一樣）本來會讓 SSH/網路整個斷掉，物理上碰它才能喚醒，所以直接鎖死比較保險。
+- **[待確認/次要]** Jetson Nano 原廠開發板插電就會自動開機、不需要按鍵；如果這片是學長改過的載板、外接了實體電源鍵，可能還是需要按一下——這個要 Sean 自己拔插電源實測一次才知道，遠端看不到。
+
 ## 硬體架構
 
 - 深度相機 → Jetson Nano (32GB micro SD，可能是舊版 JetPack，繼承自學長實驗室) → UART → STM32 (Nucleo 板) → 兩顆底盤驅動馬達 + 兩顆撿球滾輪馬達
@@ -178,6 +190,16 @@ Sean 問「能不能直接 USB 線接 Jetson 跟筆電」——可以試，這�
    之後接上就能用 `lsusb` 看到 `STMicroelectronics ST-LINK` 字樣來雙重確認。
 5. **[Sean 表示不想問同學]** 同學說的「70rpm/49rpm」是哪個版本測的？→ **不追究，直接用 PLAN 裡第9點的方法重新實測**，
    不管舊數字怎麼來的，反正都要重新校正編碼器常數，舊數字不影響現在的判斷。
+6. **[待 Sean 回去跟D同學(視覺)確認]** Jetson 上同時存在好幾個相似命名、內容不同的視覺程式版本，其中：
+   - `~/models/realtime_camera_trt_distance_angle_uart.py`（7/16）跟 Sean 放進 repo 那份**逐字元相同**，
+     送 `BALL,<距離>,<角度>` 連續座標給 STM32，跟現在 `main.c` 的解析格式吻合
+   - `~/realtime_camera_trt_distance_uart.py`（家目錄根目錄，8/24，比上面那份新）內容不同：
+     `CONF_THRES` 0.50 vs 0.35、沒有 5Hz 節流、改送 `BALL_ON`/`BALL_OFF` 開關指令而不是連續座標——
+     **這個協定跟現在 `main.c` 對不起來**（`main.c` 只認 `BALL,`開頭的封包，`BALL_ON` 會被判定成 `ERR:UNKNOWN`）
+   - 需要確認：8/24 這版是D同學後來放棄的實驗分支，還是目前測試真正在用的？如果是後者，
+     代表 Jetson↔STM32 的協定要重新對齊，不能直接假設現在的 `main.c` 能用
+   - `models/` 資料夾裡還有一堆其他變體（`_headless.py`、`_no_preview.py`、`_nodisplay.py`等），
+     建議確認完哪個是正式版之後，一起納入 git 版本控制，不要繼續用檔名+日期在猜
 
 ## 版本紀錄
 
