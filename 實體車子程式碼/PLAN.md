@@ -26,7 +26,16 @@
 - `hp` 帳號已設定 **passwordless sudo**（`/etc/sudoers.d/hp-nopasswd`），這樣 Claude Code 才能透過 SSH 直接執行需要 root 權限的指令（裝套件、燒錄等），不用每次手動輸密碼。
   取捨：這代表「能用 SSH 金鑰登入這台機器」=「能做任何系統層級操作」。因為本來就只有金鑰能登入（沒開密碼登入），對單人使用的機器人開發板來說這個風險可接受，但**這台以後不要拿來給不信任的人共用登入**。
 - **已經把 sleep/suspend/hibernate 全部 mask 掉**（`systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target`），Jetson 系統層級不會再真的進入待機，不管是螢幕保護程式、電源管理設定還是什麼東西觸發都一樣被擋下來。真正的系統待機（跟螢幕變黑不一樣）本來會讓 SSH/網路整個斷掉，物理上碰它才能喚醒，所以直接鎖死比較保險。
-- **[待確認/次要]** Jetson Nano 原廠開發板插電就會自動開機、不需要按鍵；如果這片是學長改過的載板、外接了實體電源鍵，可能還是需要按一下——這個要 Sean 自己拔插電源實測一次才知道，遠端看不到。
+- **已實測確認**：拔插電源重開機，不用按任何鍵、直接跳桌面（自動開機+自動登入都正常），Tailscale/SSH 開機後
+  在數十秒內自己恢復連線，`eduroam` 自動重連，sudo 免密碼設定也在重開機後還在（因為是寫死在設定檔）。
+  **這代表今天教室要處理的環境設定都已經驗證過、是穩固的**，之後可以純遠端（不用再帶螢幕）繼續開發。
+- **已新增兩組 WiFi 設定檔**（`autoconnect: yes`，之後到範圍內會自動連上，密碼未寫進本檔案）：
+  - `imoney`（手機熱點，一般 WPA2-PSK）
+  - `nthupeap`（校園網路，WPA2-Enterprise/PEAP，帳號 `s112033247`）
+  - 之後如果要加更多已知網路，指令模式：一般網路用 `sudo nmcli connection add type wifi con-name "<名稱>" ifname wlan0 ssid "<SSID>" wifi-sec.key-mgmt wpa-psk wifi-sec.psk "<密碼>"`；
+    企業級（帳密驗證）用 PLAN 裡上面示範的 `802-1x.eap peap` 那組寫法。**密碼一律由 Sean 自己在終端機輸入，不會經過 Claude。**
+- **[小提醒/之後收資料時注意]** Jetson 沒有內建電池校時的 RTC，剛開機時系統時間會先亂跳，等連上網路 NTP 校正後才準。
+  之後做「開機沒多久就開始記錄角度-時間 CSV」的測試時，建議先等待約10幾秒讓時間校正完，避免最前面幾筆時間戳記不準。
 
 ## 硬體架構
 
