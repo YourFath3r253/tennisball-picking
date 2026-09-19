@@ -238,6 +238,42 @@ D 同學目前在同步開發球場邊界偵測（靠顏色區分邊界），會
   球放在50cm時，量到的 `dist_cm` 平均 47-48cm（系統性低估約2-3cm，標準差 <0.5cm，量測穩定）；
   角度量測在左右50cm時標準差約0.3-0.6°，雜訊不大。
 
+## STM32 完整專案已取得大半（2026-09-19，見 [ballpicker_STM32專案/](ballpicker_STM32專案/)）
+
+B 同學給了4包壓縮檔（原本放在他 Windows 電腦 `C:\Users\User\Downloads\ballpicker\`），解壓後整理成
+`ballpicker_STM32專案/` 資料夾，結構跟 STM32CubeIDE 標準專案一致：
+
+- `Core/`（`Inc/`、`Src/`、`Startup/`）✓ 完整
+- `Drivers/`（CMSIS 含 STM32F446xx device header、STM32F4xx_HAL_Driver）✓ 完整
+- `Debug/`（CubeIDE 自動產生的 **Makefile 建置系統**：`makefile`、`sources.mk`、`objects.mk`，還有上次成功編譯的
+  `ballpicker.elf`/`.map`）✓ 完整，但 makefile 裡連結腳本寫死 B 電腦的絕對路徑
+  `C:\Users\User\Downloads\ballpicker\STM32F446RETX_FLASH.ld`，要換成相對路徑才能在 Jetson 上跑
+- `.settings/` ✓（Eclipse偏好設定，非必要但拿到了）
+
+**還缺 4 個專案根目錄檔案**：`ballpicker.ioc`、**`STM32F446RETX_FLASH.ld`（連結腳本，這個是編譯必需，最重要）**、
+`.project`、`.cproject`。這些檔案很小（.ld通常幾KB的純文字），麻煩跟 B 同學要這幾個，
+在他 `Downloads\ballpicker\` 資料夾最外層應該就看得到（不在 Core/Drivers/Debug 任何子資料夾裡面）。
+
+**確認硬體是 STM32F446RE**（LQFP64），不是之前用時脈反推猜的 F401RE，這裡更正。
+
+### 重大發現：main.c 已經加入「球場邊界」邏輯，跟之前分析的版本不同！
+
+B 同學這份 main.c（1121行，比我們之前存的版本多了一大段）新增了 **`COURT,<狀態>,<方向>,<出界比例>`** 協定
+（例如 `COURT,OUT,LEFT,0.8`），這應該是配合 D 同學正在做的球場邊界視覺偵測（[46]號待確認事項提過的那個）：
+
+- 追球邏輯現在**被包在「場地狀態必須是 SAFE」的條件裡面**，不是 SAFE 就不會去追球
+- `OUT`（真出界）：強力轉向迴避（65~75rpm，依方向）；`EDGE`（接近邊界）：溫和轉向迴避（45~55rpm）
+- 找球用的原地旋轉邏輯也改了：從「一次性轉一下」變成「明確 1.5 秒計時、時間到自動煞停」的 `search_spin_active` 機制
+- 盲衝逾時從 1500ms 改成 1000ms（在其中一處）
+
+**這代表**：舊的 `main.c` 副本、9/9 那份 CSV 分析、目前 PLAN.md 前面幾節對「離散轉向邏輯」的描述，
+都是基於**沒有邊界邏輯的舊版本**。現在的 [ballpicker_STM32專案/Core/Src/main.c](ballpicker_STM32專案/Core/Src/main.c)
+才是目前真正的（或接近目前的）韌體邏輯，之後分析行為、設計PID，要以這份為準。舊的獨立 `main.c` 檔案已刪除，
+避免兩份文件同時存在造成混淆。
+
+**待確認**：Jetson 端視覺程式現在有沒有真的送出 `COURT,...` 這個新格式？如果還沒有（D同學邊界偵測還在開發中），
+代表 `court_state` 會一直維持初始值 `"SAFE"`，追球邏輯實際上等於沒被邊界功能影響，現在球場測試應該還是舊行為。
+
 ## 待確認事項（需要 Sean 回答，才能往下走）
 
 1. **[Sean 表示不想問同學，交給 Claude 自己想辦法]** STM32 那邊除了 `main.c`，有沒有完整 STM32CubeIDE 專案
