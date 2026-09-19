@@ -2,7 +2,7 @@ import csv
 import statistics as st
 import matplotlib
 matplotlib.use("Agg")
-matplotlib.rcParams["font.family"] = "Noto Serif CJK TC"
+matplotlib.rcParams["font.family"] = "Noto Sans CJK JP"
 matplotlib.rcParams["axes.unicode_minus"] = False
 import matplotlib.pyplot as plt
 
