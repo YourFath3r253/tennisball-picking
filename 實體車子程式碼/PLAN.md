@@ -225,16 +225,20 @@ D 同學目前在同步開發球場邊界偵測（靠顏色區分邊界），會
    之後接上就能用 `lsusb` 看到 `STMicroelectronics ST-LINK` 字樣來雙重確認。
 5. **[Sean 表示不想問同學]** 同學說的「70rpm/49rpm」是哪個版本測的？→ **不追究，直接用 PLAN 裡第9點的方法重新實測**，
    不管舊數字怎麼來的，反正都要重新校正編碼器常數，舊數字不影響現在的判斷。
-6. **[待 Sean 回去跟D同學(視覺)確認]** Jetson 上同時存在好幾個相似命名、內容不同的視覺程式版本，其中：
-   - `~/models/realtime_camera_trt_distance_angle_uart.py`（7/16）跟 Sean 放進 repo 那份**逐字元相同**，
-     送 `BALL,<距離>,<角度>` 連續座標給 STM32，跟現在 `main.c` 的解析格式吻合
-   - `~/realtime_camera_trt_distance_uart.py`（家目錄根目錄，8/24，比上面那份新）內容不同：
-     `CONF_THRES` 0.50 vs 0.35、沒有 5Hz 節流、改送 `BALL_ON`/`BALL_OFF` 開關指令而不是連續座標——
-     **這個協定跟現在 `main.c` 對不起來**（`main.c` 只認 `BALL,`開頭的封包，`BALL_ON` 會被判定成 `ERR:UNKNOWN`）
-   - 需要確認：8/24 這版是D同學後來放棄的實驗分支，還是目前測試真正在用的？如果是後者，
-     代表 Jetson↔STM32 的協定要重新對齊，不能直接假設現在的 `main.c` 能用
-   - `models/` 資料夾裡還有一堆其他變體（`_headless.py`、`_no_preview.py`、`_nodisplay.py`等），
-     建議確認完哪個是正式版之後，一起納入 git 版本控制，不要繼續用檔名+日期在猜
+6. ~~視覺程式版本~~ → **已解決（2026-09-19，靠 `~/.bash_history` 執行紀錄找到，不是靠檔名日期猜的）**：
+   真正、重複跑最多次、目前實際在用的是 **`~/models/realtime_camera_trt_distance_uart_nodisplay.py`**，
+   已經拉進 repo 存檔（跟 `main.c` 一樣）。特徵：
+   - 送 `BALL,<距離>,<角度>` / `BALL_OFF`，跟 `main.c` 協定相容 ✓
+   - `UART_PORT = "/dev/ttyACM0"`，跟 STM32 實際接的埠一致 ✓（已確認 `/dev/ttyACM0` 目前存在，STM32 有接著）
+   - **沒有 5Hz 節流**（之前以為的 `UART_SEND_INTERVAL` 節流是舊版行為，這份是每一幀偵測到就送，
+     送出頻率取決於推論速度，實際頻率待之後量測）
+   - `CONF_THRES = 0.50`（比舊版 0.35 嚴格）
+   - 沒有 `cv2.imshow`/`waitKey`，**純 SSH 就能跑，不需要任何螢幕/X顯示**
+   - 已經內建 CSV 記錄（`frame, time, cx, cy, ..., dist_cm, bearing_deg, smooth_bearing_deg, motor_on` 等欄位），
+     **這份就是角度/X座標-時間資料收集工具，不需要另外寫程式**，跑的時候設定 `TEST_NAME` 環境變數
+     決定輸出檔名，例如：`TEST_NAME=baseline_discrete_run1 python3 realtime_camera_trt_distance_uart_nodisplay.py`
+   - 之前 repo 裡誤判為 baseline 的 `realtime_camera_trt_distance_angle_uart.py`（7/16版）仍保留在 repo 中，
+     但**不是實際在用的版本**，之後若要修改視覺端邏輯，應該以 `_nodisplay.py` 這份為準
 
 ## 版本紀錄
 
