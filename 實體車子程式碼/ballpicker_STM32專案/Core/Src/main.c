@@ -319,26 +319,17 @@ int main(void)
     	                                if (sscanf((char *)rx_buffer, "BALL,%f,%f", &ball_distance_cm, &ball_angle_deg) == 2)
     	                                {
     	                                    was_seeing_ball = 1;
-    	                                    search_spin_active = 0;
     	                                    tx_len = sprintf(tx_msg, "ACK:BALL,%.1f,%.1f\n", ball_distance_cm, ball_angle_deg);
     	                                    HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
 
-    	                                    // 🌟 核心防護：只有在場地安全 (SAFE) 時才允許執行追球運動
+    	                                    // [Sean 2026-09-20 STEP RESPONSE測試版] 車體永遠不前進，只做原地轉向，
+    	                                    // 避免重演昨天B同學誤燒錄程式導致暴衝撞牆掉零件的意外。
+    	                                    // 只有在場地安全 (SAFE) 時才允許轉向
     	                                    if (strcmp(court_state, "SAFE") == 0)
     	                                    {
-    	                                        if (ball_distance_cm <= 25.0f && blind_dash_active == 0)
+    	                                        if (ball_distance_cm < 30.0f)
     	                                        {
-    	                                            blind_dash_active = 1;
-    	                                            blind_dash_start_time = HAL_GetTick();
-    	                                        }
-
-    	                                        if (blind_dash_active)
-    	                                        {
-    	                                            Chassis_Forward(75.0f);
-    	                                        }
-    	                                        else if (ball_distance_cm <= 30.0f)
-    	                                        {
-    	                                            Chassis_Forward(75.0f);
+    	                                            Chassis_Stop(); // 太近：直接停止，不前進、不盲衝
     	                                        }
     	                                        else
     	                                        {
@@ -364,8 +355,7 @@ int main(void)
     	                                            }
     	                                            else
     	                                            {
-    	                                                Chassis_Forward(75.0f);
-    	                                                last_turn_time = HAL_GetTick();
+    	                                                Chassis_Stop(); // 角度已對準：停止，不前進（原本這裡是直行）
     	                                            }
     	                                        }
     	                                    } // (結束 SAFE 檢查)
@@ -382,37 +372,11 @@ int main(void)
     	                            {
     	                                HAL_UART_Transmit(&huart2, (uint8_t*)"ACK:NOBALL\n", 11, 50);
 
-    	                                // 🌟 核心防護：只有在場地安全 (SAFE) 時才執行找球邏輯
+    	                                // [Sean 2026-09-20 STEP RESPONSE測試版] 看不到球一律靜止
     	                                if (strcmp(court_state, "SAFE") == 0)
     	                                {
-    	                                    if (blind_dash_active == 0 && ball_distance_cm > 0.0f && ball_distance_cm <= 30.0f)
-    	                                    {
-    	                                        blind_dash_active = 1;
-    	                                        blind_dash_start_time = HAL_GetTick();
-    	                                    }
-
-    	                                    if (blind_dash_active)
-    	                                    {
-    	                                        Chassis_Forward(75.0f); // 盲衝中，繼續直走
-    	                                    }
-    	                                    else
-    	                                    {
-    	                                        if (was_seeing_ball == 1)
-    	                                        {
-    	                                            was_seeing_ball = 0;
-    	                                            search_spin_active = 1;
-    	                                            search_spin_start_time = HAL_GetTick();
-    	                                            Chassis_SpinRight(50.0f);
-    	                                        }
-    	                                        else if (search_spin_active == 1)
-    	                                        {
-    	                                            Chassis_SpinRight(50.0f);
-    	                                        }
-    	                                        else
-    	                                        {
-    	                                            Chassis_Stop();
-    	                                        }
-    	                                    }
+    	                                    was_seeing_ball = 0;
+    	                                    Chassis_Stop();
     	                                } // (結束 SAFE 檢查)
     	                            }
     	                            else
@@ -943,6 +907,7 @@ float locked_heading_deg = 0.0f;  // 用來記住起步瞬間的那條直線角�
 
 void Chassis_SpinLeft(float turn_rpm)
 {
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // [Sean 2026-09-20 debug] 確認邏輯有沒有被呼叫
     chassis_motion_state = 0; // 告訴系統現在不是直走
     pid_left.target_rpm  =  turn_rpm;
     pid_right.target_rpm = -turn_rpm;
@@ -952,6 +917,7 @@ void Chassis_SpinLeft(float turn_rpm)
 
 void Chassis_SpinRight(float turn_rpm)
 {
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // [Sean 2026-09-20 debug] 確認邏輯有沒有被呼叫
     chassis_motion_state = 0; // 告訴系統現在不是直走
     pid_left.target_rpm  = -turn_rpm;
     pid_right.target_rpm =  turn_rpm;
