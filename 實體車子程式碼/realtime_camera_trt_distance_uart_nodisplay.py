@@ -34,6 +34,23 @@ UART_TIMEOUT = 0.2
 BALL_ON_CONFIRM_FRAMES = 2
 BALL_OFF_CONFIRM_FRAMES = 5
 
+# Court boundary V6
+COURT_MODEL_PATH = "/home/hp/models/court_color_model_v6.npz"
+COURT_EVERY_N_FRAMES = 3
+
+# Hysteresis thresholds
+COURT_EDGE_ENTER = 0.20
+COURT_EDGE_EXIT = 0.10
+COURT_OUT_ENTER = 0.55
+COURT_OUT_EXIT = 0.40
+COURT_CONFIRM_UPDATES = 5
+COURT_WARMUP_SEC = 2.0
+
+# Keep False until STM32 firmware can parse:
+# COURT,<SAFE|EDGE|OUT>,<LEFT|CENTER|RIGHT|NONE>,<outside_ratio>
+COURT_UART_ENABLE = False
+COURT_UART_PERIOD_SEC = 0.5
+
 TEST_NAME = os.environ.get("TEST_NAME", "distance_512x384_uart")
 CSV_PATH = TEST_NAME + ".csv"
 SAVE_LAST_IMAGE = TEST_NAME + ".jpg"
@@ -296,6 +313,231 @@ def send_command(ser, command):
         print("STM32 -> no response")
 
 
+
+def court_patch_feature(patch):
+    """Feature vector used by the trained V6 court model."""
+    hsv = cv2.cvtColor(patch, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(patch, cv2.COLOR_BGR2LAB).astype(np.float32)
+    bgr = patch.astype(np.float32)
+
+    b = bgr[:, :, 0]
+    g = bgr[:, :, 1]
+    r = bgr[:, :, 2]
+
+    s = hsv[:, :, 1]
+    v = hsv[:, :, 2]
+
+    white = (s < 35) & (v > 180)
+    reflection = v > 245
+    dark = v < 25
+    valid = ~(white | reflection | dark)
+
+    if np.count_nonzero(valid) < valid.size * 0.35:
+        return None
+
+    denom = r + g + b + 1.0
+
+    return np.array([
+        np.median(b[valid] / denom[valid]),
+        np.median(g[valid] / denom[valid]),
+        np.median(r[valid] / denom[valid]),
+        np.median(s[valid]) / 255.0,
+        np.median((lab[:, :, 1][valid] - 128.0) / 127.0),
+        np.median((lab[:, :, 2][valid] - 128.0) / 127.0),
+    ], dtype=np.float32)
+
+
+def load_court_model(path):
+    d = np.load(path)
+
+    return {
+        "weights": d["weights"],
+        "th_inside": d["th_inside"],
+        "th_outside": d["th_outside"],
+        "valid_cell": d["valid_cell"],
+        "separation": d["separation"],
+        "h": int(d["h"][0]),
+        "w": int(d["w"][0]),
+        "y0": int(d["y0"][0]),
+        "y1": int(d["y1"][0]),
+        "patch": int(d["patch"][0]),
+    }
+
+
+def remove_isolated_court_outside(class_grid, min_size=3):
+    binary = (class_grid == 1).astype(np.uint8)
+
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
+        binary,
+        connectivity=8,
+    )
+
+    clean = np.zeros_like(binary)
+
+    for i in range(1, num_labels):
+        area = stats[i, cv2.CC_STAT_AREA]
+
+        if area >= min_size:
+            clean[labels == i] = 1
+
+    return clean
+
+
+def classify_court_frame(frame, model):
+    """Return grid, cleaned OUT mask, OUT ratio, known ratio, direction."""
+    h, w = frame.shape[:2]
+
+    if h != model["h"] or w != model["w"]:
+        raise RuntimeError(
+            "Court model expects %dx%d, camera returned %dx%d"
+            % (model["w"], model["h"], w, h)
+        )
+
+    patch = model["patch"]
+    y0 = model["y0"]
+    y1 = model["y1"]
+
+    xs = list(range(0, w - patch + 1, patch))
+    ys = list(range(y0, y1 - patch + 1, patch))
+
+    rows = len(ys)
+    cols = len(xs)
+
+    # -1 UNKNOWN, 0 INSIDE, 1 OUTSIDE
+    grid = np.full((rows, cols), -1, dtype=np.int8)
+
+    for ry, y in enumerate(ys):
+        for cx, x in enumerate(xs):
+            if model["valid_cell"][ry, cx] == 0:
+                continue
+
+            p = frame[y:y + patch, x:x + patch]
+            f = court_patch_feature(p)
+
+            if f is None:
+                continue
+
+            score = float(np.dot(f, model["weights"][ry, cx]))
+
+            if score >= model["th_outside"][ry, cx]:
+                grid[ry, cx] = 1
+            elif score <= model["th_inside"][ry, cx]:
+                grid[ry, cx] = 0
+
+    clean_out = remove_isolated_court_outside(grid, min_size=3)
+
+    inside = (grid == 0)
+    known = inside | (clean_out == 1)
+
+    known_count = int(np.count_nonzero(known))
+    out_count = int(np.count_nonzero(clean_out))
+
+    if known_count > 0:
+        outside_ratio = out_count / float(known_count)
+    else:
+        outside_ratio = 0.0
+
+    known_ratio = known_count / float(rows * cols)
+
+    direction = "NONE"
+    pos = np.argwhere(clean_out == 1)
+
+    if len(pos) > 0:
+        mean_col = float(np.mean(pos[:, 1]))
+
+        if mean_col < cols / 3.0:
+            direction = "LEFT"
+        elif mean_col > 2.0 * cols / 3.0:
+            direction = "RIGHT"
+        else:
+            direction = "CENTER"
+
+    return grid, clean_out, outside_ratio, known_ratio, direction
+
+
+def update_court_state(
+    state,
+    pending_target,
+    pending_count,
+    smooth_ratio,
+    known_ratio,
+):
+    """Update SAFE / EDGE / OUT with hysteresis and confirmation."""
+    if known_ratio < 0.25:
+        return state, pending_target, pending_count, False
+
+    if state == "SAFE":
+        target = "EDGE" if smooth_ratio >= COURT_EDGE_ENTER else "SAFE"
+
+    elif state == "EDGE":
+        if smooth_ratio >= COURT_OUT_ENTER:
+            target = "OUT"
+        elif smooth_ratio <= COURT_EDGE_EXIT:
+            target = "SAFE"
+        else:
+            target = "EDGE"
+
+    else:  # OUT
+        target = "EDGE" if smooth_ratio <= COURT_OUT_EXIT else "OUT"
+
+    changed = False
+
+    if target != state:
+        if pending_target == target:
+            pending_count += 1
+        else:
+            pending_target = target
+            pending_count = 1
+
+        if pending_count >= COURT_CONFIRM_UPDATES:
+            state = target
+            pending_target = None
+            pending_count = 0
+            changed = True
+    else:
+        pending_target = None
+        pending_count = 0
+
+    return state, pending_target, pending_count, changed
+
+
+def draw_court_status(
+    frame512,
+    state,
+    direction,
+    smooth_ratio,
+    raw_ratio,
+    known_ratio,
+):
+    if state == "SAFE":
+        color = (0, 255, 0)
+    elif state == "EDGE":
+        color = (0, 255, 255)
+    else:
+        color = (0, 0, 255)
+
+    cv2.putText(
+        frame512,
+        "COURT %s  %s" % (state, direction),
+        (10, 325),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.55,
+        color,
+        2,
+    )
+    cv2.putText(
+        frame512,
+        "OUT %.1f%% raw %.1f%% known %.1f%%"
+        % (smooth_ratio * 100.0, raw_ratio * 100.0, known_ratio * 100.0),
+        (10, 350),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.47,
+        (255, 255, 255),
+        1,
+    )
+
+    return frame512
+
 def main():
     ser = None
     cap = None
@@ -318,6 +560,10 @@ def main():
         print("Focal length px:", FOCAL_LENGTH_PX)
         print("Ball diameter cm:", BALL_DIAMETER_CM)
 
+        print("Loading court V6 model...")
+        court_model = load_court_model(COURT_MODEL_PATH)
+        print("Court model:", COURT_MODEL_PATH)
+
         cap = cv2.VideoCapture(0)
         cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAM_W)
@@ -339,6 +585,18 @@ def main():
         motor_on = False
         detected_streak = 0
         missing_streak = 0
+
+        # Court runtime state
+        court_state = "SAFE"
+        court_direction = "NONE"
+        court_raw_ratio = 0.0
+        court_smooth_ratio = 0.0
+        court_known_ratio = 0.0
+        court_smooth_started = False
+        court_pending_target = None
+        court_pending_count = 0
+        court_last_uart_time = 0.0
+        court_alpha = 0.20
 
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         video_writer = cv2.VideoWriter(
@@ -384,6 +642,66 @@ def main():
 
             frame_count += 1
             t_now = time.time()
+
+            # ---------------------------------------------------------
+            # Court V6 boundary detection on original 640x480 frame
+            # ---------------------------------------------------------
+            court_changed = False
+
+            if (
+                (t_now - total_t0) >= COURT_WARMUP_SEC
+                and frame_count % COURT_EVERY_N_FRAMES == 0
+            ):
+                (
+                    _court_grid,
+                    _court_clean_out,
+                    court_raw_ratio,
+                    court_known_ratio,
+                    court_direction,
+                ) = classify_court_frame(raw_frame, court_model)
+
+                if not court_smooth_started:
+                    court_smooth_ratio = court_raw_ratio
+                    court_smooth_started = True
+                else:
+                    court_smooth_ratio = (
+                        court_alpha * court_raw_ratio
+                        + (1.0 - court_alpha) * court_smooth_ratio
+                    )
+
+                (
+                    court_state,
+                    court_pending_target,
+                    court_pending_count,
+                    court_changed,
+                ) = update_court_state(
+                    court_state,
+                    court_pending_target,
+                    court_pending_count,
+                    court_smooth_ratio,
+                    court_known_ratio,
+                )
+
+                court_command = "COURT,%s,%s,%.2f" % (
+                    court_state,
+                    court_direction,
+                    court_smooth_ratio,
+                )
+
+                if COURT_UART_ENABLE:
+                    if (
+                        court_changed
+                        or (t_now - court_last_uart_time) >= COURT_UART_PERIOD_SEC
+                    ):
+                        send_command(ser, court_command)
+                        court_last_uart_time = t_now
+
+                if court_changed or frame_count % (COURT_EVERY_N_FRAMES * 10) == 0:
+                    print(
+                        court_command,
+                        "| raw %.2f" % court_raw_ratio,
+                        "| known %.2f" % court_known_ratio,
+                    )
 
             input_image, frame512 = preprocess(frame)
             outputs_data = infer(
@@ -498,6 +816,15 @@ def main():
                     (0, 255, 0) if motor_on else (0, 0, 255),
                     2,
                 )
+
+            frame512 = draw_court_status(
+                frame512,
+                court_state,
+                court_direction,
+                court_smooth_ratio,
+                court_raw_ratio,
+                court_known_ratio,
+            )
 
             last_output_frame = frame512
             video_writer.write(frame512)

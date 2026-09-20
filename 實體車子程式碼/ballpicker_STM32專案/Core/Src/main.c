@@ -160,12 +160,12 @@ int main(void)
   // 開啟 USART2 中斷接收，每次只接收 1 個位元組，存入 rx_byte
   HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
   // 1. 設定左輪馬達方向為正轉 (IN1=High, IN2=Low)
-    HAL_GPIO_WritePin(GPIOC, L_IN1_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOC, L_IN2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, L_IN1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, L_IN2_Pin, GPIO_PIN_SET);
 
     // 2. 設定右輪馬達方向為正轉 (IN1=High, IN2=Low)
-    HAL_GPIO_WritePin(GPIOC, R_IN1_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOC, R_IN2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, R_IN1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, R_IN2_Pin, GPIO_PIN_SET);
 
     // 3. 啟動定時器 2 的通道 1 (PA0) 與通道 2 (PA1)
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
@@ -181,8 +181,8 @@ int main(void)
     // 1. 預設底盤馬達方向為正轉 (前進)
     HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_SET);
 
     // 2. 啟動底盤的 PWM (TIM3 的 Channel 1 與 Channel 2)
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
@@ -251,7 +251,7 @@ int main(void)
     	                                Chassis_SpinRight(50.0f); // 統一用 50 RPM 旋轉
     	                        }
     	                        // 👇 新增：旋轉找球 1.5 秒 (1500ms) 後自動煞車停止
-    	                        if (search_spin_active == 1 && (HAL_GetTick() - search_spin_start_time > 1500))
+    	                       if (search_spin_active == 1 && (HAL_GetTick() - search_spin_start_time > 1500))
     	                        {
     	                            search_spin_active = 0; // 時間到，解除找球狀態
     	                            Chassis_Stop();         // 停止馬達
@@ -868,8 +868,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM6)
     {
         // 1. 讀取這 10ms 內累積的脈衝數 (底盤左右輪)
-        chassis_enc_left = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
-        chassis_enc_right = -((int16_t)__HAL_TIM_GET_COUNTER(&htim1));
+        chassis_enc_left = -((int16_t)__HAL_TIM_GET_COUNTER(&htim4));
+        chassis_enc_right = (int16_t)__HAL_TIM_GET_COUNTER(&htim1);
 
         // 2. 讀完立刻歸零！(這是 M 法測速的核心，你原本漏掉這步)
         __HAL_TIM_SET_COUNTER(&htim4, 0);
@@ -906,13 +906,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
                 if (pwm_cmd_left >= 0) {
                     // 正轉：IN1 高, IN2 低
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_SET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_SET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, (uint32_t)pwm_cmd_left);
                 } else {
                     // 反轉：IN1 低, IN2 高 (PWM 值必須轉回正數)
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_RESET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_RESET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, (uint32_t)(-pwm_cmd_left));
                 }
 
@@ -921,13 +921,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
                 if (pwm_cmd_right >= 0) {
                     // 正轉
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_RESET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_RESET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, (uint32_t)pwm_cmd_right);
                 } else {
                     // 反轉
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_SET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_SET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, (uint32_t)(-pwm_cmd_right));
                 }
     }
