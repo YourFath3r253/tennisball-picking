@@ -10762,7 +10762,7 @@ int main(void)
  8006d8a:	f7f9 fd8f 	bl	80008ac <siscanf>
  8006d8e:	4603      	mov	r3, r0
  8006d90:	2b03      	cmp	r3, #3
- 8006d92:	f040 8193 	bne.w	80070bc <main+0x5b4>
+ 8006d92:	f040 8194 	bne.w	80070be <main+0x5b6>
     	                                {
     	                                    tx_len = sprintf(tx_msg, "ACK:COURT,%s,%s,%.2f\n", court_state, court_dir, court_outside_ratio);
  8006d96:	4b38      	ldr	r3, [pc, #224]	; (8006e78 <main+0x370>)
@@ -10793,7 +10793,7 @@ int main(void)
  8006dcc:	f7f9 fe1c 	bl	8000a08 <strcmp>
  8006dd0:	4603      	mov	r3, r0
  8006dd2:	2b00      	cmp	r3, #0
- 8006dd4:	f000 8172 	beq.w	80070bc <main+0x5b4>
+ 8006dd4:	f000 8173 	beq.w	80070be <main+0x5b6>
     	                                    {
     	                                        blind_dash_active = 0;
  8006dd8:	2300      	movs	r3, #0
@@ -10820,7 +10820,7 @@ int main(void)
  8006dfe:	d104      	bne.n	8006e0a <main+0x302>
  8006e00:	ed9f 0a23 	vldr	s0, [pc, #140]	; 8006e90 <main+0x388>
  8006e04:	f000 fee6 	bl	8007bd4 <Chassis_SpinRight>
- 8006e08:	e158      	b.n	80070bc <main+0x5b4>
+ 8006e08:	e159      	b.n	80070be <main+0x5b6>
     	                                            else if (strcmp(court_dir, "RIGHT") == 0) Chassis_SpinLeft(65.0f);  // 右出界 -> 強力左轉
  8006e0a:	4922      	ldr	r1, [pc, #136]	; (8006e94 <main+0x38c>)
  8006e0c:	4819      	ldr	r0, [pc, #100]	; (8006e74 <main+0x36c>)
@@ -10830,11 +10830,11 @@ int main(void)
  8006e16:	d104      	bne.n	8006e22 <main+0x31a>
  8006e18:	ed9f 0a1d 	vldr	s0, [pc, #116]	; 8006e90 <main+0x388>
  8006e1c:	f000 feb0 	bl	8007b80 <Chassis_SpinLeft>
- 8006e20:	e14c      	b.n	80070bc <main+0x5b4>
+ 8006e20:	e14d      	b.n	80070be <main+0x5b6>
     	                                            else                                      Chassis_SpinRight(75.0f); // 正前出界 -> 大力轉身
  8006e22:	ed9f 0a1d 	vldr	s0, [pc, #116]	; 8006e98 <main+0x390>
  8006e26:	f000 fed5 	bl	8007bd4 <Chassis_SpinRight>
- 8006e2a:	e147      	b.n	80070bc <main+0x5b4>
+ 8006e2a:	e148      	b.n	80070be <main+0x5b6>
  8006e2c:	200003d0 	.word	0x200003d0
  8006e30:	20000388 	.word	0x20000388
  8006e34:	40020800 	.word	0x40020800
@@ -10865,37 +10865,37 @@ int main(void)
  8006e98:	42960000 	.word	0x42960000
     	                                        }
     	                                        else if (strcmp(court_state, "EDGE") == 0)
- 8006e9c:	498d      	ldr	r1, [pc, #564]	; (80070d4 <main+0x5cc>)
- 8006e9e:	488e      	ldr	r0, [pc, #568]	; (80070d8 <main+0x5d0>)
+ 8006e9c:	498e      	ldr	r1, [pc, #568]	; (80070d8 <main+0x5d0>)
+ 8006e9e:	488f      	ldr	r0, [pc, #572]	; (80070dc <main+0x5d4>)
  8006ea0:	f7f9 fdb2 	bl	8000a08 <strcmp>
  8006ea4:	4603      	mov	r3, r0
  8006ea6:	2b00      	cmp	r3, #0
- 8006ea8:	f040 8108 	bne.w	80070bc <main+0x5b4>
+ 8006ea8:	f040 8109 	bne.w	80070be <main+0x5b6>
     	                                        {
     	                                            if (strcmp(court_dir, "LEFT") == 0)       Chassis_SpinRight(45.0f); // 左邊界 -> 溫和右轉
- 8006eac:	498b      	ldr	r1, [pc, #556]	; (80070dc <main+0x5d4>)
- 8006eae:	488c      	ldr	r0, [pc, #560]	; (80070e0 <main+0x5d8>)
+ 8006eac:	498c      	ldr	r1, [pc, #560]	; (80070e0 <main+0x5d8>)
+ 8006eae:	488d      	ldr	r0, [pc, #564]	; (80070e4 <main+0x5dc>)
  8006eb0:	f7f9 fdaa 	bl	8000a08 <strcmp>
  8006eb4:	4603      	mov	r3, r0
  8006eb6:	2b00      	cmp	r3, #0
  8006eb8:	d104      	bne.n	8006ec4 <main+0x3bc>
- 8006eba:	ed9f 0a8a 	vldr	s0, [pc, #552]	; 80070e4 <main+0x5dc>
+ 8006eba:	ed9f 0a8b 	vldr	s0, [pc, #556]	; 80070e8 <main+0x5e0>
  8006ebe:	f000 fe89 	bl	8007bd4 <Chassis_SpinRight>
- 8006ec2:	e0fb      	b.n	80070bc <main+0x5b4>
+ 8006ec2:	e0fc      	b.n	80070be <main+0x5b6>
     	                                            else if (strcmp(court_dir, "RIGHT") == 0) Chassis_SpinLeft(45.0f);  // 右邊界 -> 溫和左轉
- 8006ec4:	4988      	ldr	r1, [pc, #544]	; (80070e8 <main+0x5e0>)
- 8006ec6:	4886      	ldr	r0, [pc, #536]	; (80070e0 <main+0x5d8>)
+ 8006ec4:	4989      	ldr	r1, [pc, #548]	; (80070ec <main+0x5e4>)
+ 8006ec6:	4887      	ldr	r0, [pc, #540]	; (80070e4 <main+0x5dc>)
  8006ec8:	f7f9 fd9e 	bl	8000a08 <strcmp>
  8006ecc:	4603      	mov	r3, r0
  8006ece:	2b00      	cmp	r3, #0
  8006ed0:	d104      	bne.n	8006edc <main+0x3d4>
- 8006ed2:	ed9f 0a84 	vldr	s0, [pc, #528]	; 80070e4 <main+0x5dc>
+ 8006ed2:	ed9f 0a85 	vldr	s0, [pc, #532]	; 80070e8 <main+0x5e0>
  8006ed6:	f000 fe53 	bl	8007b80 <Chassis_SpinLeft>
- 8006eda:	e0ef      	b.n	80070bc <main+0x5b4>
+ 8006eda:	e0f0      	b.n	80070be <main+0x5b6>
     	                                            else                                      Chassis_SpinRight(55.0f); // 正前邊界 -> 溫和轉身
- 8006edc:	ed9f 0a83 	vldr	s0, [pc, #524]	; 80070ec <main+0x5e4>
+ 8006edc:	ed9f 0a84 	vldr	s0, [pc, #528]	; 80070f0 <main+0x5e8>
  8006ee0:	f000 fe78 	bl	8007bd4 <Chassis_SpinRight>
- 8006ee4:	e0ea      	b.n	80070bc <main+0x5b4>
+ 8006ee4:	e0eb      	b.n	80070be <main+0x5b6>
     	                                }
     	                            }
     	                            // ==========================================================
@@ -10903,34 +10903,34 @@ int main(void)
     	                            // ==========================================================
     	                            else if (strncmp((char *)rx_buffer, "BALL,", 5) == 0)
  8006ee6:	2205      	movs	r2, #5
- 8006ee8:	4981      	ldr	r1, [pc, #516]	; (80070f0 <main+0x5e8>)
- 8006eea:	4882      	ldr	r0, [pc, #520]	; (80070f4 <main+0x5ec>)
+ 8006ee8:	4982      	ldr	r1, [pc, #520]	; (80070f4 <main+0x5ec>)
+ 8006eea:	4883      	ldr	r0, [pc, #524]	; (80070f8 <main+0x5f0>)
  8006eec:	f7f9 ff76 	bl	8000ddc <strncmp>
  8006ef0:	4603      	mov	r3, r0
  8006ef2:	2b00      	cmp	r3, #0
- 8006ef4:	f040 80af 	bne.w	8007056 <main+0x54e>
+ 8006ef4:	f040 80b0 	bne.w	8007058 <main+0x550>
     	                            {
     	                                if (sscanf((char *)rx_buffer, "BALL,%f,%f", &ball_distance_cm, &ball_angle_deg) == 2)
- 8006ef8:	4b7f      	ldr	r3, [pc, #508]	; (80070f8 <main+0x5f0>)
- 8006efa:	4a80      	ldr	r2, [pc, #512]	; (80070fc <main+0x5f4>)
- 8006efc:	4980      	ldr	r1, [pc, #512]	; (8007100 <main+0x5f8>)
- 8006efe:	487d      	ldr	r0, [pc, #500]	; (80070f4 <main+0x5ec>)
+ 8006ef8:	4b80      	ldr	r3, [pc, #512]	; (80070fc <main+0x5f4>)
+ 8006efa:	4a81      	ldr	r2, [pc, #516]	; (8007100 <main+0x5f8>)
+ 8006efc:	4981      	ldr	r1, [pc, #516]	; (8007104 <main+0x5fc>)
+ 8006efe:	487e      	ldr	r0, [pc, #504]	; (80070f8 <main+0x5f0>)
  8006f00:	f7f9 fcd4 	bl	80008ac <siscanf>
  8006f04:	4603      	mov	r3, r0
  8006f06:	2b02      	cmp	r3, #2
- 8006f08:	f040 809e 	bne.w	8007048 <main+0x540>
+ 8006f08:	f040 809f 	bne.w	800704a <main+0x542>
     	                                {
     	                                    was_seeing_ball = 1;
  8006f0c:	2301      	movs	r3, #1
  8006f0e:	f887 308f 	strb.w	r3, [r7, #143]	; 0x8f
     	                                    tx_len = sprintf(tx_msg, "ACK:BALL,%.1f,%.1f\n", ball_distance_cm, ball_angle_deg);
- 8006f12:	4b7a      	ldr	r3, [pc, #488]	; (80070fc <main+0x5f4>)
+ 8006f12:	4b7b      	ldr	r3, [pc, #492]	; (8007100 <main+0x5f8>)
  8006f14:	681b      	ldr	r3, [r3, #0]
  8006f16:	4618      	mov	r0, r3
  8006f18:	f7ff f8c6 	bl	80060a8 <__aeabi_f2d>
  8006f1c:	4604      	mov	r4, r0
  8006f1e:	460d      	mov	r5, r1
- 8006f20:	4b75      	ldr	r3, [pc, #468]	; (80070f8 <main+0x5f0>)
+ 8006f20:	4b76      	ldr	r3, [pc, #472]	; (80070fc <main+0x5f4>)
  8006f22:	681b      	ldr	r3, [r3, #0]
  8006f24:	4618      	mov	r0, r3
  8006f26:	f7ff f8bf 	bl	80060a8 <__aeabi_f2d>
@@ -10940,7 +10940,7 @@ int main(void)
  8006f30:	e9cd 2300 	strd	r2, r3, [sp]
  8006f34:	4622      	mov	r2, r4
  8006f36:	462b      	mov	r3, r5
- 8006f38:	4972      	ldr	r1, [pc, #456]	; (8007104 <main+0x5fc>)
+ 8006f38:	4973      	ldr	r1, [pc, #460]	; (8007108 <main+0x600>)
  8006f3a:	f7f9 fc97 	bl	800086c <siprintf>
  8006f3e:	f8c7 0088 	str.w	r0, [r7, #136]	; 0x88
     	                                    HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
@@ -10948,22 +10948,22 @@ int main(void)
  8006f46:	b29a      	uxth	r2, r3
  8006f48:	1d39      	adds	r1, r7, #4
  8006f4a:	2332      	movs	r3, #50	; 0x32
- 8006f4c:	486e      	ldr	r0, [pc, #440]	; (8007108 <main+0x600>)
+ 8006f4c:	486f      	ldr	r0, [pc, #444]	; (800710c <main+0x604>)
  8006f4e:	f003 fd99 	bl	800aa84 <HAL_UART_Transmit>
 
     	                                    // [Sean 2026-09-20 STEP RESPONSE測試版] 車體永遠不前進，只做原地轉向，
     	                                    // 避免重演昨天B同學誤燒錄程式導致暴衝撞牆掉零件的意外。
     	                                    // 只有在場地安全 (SAFE) 時才允許轉向
     	                                    if (strcmp(court_state, "SAFE") == 0)
- 8006f52:	496e      	ldr	r1, [pc, #440]	; (800710c <main+0x604>)
- 8006f54:	4860      	ldr	r0, [pc, #384]	; (80070d8 <main+0x5d0>)
+ 8006f52:	496f      	ldr	r1, [pc, #444]	; (8007110 <main+0x608>)
+ 8006f54:	4861      	ldr	r0, [pc, #388]	; (80070dc <main+0x5d4>)
  8006f56:	f7f9 fd57 	bl	8000a08 <strcmp>
  8006f5a:	4603      	mov	r3, r0
  8006f5c:	2b00      	cmp	r3, #0
- 8006f5e:	f040 80ad 	bne.w	80070bc <main+0x5b4>
+ 8006f5e:	f040 80ae 	bne.w	80070be <main+0x5b6>
     	                                    {
     	                                        if (ball_distance_cm < 30.0f)
- 8006f62:	4b66      	ldr	r3, [pc, #408]	; (80070fc <main+0x5f4>)
+ 8006f62:	4b67      	ldr	r3, [pc, #412]	; (8007100 <main+0x5f8>)
  8006f64:	edd3 7a00 	vldr	s15, [r3]
  8006f68:	eeb3 7a0e 	vmov.f32	s14, #62	; 0x41f00000  30.0
  8006f6c:	eef4 7ac7 	vcmpe.f32	s15, s14
@@ -10972,25 +10972,25 @@ int main(void)
     	                                        {
     	                                            Chassis_Stop(); // 太近：直接停止，不前進、不盲衝
  8006f76:	f000 fe57 	bl	8007c28 <Chassis_Stop>
- 8006f7a:	e09f      	b.n	80070bc <main+0x5b4>
+ 8006f7a:	e0a0      	b.n	80070be <main+0x5b6>
     	                                        }
     	                                        else
     	                                        {
     	                                            static uint32_t last_turn_time = 0;
     	                                            float turn_threshold = (ball_distance_cm > 40.0f) ? 6.0f : 4.0f;
- 8006f7c:	4b5f      	ldr	r3, [pc, #380]	; (80070fc <main+0x5f4>)
+ 8006f7c:	4b60      	ldr	r3, [pc, #384]	; (8007100 <main+0x5f8>)
  8006f7e:	edd3 7a00 	vldr	s15, [r3]
- 8006f82:	ed9f 7a63 	vldr	s14, [pc, #396]	; 8007110 <main+0x608>
+ 8006f82:	ed9f 7a64 	vldr	s14, [pc, #400]	; 8007114 <main+0x60c>
  8006f86:	eef4 7ac7 	vcmpe.f32	s15, s14
  8006f8a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
  8006f8e:	dd01      	ble.n	8006f94 <main+0x48c>
- 8006f90:	4b60      	ldr	r3, [pc, #384]	; (8007114 <main+0x60c>)
+ 8006f90:	4b61      	ldr	r3, [pc, #388]	; (8007118 <main+0x610>)
  8006f92:	e001      	b.n	8006f98 <main+0x490>
  8006f94:	f04f 4381 	mov.w	r3, #1082130432	; 0x40800000
  8006f98:	f8c7 3084 	str.w	r3, [r7, #132]	; 0x84
 
     	                                            if (ball_angle_deg > turn_threshold || ball_angle_deg < -turn_threshold)
- 8006f9c:	4b56      	ldr	r3, [pc, #344]	; (80070f8 <main+0x5f0>)
+ 8006f9c:	4b57      	ldr	r3, [pc, #348]	; (80070fc <main+0x5f4>)
  8006f9e:	edd3 7a00 	vldr	s15, [r3]
  8006fa2:	ed97 7a21 	vldr	s14, [r7, #132]	; 0x84
  8006fa6:	eeb4 7ae7 	vcmpe.f32	s14, s15
@@ -10998,186 +10998,186 @@ int main(void)
  8006fae:	d40b      	bmi.n	8006fc8 <main+0x4c0>
  8006fb0:	edd7 7a21 	vldr	s15, [r7, #132]	; 0x84
  8006fb4:	eeb1 7a67 	vneg.f32	s14, s15
- 8006fb8:	4b4f      	ldr	r3, [pc, #316]	; (80070f8 <main+0x5f0>)
+ 8006fb8:	4b50      	ldr	r3, [pc, #320]	; (80070fc <main+0x5f4>)
  8006fba:	edd3 7a00 	vldr	s15, [r3]
  8006fbe:	eeb4 7ae7 	vcmpe.f32	s14, s15
  8006fc2:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 8006fc6:	dd3c      	ble.n	8007042 <main+0x53a>
+ 8006fc6:	dd3d      	ble.n	8007044 <main+0x53c>
     	                                            {
     	                                                if ((HAL_GetTick() - last_turn_time) >= 1000)
  8006fc8:	f001 fa1c 	bl	8008404 <HAL_GetTick>
  8006fcc:	4602      	mov	r2, r0
- 8006fce:	4b52      	ldr	r3, [pc, #328]	; (8007118 <main+0x610>)
+ 8006fce:	4b53      	ldr	r3, [pc, #332]	; (800711c <main+0x614>)
  8006fd0:	681b      	ldr	r3, [r3, #0]
  8006fd2:	1ad3      	subs	r3, r2, r3
  8006fd4:	f5b3 7f7a 	cmp.w	r3, #1000	; 0x3e8
- 8006fd8:	d330      	bcc.n	800703c <main+0x534>
+ 8006fd8:	d331      	bcc.n	800703e <main+0x536>
     	                                                {
-    	                                                    float spin_rpm = 40.0f;
- 8006fda:	4b50      	ldr	r3, [pc, #320]	; (800711c <main+0x614>)
- 8006fdc:	f8c7 3094 	str.w	r3, [r7, #148]	; 0x94
+    	                                                    float spin_rpm = 4.0f; // [Sean 2026-09-20] 安全降速，原本40.0f，除以10
+ 8006fda:	f04f 4381 	mov.w	r3, #1082130432	; 0x40800000
+ 8006fde:	f8c7 3094 	str.w	r3, [r7, #148]	; 0x94
     	                                                    if (ball_angle_deg > 14.0f || ball_angle_deg < -14.0f) {
- 8006fe0:	4b45      	ldr	r3, [pc, #276]	; (80070f8 <main+0x5f0>)
- 8006fe2:	edd3 7a00 	vldr	s15, [r3]
- 8006fe6:	eeb2 7a0c 	vmov.f32	s14, #44	; 0x41600000  14.0
- 8006fea:	eef4 7ac7 	vcmpe.f32	s15, s14
- 8006fee:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 8006ff2:	dc09      	bgt.n	8007008 <main+0x500>
- 8006ff4:	4b40      	ldr	r3, [pc, #256]	; (80070f8 <main+0x5f0>)
- 8006ff6:	edd3 7a00 	vldr	s15, [r3]
- 8006ffa:	eeba 7a0c 	vmov.f32	s14, #172	; 0xc1600000 -14.0
- 8006ffe:	eef4 7ac7 	vcmpe.f32	s15, s14
- 8007002:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 8007006:	d502      	bpl.n	800700e <main+0x506>
-    	                                                        spin_rpm = 55.0f;
- 8007008:	4b45      	ldr	r3, [pc, #276]	; (8007120 <main+0x618>)
- 800700a:	f8c7 3094 	str.w	r3, [r7, #148]	; 0x94
+ 8006fe2:	4b46      	ldr	r3, [pc, #280]	; (80070fc <main+0x5f4>)
+ 8006fe4:	edd3 7a00 	vldr	s15, [r3]
+ 8006fe8:	eeb2 7a0c 	vmov.f32	s14, #44	; 0x41600000  14.0
+ 8006fec:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8006ff0:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8006ff4:	dc09      	bgt.n	800700a <main+0x502>
+ 8006ff6:	4b41      	ldr	r3, [pc, #260]	; (80070fc <main+0x5f4>)
+ 8006ff8:	edd3 7a00 	vldr	s15, [r3]
+ 8006ffc:	eeba 7a0c 	vmov.f32	s14, #172	; 0xc1600000 -14.0
+ 8007000:	eef4 7ac7 	vcmpe.f32	s15, s14
+ 8007004:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8007008:	d502      	bpl.n	8007010 <main+0x508>
+    	                                                        spin_rpm = 5.5f; // 原本55.0f，除以10
+ 800700a:	4b45      	ldr	r3, [pc, #276]	; (8007120 <main+0x618>)
+ 800700c:	f8c7 3094 	str.w	r3, [r7, #148]	; 0x94
     	                                                    }
     	                                                    if (ball_angle_deg > 0) Chassis_SpinRight(spin_rpm);
- 800700e:	4b3a      	ldr	r3, [pc, #232]	; (80070f8 <main+0x5f0>)
- 8007010:	edd3 7a00 	vldr	s15, [r3]
- 8007014:	eef5 7ac0 	vcmpe.f32	s15, #0.0
- 8007018:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 800701c:	dd04      	ble.n	8007028 <main+0x520>
- 800701e:	ed97 0a25 	vldr	s0, [r7, #148]	; 0x94
- 8007022:	f000 fdd7 	bl	8007bd4 <Chassis_SpinRight>
- 8007026:	e003      	b.n	8007030 <main+0x528>
+ 8007010:	4b3a      	ldr	r3, [pc, #232]	; (80070fc <main+0x5f4>)
+ 8007012:	edd3 7a00 	vldr	s15, [r3]
+ 8007016:	eef5 7ac0 	vcmpe.f32	s15, #0.0
+ 800701a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 800701e:	dd04      	ble.n	800702a <main+0x522>
+ 8007020:	ed97 0a25 	vldr	s0, [r7, #148]	; 0x94
+ 8007024:	f000 fdd6 	bl	8007bd4 <Chassis_SpinRight>
+ 8007028:	e003      	b.n	8007032 <main+0x52a>
     	                                                    else                    Chassis_SpinLeft(spin_rpm);
- 8007028:	ed97 0a25 	vldr	s0, [r7, #148]	; 0x94
- 800702c:	f000 fda8 	bl	8007b80 <Chassis_SpinLeft>
+ 800702a:	ed97 0a25 	vldr	s0, [r7, #148]	; 0x94
+ 800702e:	f000 fda7 	bl	8007b80 <Chassis_SpinLeft>
     	                                                    last_turn_time = HAL_GetTick();
- 8007030:	f001 f9e8 	bl	8008404 <HAL_GetTick>
- 8007034:	4603      	mov	r3, r0
- 8007036:	4a38      	ldr	r2, [pc, #224]	; (8007118 <main+0x610>)
- 8007038:	6013      	str	r3, [r2, #0]
+ 8007032:	f001 f9e7 	bl	8008404 <HAL_GetTick>
+ 8007036:	4603      	mov	r3, r0
+ 8007038:	4a38      	ldr	r2, [pc, #224]	; (800711c <main+0x614>)
+ 800703a:	6013      	str	r3, [r2, #0]
     	                                                if ((HAL_GetTick() - last_turn_time) >= 1000)
- 800703a:	e03f      	b.n	80070bc <main+0x5b4>
+ 800703c:	e03f      	b.n	80070be <main+0x5b6>
     	                                                }
     	                                                else
     	                                                {
     	                                                    Chassis_Stop();
- 800703c:	f000 fdf4 	bl	8007c28 <Chassis_Stop>
+ 800703e:	f000 fdf3 	bl	8007c28 <Chassis_Stop>
     	                                                if ((HAL_GetTick() - last_turn_time) >= 1000)
- 8007040:	e03c      	b.n	80070bc <main+0x5b4>
+ 8007042:	e03c      	b.n	80070be <main+0x5b6>
     	                                                }
     	                                            }
     	                                            else
     	                                            {
     	                                                Chassis_Stop(); // 角度已對準：停止，不前進（原本這裡是直行）
- 8007042:	f000 fdf1 	bl	8007c28 <Chassis_Stop>
- 8007046:	e039      	b.n	80070bc <main+0x5b4>
+ 8007044:	f000 fdf0 	bl	8007c28 <Chassis_Stop>
+ 8007048:	e039      	b.n	80070be <main+0x5b6>
     	                                        }
     	                                    } // (結束 SAFE 檢查)
     	                                }
     	                                else
     	                                {
     	                                    HAL_UART_Transmit(&huart2, (uint8_t*)"ERR:SCANF_FAILED\n", 17, 50);
- 8007048:	2332      	movs	r3, #50	; 0x32
- 800704a:	2211      	movs	r2, #17
- 800704c:	4935      	ldr	r1, [pc, #212]	; (8007124 <main+0x61c>)
- 800704e:	482e      	ldr	r0, [pc, #184]	; (8007108 <main+0x600>)
- 8007050:	f003 fd18 	bl	800aa84 <HAL_UART_Transmit>
- 8007054:	e032      	b.n	80070bc <main+0x5b4>
+ 800704a:	2332      	movs	r3, #50	; 0x32
+ 800704c:	2211      	movs	r2, #17
+ 800704e:	4935      	ldr	r1, [pc, #212]	; (8007124 <main+0x61c>)
+ 8007050:	482e      	ldr	r0, [pc, #184]	; (800710c <main+0x604>)
+ 8007052:	f003 fd17 	bl	800aa84 <HAL_UART_Transmit>
+ 8007056:	e032      	b.n	80070be <main+0x5b6>
     	                                }
     	                            }
     	                            // ==========================================================
     	                            // 3️⃣ 處理 NOBALL (跟丟球) 資料
     	                            // ==========================================================
     	                            else if (strncmp((char *)rx_buffer, "NOBALL", 6) == 0 || strncmp((char *)rx_buffer, "BALL_OFF", 8) == 0)
- 8007056:	2206      	movs	r2, #6
- 8007058:	4933      	ldr	r1, [pc, #204]	; (8007128 <main+0x620>)
- 800705a:	4826      	ldr	r0, [pc, #152]	; (80070f4 <main+0x5ec>)
- 800705c:	f7f9 febe 	bl	8000ddc <strncmp>
- 8007060:	4603      	mov	r3, r0
- 8007062:	2b00      	cmp	r3, #0
- 8007064:	d007      	beq.n	8007076 <main+0x56e>
- 8007066:	2208      	movs	r2, #8
- 8007068:	4930      	ldr	r1, [pc, #192]	; (800712c <main+0x624>)
- 800706a:	4822      	ldr	r0, [pc, #136]	; (80070f4 <main+0x5ec>)
- 800706c:	f7f9 feb6 	bl	8000ddc <strncmp>
- 8007070:	4603      	mov	r3, r0
- 8007072:	2b00      	cmp	r3, #0
- 8007074:	d112      	bne.n	800709c <main+0x594>
+ 8007058:	2206      	movs	r2, #6
+ 800705a:	4933      	ldr	r1, [pc, #204]	; (8007128 <main+0x620>)
+ 800705c:	4826      	ldr	r0, [pc, #152]	; (80070f8 <main+0x5f0>)
+ 800705e:	f7f9 febd 	bl	8000ddc <strncmp>
+ 8007062:	4603      	mov	r3, r0
+ 8007064:	2b00      	cmp	r3, #0
+ 8007066:	d007      	beq.n	8007078 <main+0x570>
+ 8007068:	2208      	movs	r2, #8
+ 800706a:	4930      	ldr	r1, [pc, #192]	; (800712c <main+0x624>)
+ 800706c:	4822      	ldr	r0, [pc, #136]	; (80070f8 <main+0x5f0>)
+ 800706e:	f7f9 feb5 	bl	8000ddc <strncmp>
+ 8007072:	4603      	mov	r3, r0
+ 8007074:	2b00      	cmp	r3, #0
+ 8007076:	d112      	bne.n	800709e <main+0x596>
     	                            {
     	                                HAL_UART_Transmit(&huart2, (uint8_t*)"ACK:NOBALL\n", 11, 50);
- 8007076:	2332      	movs	r3, #50	; 0x32
- 8007078:	220b      	movs	r2, #11
- 800707a:	492d      	ldr	r1, [pc, #180]	; (8007130 <main+0x628>)
- 800707c:	4822      	ldr	r0, [pc, #136]	; (8007108 <main+0x600>)
- 800707e:	f003 fd01 	bl	800aa84 <HAL_UART_Transmit>
+ 8007078:	2332      	movs	r3, #50	; 0x32
+ 800707a:	220b      	movs	r2, #11
+ 800707c:	492c      	ldr	r1, [pc, #176]	; (8007130 <main+0x628>)
+ 800707e:	4823      	ldr	r0, [pc, #140]	; (800710c <main+0x604>)
+ 8007080:	f003 fd00 	bl	800aa84 <HAL_UART_Transmit>
 
     	                                // [Sean 2026-09-20 STEP RESPONSE測試版] 看不到球一律靜止
     	                                if (strcmp(court_state, "SAFE") == 0)
- 8007082:	4922      	ldr	r1, [pc, #136]	; (800710c <main+0x604>)
- 8007084:	4814      	ldr	r0, [pc, #80]	; (80070d8 <main+0x5d0>)
- 8007086:	f7f9 fcbf 	bl	8000a08 <strcmp>
- 800708a:	4603      	mov	r3, r0
- 800708c:	2b00      	cmp	r3, #0
- 800708e:	d115      	bne.n	80070bc <main+0x5b4>
+ 8007084:	4922      	ldr	r1, [pc, #136]	; (8007110 <main+0x608>)
+ 8007086:	4815      	ldr	r0, [pc, #84]	; (80070dc <main+0x5d4>)
+ 8007088:	f7f9 fcbe 	bl	8000a08 <strcmp>
+ 800708c:	4603      	mov	r3, r0
+ 800708e:	2b00      	cmp	r3, #0
+ 8007090:	d115      	bne.n	80070be <main+0x5b6>
     	                                {
     	                                    was_seeing_ball = 0;
- 8007090:	2300      	movs	r3, #0
- 8007092:	f887 308f 	strb.w	r3, [r7, #143]	; 0x8f
+ 8007092:	2300      	movs	r3, #0
+ 8007094:	f887 308f 	strb.w	r3, [r7, #143]	; 0x8f
     	                                    Chassis_Stop();
- 8007096:	f000 fdc7 	bl	8007c28 <Chassis_Stop>
+ 8007098:	f000 fdc6 	bl	8007c28 <Chassis_Stop>
     	                                if (strcmp(court_state, "SAFE") == 0)
- 800709a:	e00f      	b.n	80070bc <main+0x5b4>
+ 800709c:	e00f      	b.n	80070be <main+0x5b6>
     	                                } // (結束 SAFE 檢查)
     	                            }
     	                            else
     	                            {
     	                                tx_len = sprintf(tx_msg, "ERR:UNKNOWN,%s", (char*)rx_buffer);
- 800709c:	1d3b      	adds	r3, r7, #4
- 800709e:	4a15      	ldr	r2, [pc, #84]	; (80070f4 <main+0x5ec>)
- 80070a0:	4924      	ldr	r1, [pc, #144]	; (8007134 <main+0x62c>)
- 80070a2:	4618      	mov	r0, r3
- 80070a4:	f7f9 fbe2 	bl	800086c <siprintf>
- 80070a8:	f8c7 0088 	str.w	r0, [r7, #136]	; 0x88
+ 800709e:	1d3b      	adds	r3, r7, #4
+ 80070a0:	4a15      	ldr	r2, [pc, #84]	; (80070f8 <main+0x5f0>)
+ 80070a2:	4924      	ldr	r1, [pc, #144]	; (8007134 <main+0x62c>)
+ 80070a4:	4618      	mov	r0, r3
+ 80070a6:	f7f9 fbe1 	bl	800086c <siprintf>
+ 80070aa:	f8c7 0088 	str.w	r0, [r7, #136]	; 0x88
     	                                HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
- 80070ac:	f8d7 3088 	ldr.w	r3, [r7, #136]	; 0x88
- 80070b0:	b29a      	uxth	r2, r3
- 80070b2:	1d39      	adds	r1, r7, #4
- 80070b4:	2332      	movs	r3, #50	; 0x32
- 80070b6:	4814      	ldr	r0, [pc, #80]	; (8007108 <main+0x600>)
- 80070b8:	f003 fce4 	bl	800aa84 <HAL_UART_Transmit>
+ 80070ae:	f8d7 3088 	ldr.w	r3, [r7, #136]	; 0x88
+ 80070b2:	b29a      	uxth	r2, r3
+ 80070b4:	1d39      	adds	r1, r7, #4
+ 80070b6:	2332      	movs	r3, #50	; 0x32
+ 80070b8:	4814      	ldr	r0, [pc, #80]	; (800710c <main+0x604>)
+ 80070ba:	f003 fce3 	bl	800aa84 <HAL_UART_Transmit>
     	                            }
 
     	                            // 清空快取
     	                            memset(rx_buffer, 0, sizeof(rx_buffer));
- 80070bc:	2264      	movs	r2, #100	; 0x64
- 80070be:	2100      	movs	r1, #0
- 80070c0:	480c      	ldr	r0, [pc, #48]	; (80070f4 <main+0x5ec>)
- 80070c2:	f7f9 f90b 	bl	80002dc <memset>
+ 80070be:	2264      	movs	r2, #100	; 0x64
+ 80070c0:	2100      	movs	r1, #0
+ 80070c2:	480d      	ldr	r0, [pc, #52]	; (80070f8 <main+0x5f0>)
+ 80070c4:	f7f9 f90a 	bl	80002dc <memset>
     	                            rx_index = 0;
- 80070c6:	4b1c      	ldr	r3, [pc, #112]	; (8007138 <main+0x630>)
- 80070c8:	2200      	movs	r2, #0
- 80070ca:	701a      	strb	r2, [r3, #0]
+ 80070c8:	4b1b      	ldr	r3, [pc, #108]	; (8007138 <main+0x630>)
+ 80070ca:	2200      	movs	r2, #0
+ 80070cc:	701a      	strb	r2, [r3, #0]
     	                            command_ready = 0;
- 80070cc:	4b1b      	ldr	r3, [pc, #108]	; (800713c <main+0x634>)
- 80070ce:	2200      	movs	r2, #0
- 80070d0:	701a      	strb	r2, [r3, #0]
+ 80070ce:	4b1b      	ldr	r3, [pc, #108]	; (800713c <main+0x634>)
+ 80070d0:	2200      	movs	r2, #0
+ 80070d2:	701a      	strb	r2, [r3, #0]
     	        if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
- 80070d2:	e5b8      	b.n	8006c46 <main+0x13e>
- 80070d4:	0800bb2c 	.word	0x0800bb2c
- 80070d8:	200001d4 	.word	0x200001d4
- 80070dc:	0800bb1c 	.word	0x0800bb1c
- 80070e0:	200001e0 	.word	0x200001e0
- 80070e4:	42340000 	.word	0x42340000
- 80070e8:	0800bb24 	.word	0x0800bb24
- 80070ec:	425c0000 	.word	0x425c0000
- 80070f0:	0800bb34 	.word	0x0800bb34
- 80070f4:	200003d4 	.word	0x200003d4
- 80070f8:	20000440 	.word	0x20000440
- 80070fc:	2000043c 	.word	0x2000043c
- 8007100:	0800bb3c 	.word	0x0800bb3c
- 8007104:	0800bb48 	.word	0x0800bb48
- 8007108:	20000388 	.word	0x20000388
- 800710c:	0800bb10 	.word	0x0800bb10
- 8007110:	42200000 	.word	0x42200000
- 8007114:	40c00000 	.word	0x40c00000
- 8007118:	200004b4 	.word	0x200004b4
- 800711c:	42200000 	.word	0x42200000
- 8007120:	425c0000 	.word	0x425c0000
+ 80070d4:	e5b7      	b.n	8006c46 <main+0x13e>
+ 80070d6:	bf00      	nop
+ 80070d8:	0800bb2c 	.word	0x0800bb2c
+ 80070dc:	200001d4 	.word	0x200001d4
+ 80070e0:	0800bb1c 	.word	0x0800bb1c
+ 80070e4:	200001e0 	.word	0x200001e0
+ 80070e8:	42340000 	.word	0x42340000
+ 80070ec:	0800bb24 	.word	0x0800bb24
+ 80070f0:	425c0000 	.word	0x425c0000
+ 80070f4:	0800bb34 	.word	0x0800bb34
+ 80070f8:	200003d4 	.word	0x200003d4
+ 80070fc:	20000440 	.word	0x20000440
+ 8007100:	2000043c 	.word	0x2000043c
+ 8007104:	0800bb3c 	.word	0x0800bb3c
+ 8007108:	0800bb48 	.word	0x0800bb48
+ 800710c:	20000388 	.word	0x20000388
+ 8007110:	0800bb10 	.word	0x0800bb10
+ 8007114:	42200000 	.word	0x42200000
+ 8007118:	40c00000 	.word	0x40c00000
+ 800711c:	200004b4 	.word	0x200004b4
+ 8007120:	40b00000 	.word	0x40b00000
  8007124:	0800bb5c 	.word	0x0800bb5c
  8007128:	0800bb70 	.word	0x0800bb70
  800712c:	0800bb78 	.word	0x0800bb78

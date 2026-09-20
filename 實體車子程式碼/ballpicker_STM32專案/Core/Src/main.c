@@ -340,9 +340,9 @@ int main(void)
     	                                            {
     	                                                if ((HAL_GetTick() - last_turn_time) >= 1000)
     	                                                {
-    	                                                    float spin_rpm = 40.0f;
+    	                                                    float spin_rpm = 4.0f; // [Sean 2026-09-20] 安全降速，原本40.0f，除以10
     	                                                    if (ball_angle_deg > 14.0f || ball_angle_deg < -14.0f) {
-    	                                                        spin_rpm = 55.0f;
+    	                                                        spin_rpm = 5.5f; // 原本55.0f，除以10
     	                                                    }
     	                                                    if (ball_angle_deg > 0) Chassis_SpinRight(spin_rpm);
     	                                                    else                    Chassis_SpinLeft(spin_rpm);
