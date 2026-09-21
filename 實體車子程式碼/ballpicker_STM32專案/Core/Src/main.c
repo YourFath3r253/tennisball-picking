@@ -97,7 +97,7 @@ const float WHEEL_TRACK  = 0.243f;  // 左右輪心間距 250mm (0.25公尺)
 
 // [Sean 2026-09-21] 連續P控制轉向參數：第一次設定，還沒實機驗證過，需要調整
 // error = 0 - angle；y = Kp*error（=left_rpm-right_rpm）；左=y/2、右=-y/2
-const float STEER_KP = 0.3f;          // rpm / 度 [Sean 2026-09-21] 1.5震盪，降為1/5測試
+const float STEER_KP = 0.6f;          // rpm / 度 [Sean 2026-09-21] 0.3已驗證乾淨收斂(run13/14平均7.6s,無overshoot)，加倍測試找overshoot邊界
 const float STEER_WHEEL_MAX = 45.0f;  // 單輪rpm飽和上限，比今天驗證過安全的40rpm高一點
 
 // 💡 里程計核心：記錄車體當前旋轉的總角度 (度數)
