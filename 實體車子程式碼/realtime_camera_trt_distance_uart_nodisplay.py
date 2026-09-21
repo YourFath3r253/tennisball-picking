@@ -55,6 +55,8 @@ TEST_NAME = os.environ.get("TEST_NAME", "distance_512x384_uart")
 CSV_PATH = TEST_NAME + ".csv"
 SAVE_LAST_IMAGE = TEST_NAME + ".jpg"
 SAVE_VIDEO = TEST_NAME + ".mp4"
+# [Sean 2026-09-20] STM32每50ms送一次的實際/目標輪子轉速debug telemetry
+RPM_CSV_PATH = TEST_NAME + "_rpm.csv"
 
 # 按下 s 時，儲存尚未畫框的相機原始畫面
 FEEDBACK_DIR = "dataset_feedback"
@@ -313,6 +315,19 @@ def send_command(ser, command):
         print("STM32 -> no response")
 
 
+def drain_rpm_telemetry(ser, rpm_writer, t0):
+    """[Sean 2026-09-20] 把STM32每50ms主動送來的RPM,...telemetry行全部讀出來寫進CSV。
+    每個frame呼叫一次，讀光目前緩衝區裡累積的所有行，避免累積延遲。"""
+    while ser.in_waiting > 0:
+        line = ser.readline().decode("utf-8", errors="replace").strip()
+        if not line.startswith("RPM,"):
+            continue
+        parts = line.split(",")
+        if len(parts) != 6:
+            continue
+        rpm_writer.writerow([time.time() - t0] + parts[1:])
+
+
 
 def court_patch_feature(patch):
     """Feature vector used by the trained V6 court model."""
@@ -543,6 +558,7 @@ def main():
     cap = None
     video_writer = None
     csv_file = None
+    rpm_csv_file = None
 
     try:
         ser = open_uart()
@@ -629,6 +645,17 @@ def main():
             "motor_on",
         ])
 
+        rpm_csv_file = open(RPM_CSV_PATH, "w", newline="")
+        rpm_writer = csv.writer(rpm_csv_file)
+        rpm_writer.writerow([
+            "jetson_time_s",
+            "stm32_ms",
+            "target_left_rpm",
+            "actual_left_rpm",
+            "target_right_rpm",
+            "actual_right_rpm",
+        ])
+
         total_t0 = time.time()
 
         while True:
@@ -642,6 +669,8 @@ def main():
 
             frame_count += 1
             t_now = time.time()
+
+            drain_rpm_telemetry(ser, rpm_writer, total_t0)
 
             # ---------------------------------------------------------
             # Court V6 boundary detection on original 640x480 frame
@@ -855,6 +884,9 @@ def main():
         if csv_file is not None:
             csv_file.close()
 
+        if rpm_csv_file is not None:
+            rpm_csv_file.close()
+
         if "last_output_frame" in locals() and last_output_frame is not None:
             cv2.imwrite(SAVE_LAST_IMAGE, last_output_frame)
             print("Saved last image:", SAVE_LAST_IMAGE)
@@ -876,6 +908,7 @@ def main():
                 )
 
             print("CSV saved:", CSV_PATH)
+            print("RPM CSV saved:", RPM_CSV_PATH)
             print("Video saved:", SAVE_VIDEO)
 
         if ser is not None and ser.is_open:

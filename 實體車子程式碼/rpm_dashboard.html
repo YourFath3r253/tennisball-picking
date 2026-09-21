@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RPM Live</title>
+<style>
+  body {
+    background: #0b0e12;
+    color: #dfe6ee;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    margin: 0;
+    padding: 16px;
+  }
+  .panel {
+    background: #12161c;
+    border: 1px solid #262d36;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .panel h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #93a1b0;
+    text-transform: uppercase;
+  }
+  .readout {
+    display: flex;
+    gap: 26px;
+    margin-bottom: 8px;
+  }
+  .readout .item .label { font-size: 11px; color: #6b7684; }
+  .readout .item .value { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .value.target { color: #97a0a8; }
+  .value.actual.left { color: #5b8fff; }
+  .value.actual.right { color: #e2924f; }
+  canvas { display: block; width: 100%; height: 140px; background: #0b0e12; }
+  #status { font-size: 12px; color: #6b7684; margin-bottom: 10px; }
+  #status.stale { color: #ff8a75; }
+</style>
+</head>
+<body>
+  <div id="status">connecting...</div>
+
+  <div class="panel">
+    <h2>Left Wheel</h2>
+    <div class="readout">
+      <div class="item"><div class="label">TARGET</div><div class="value target" id="lt">–</div></div>
+      <div class="item"><div class="label">ACTUAL</div><div class="value actual left" id="la">–</div></div>
+    </div>
+    <canvas id="cLeft"></canvas>
+  </div>
+
+  <div class="panel">
+    <h2>Right Wheel</h2>
+    <div class="readout">
+      <div class="item"><div class="label">TARGET</div><div class="value target" id="rt">–</div></div>
+      <div class="item"><div class="label">ACTUAL</div><div class="value actual right" id="ra">–</div></div>
+    </div>
+    <canvas id="cRight"></canvas>
+  </div>
+
+<script>
+var cLeft = document.getElementById("cLeft");
+var cRight = document.getElementById("cRight");
+var statusEl = document.getElementById("status");
+
+function fitCanvas(c) {
+  var rect = c.getBoundingClientRect();
+  c.width = rect.width * devicePixelRatio;
+  c.height = rect.height * devicePixelRatio;
+}
+window.addEventListener("resize", function () { fitCanvas(cLeft); fitCanvas(cRight); });
+fitCanvas(cLeft);
+fitCanvas(cRight);
+
+function drawStrip(canvas, targetSeries, actualSeries, actualColor) {
+  var ctx = canvas.getContext("2d");
+  var w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  var all = targetSeries.concat(actualSeries);
+  var lo = Math.min.apply(null, all);
+  var hi = Math.max.apply(null, all);
+  if (hi - lo < 10) { var mid = (hi + lo) / 2; lo = mid - 5; hi = mid + 5; }
+  var pad = (hi - lo) * 0.12;
+  lo -= pad; hi += pad;
+
+  function y(v) { return h - ((v - lo) / (hi - lo)) * h; }
+  function x(i, n) { return (i / Math.max(1, n - 1)) * w; }
+
+  // zero line
+  if (lo < 0 && hi > 0) {
+    ctx.strokeStyle = "#262d36";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y(0));
+    ctx.lineTo(w, y(0));
+    ctx.stroke();
+  }
+
+  function drawLine(series, color, dashed) {
+    var n = series.length;
+    if (n < 2) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2 * devicePixelRatio;
+    ctx.setLineDash(dashed ? [6 * devicePixelRatio, 5 * devicePixelRatio] : []);
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) {
+      var px = x(i, n), py = y(series[i]);
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  drawLine(targetSeries, "#97a0a8", true);
+  drawLine(actualSeries, actualColor, false);
+}
+
+var lastT = null;
+var staleCount = 0;
+
+function poll() {
+  fetch("rpm_live.json?_=" + Date.now())
+    .then(function (r) { return r.json(); })
+    .then(function (rows) {
+      if (!rows.length) return;
+      var newest = rows[rows.length - 1];
+
+      if (newest.t === lastT) {
+        staleCount++;
+      } else {
+        staleCount = 0;
+        lastT = newest.t;
+      }
+
+      statusEl.textContent = staleCount > 6
+        ? "no new data for a while (stm32_t last=" + newest.t.toFixed(2) + "s) — check connection"
+        : "live — t=" + newest.t.toFixed(2) + "s, " + rows.length + " pts in window";
+      statusEl.className = staleCount > 6 ? "stale" : "";
+
+      document.getElementById("lt").textContent = newest.target_left.toFixed(2);
+      document.getElementById("la").textContent = newest.actual_left.toFixed(2);
+      document.getElementById("rt").textContent = newest.target_right.toFixed(2);
+      document.getElementById("ra").textContent = newest.actual_right.toFixed(2);
+
+      var tl = rows.map(function (r) { return r.target_left; });
+      var al = rows.map(function (r) { return r.actual_left; });
+      var tr = rows.map(function (r) { return r.target_right; });
+      var ar = rows.map(function (r) { return r.actual_right; });
+
+      drawStrip(cLeft, tl, al, "#5b8fff");
+      drawStrip(cRight, tr, ar, "#e2924f");
+    })
+    .catch(function (e) {
+      statusEl.textContent = "waiting for rpm_live.json... (" + e.message + ")";
+      statusEl.className = "stale";
+    });
+}
+
+setInterval(poll, 120);
+poll();
+</script>
+</body>
+</html>

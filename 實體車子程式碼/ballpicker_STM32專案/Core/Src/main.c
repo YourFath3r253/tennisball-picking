@@ -95,6 +95,11 @@ PID_Controller pid_right;
 const float WHEEL_RADIUS = 0.052f; // 輪胎半徑 35mm (0.035公尺)
 const float WHEEL_TRACK  = 0.243f;  // 左右輪心間距 250mm (0.25公尺)
 
+// [Sean 2026-09-21] 連續P控制轉向參數：第一次設定，還沒實機驗證過，需要調整
+// error = 0 - angle；y = Kp*error（=left_rpm-right_rpm）；左=y/2、右=-y/2
+const float STEER_KP = 0.3f;          // rpm / 度 [Sean 2026-09-21] 1.5震盪，降為1/5測試
+const float STEER_WHEEL_MAX = 45.0f;  // 單輪rpm飽和上限，比今天驗證過安全的40rpm高一點
+
 // 💡 里程計核心：記錄車體當前旋轉的總角度 (度數)
 float chassis_angle_deg = 0.0f;
 /* USER CODE END PV */
@@ -111,6 +116,7 @@ static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 void Chassis_SpinLeft(float turn_rpm);
 void Chassis_SpinRight(float turn_rpm);
+void Chassis_SteerP(float left_rpm, float right_rpm);
 void Chassis_Forward(float forward_rpm);
 void Chassis_Stop(void);
 void Chassis_TurnPrecise(float target_angle_change, float spin_rpm);
@@ -212,12 +218,6 @@ int main(void)
 
   /* Infinite loop */
       /* USER CODE BEGIN WHILE */
-    	uint8_t blind_dash_active = 0;
-        uint32_t blind_dash_start_time = 0;
-        uint8_t was_seeing_ball = 0; // 💡 新增：用來記錄上一刻是否還有看到球
-        // 👇 新增這兩行：用來控制「找球旋轉 1.5 秒」的計時器
-        uint8_t search_spin_active = 0;
-        uint32_t search_spin_start_time = 0;
       while (1)
       {
     	  // 偵測 Nucleo 板子上的藍色按鈕是否被按下 (防卡球排除機制)
@@ -239,23 +239,6 @@ int main(void)
 
     	            HAL_Delay(500);
     	        }
-    	        // ==========================================================
-    	                        // 🚀 【計時器安全區】放在 while 迴圈內，1000毫秒一到絕對強制轉彎！
-    	                        // ==========================================================
-    	                        if (blind_dash_active == 1 && (HAL_GetTick() - blind_dash_start_time > 1000))
-    	                        {
-    	                            blind_dash_active = 0;    // 時間到，解除直行鎖定！
-    	                            // 👇 補上這兩行：盲衝撲空後，無縫接軌啟動 1.5 秒找球計時器！
-    	                                search_spin_active = 1;
-    	                                search_spin_start_time = HAL_GetTick();
-    	                                Chassis_SpinRight(50.0f); // 統一用 50 RPM 旋轉
-    	                        }
-    	                        // 👇 新增：旋轉找球 1.5 秒 (1500ms) 後自動煞車停止
-    	                       if (search_spin_active == 1 && (HAL_GetTick() - search_spin_start_time > 1500))
-    	                        {
-    	                            search_spin_active = 0; // 時間到，解除找球狀態
-    	                            Chassis_Stop();         // 停止馬達
-    	                        }
 
         /* USER CODE END WHILE */
 
@@ -266,118 +249,43 @@ int main(void)
     	                            int tx_len = 0;
 
     	                            // ==========================================================
-    	                            // 檢查是否盲衝超時 (設定 1 秒 = 1000 毫秒)
-    	                            if (blind_dash_active && (HAL_GetTick() - blind_dash_start_time > 1000))
-    	                            {
-    	                                blind_dash_active = 0; // 時間到，解除鎖定！
-    	                                search_spin_active = 1;
-    	                                search_spin_start_time = HAL_GetTick();
-    	                                Chassis_SpinRight(50.0f);
-    	                            }
-
+    	                            // [Sean 2026-09-21] 連續P控制轉向（第一次設定，Kp=1.5，未實機驗證）：
+    	                            //   距離>30cm -> error=0-angle, y=Kp*error, 左=y/2 右=-y/2（各自飽和±45rpm）
+    	                            //   距離<=30cm -> 停止
+    	                            //   每個vision frame都直接設定target_rpm，不清積分（跟舊的離散版本不同）
     	                            // ==========================================================
-    	                            // 1️⃣ 優先處理 COURT (邊界) 資料
-    	                            // ==========================================================
-    	                            if (strncmp((char *)rx_buffer, "COURT,", 6) == 0)
-    	                            {
-    	                                // 清空字串避免殘留
-    	                                memset(court_state, 0, sizeof(court_state));
-    	                                memset(court_dir, 0, sizeof(court_dir));
-
-    	                                if (sscanf((char *)rx_buffer, "COURT,%9[^,],%9[^,],%f", court_state, court_dir, &court_outside_ratio) == 3)
-    	                                {
-    	                                    tx_len = sprintf(tx_msg, "ACK:COURT,%s,%s,%.2f\n", court_state, court_dir, court_outside_ratio);
-    	                                    HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
-
-    	                                    // ⚠️ 只要不是 SAFE，立刻打斷所有衝刺與找球狀態！
-    	                                    if (strcmp(court_state, "SAFE") != 0)
-    	                                    {
-    	                                        blind_dash_active = 0;
-    	                                        search_spin_active = 0;
-
-    	                                        // 🛡️ 邊界迴避邏輯 (OUT 優先級最高，轉向速度較快)
-    	                                        if (strcmp(court_state, "OUT") == 0)
-    	                                        {
-    	                                            if (strcmp(court_dir, "LEFT") == 0)       Chassis_SpinRight(65.0f); // 左出界 -> 強力右轉
-    	                                            else if (strcmp(court_dir, "RIGHT") == 0) Chassis_SpinLeft(65.0f);  // 右出界 -> 強力左轉
-    	                                            else                                      Chassis_SpinRight(75.0f); // 正前出界 -> 大力轉身
-    	                                        }
-    	                                        else if (strcmp(court_state, "EDGE") == 0)
-    	                                        {
-    	                                            if (strcmp(court_dir, "LEFT") == 0)       Chassis_SpinRight(45.0f); // 左邊界 -> 溫和右轉
-    	                                            else if (strcmp(court_dir, "RIGHT") == 0) Chassis_SpinLeft(45.0f);  // 右邊界 -> 溫和左轉
-    	                                            else                                      Chassis_SpinRight(55.0f); // 正前邊界 -> 溫和轉身
-    	                                        }
-    	                                    }
-    	                                }
-    	                            }
-    	                            // ==========================================================
-    	                            // 2️⃣ 處理 BALL (球) 資料
-    	                            // ==========================================================
-    	                            else if (strncmp((char *)rx_buffer, "BALL,", 5) == 0)
+    	                            if (strncmp((char *)rx_buffer, "BALL,", 5) == 0)
     	                            {
     	                                if (sscanf((char *)rx_buffer, "BALL,%f,%f", &ball_distance_cm, &ball_angle_deg) == 2)
     	                                {
-    	                                    was_seeing_ball = 1;
     	                                    tx_len = sprintf(tx_msg, "ACK:BALL,%.1f,%.1f\n", ball_distance_cm, ball_angle_deg);
     	                                    HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
 
-    	                                    // [Sean 2026-09-20 STEP RESPONSE測試版] 車體永遠不前進，只做原地轉向，
-    	                                    // 避免重演昨天B同學誤燒錄程式導致暴衝撞牆掉零件的意外。
-    	                                    // 只有在場地安全 (SAFE) 時才允許轉向
-    	                                    if (strcmp(court_state, "SAFE") == 0)
+    	                                    if (ball_distance_cm > 30.0f)
     	                                    {
-    	                                        if (ball_distance_cm < 30.0f)
-    	                                        {
-    	                                            Chassis_Stop(); // 太近：直接停止，不前進、不盲衝
-    	                                        }
-    	                                        else
-    	                                        {
-    	                                            static uint32_t last_turn_time = 0;
-    	                                            float turn_threshold = (ball_distance_cm > 40.0f) ? 6.0f : 4.0f;
+    	                                        float error = 0.0f - ball_angle_deg;
+    	                                        float y = STEER_KP * error; // y = left_rpm - right_rpm
 
-    	                                            if (ball_angle_deg > turn_threshold || ball_angle_deg < -turn_threshold)
-    	                                            {
-    	                                                if ((HAL_GetTick() - last_turn_time) >= 1000)
-    	                                                {
-    	                                                    float spin_rpm = 4.0f; // [Sean 2026-09-20] 安全降速，原本40.0f，除以10
-    	                                                    if (ball_angle_deg > 14.0f || ball_angle_deg < -14.0f) {
-    	                                                        spin_rpm = 5.5f; // 原本55.0f，除以10
-    	                                                    }
-    	                                                    if (ball_angle_deg > 0) Chassis_SpinRight(spin_rpm);
-    	                                                    else                    Chassis_SpinLeft(spin_rpm);
-    	                                                    last_turn_time = HAL_GetTick();
-    	                                                }
-    	                                                else
-    	                                                {
-    	                                                    Chassis_Stop();
-    	                                                }
-    	                                            }
-    	                                            else
-    	                                            {
-    	                                                Chassis_Stop(); // 角度已對準：停止，不前進（原本這裡是直行）
-    	                                            }
-    	                                        }
-    	                                    } // (結束 SAFE 檢查)
+    	                                        float half_y = y / 2.0f;
+    	                                        if (half_y > STEER_WHEEL_MAX)  half_y = STEER_WHEEL_MAX;
+    	                                        if (half_y < -STEER_WHEEL_MAX) half_y = -STEER_WHEEL_MAX;
+
+    	                                        Chassis_SteerP(-half_y, half_y); // [Sean 2026-09-21] 方向反了，對調左右
+    	                                    }
+    	                                    else
+    	                                    {
+    	                                        Chassis_Stop();
+    	                                    }
     	                                }
     	                                else
     	                                {
     	                                    HAL_UART_Transmit(&huart2, (uint8_t*)"ERR:SCANF_FAILED\n", 17, 50);
     	                                }
     	                            }
-    	                            // ==========================================================
-    	                            // 3️⃣ 處理 NOBALL (跟丟球) 資料
-    	                            // ==========================================================
     	                            else if (strncmp((char *)rx_buffer, "NOBALL", 6) == 0 || strncmp((char *)rx_buffer, "BALL_OFF", 8) == 0)
     	                            {
     	                                HAL_UART_Transmit(&huart2, (uint8_t*)"ACK:NOBALL\n", 11, 50);
-
-    	                                // [Sean 2026-09-20 STEP RESPONSE測試版] 看不到球一律靜止
-    	                                if (strcmp(court_state, "SAFE") == 0)
-    	                                {
-    	                                    was_seeing_ball = 0;
-    	                                    Chassis_Stop();
-    	                                } // (結束 SAFE 檢查)
+    	                                Chassis_Stop();
     	                            }
     	                            else
     	                            {
@@ -925,6 +833,16 @@ void Chassis_SpinRight(float turn_rpm)
     pid_right.integral = 0.0f;
 }
 
+// [Sean 2026-09-21] 連續P控制專用：只設定目標轉速，不清空積分。
+// 跟Chassis_SpinLeft/SpinRight最大的差異在這裡——舊的離散版本每次呼叫都清積分，
+// 連續控制每個vision frame都會呼叫，若清積分等於積分永遠來不及累積、克服不了靜摩擦力。
+void Chassis_SteerP(float left_rpm, float right_rpm)
+{
+    chassis_motion_state = 0;
+    pid_left.target_rpm  = left_rpm;
+    pid_right.target_rpm = right_rpm;
+}
+
 void Chassis_Stop(void)
 {
     chassis_motion_state = 0; // 告訴系統現在不是直走
@@ -947,6 +865,7 @@ void Chassis_Forward(float forward_rpm)
     // 剛從靜止轉為直走的第一瞬間
     if (chassis_motion_state == 0)
     {
+        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // [Sean 2026-09-20 debug] 確認Forward邏輯有沒有被呼叫
         pid_left.integral = 0.0f;
         pid_right.integral = 0.0f;
         pid_left.error_last = 0.0f;
