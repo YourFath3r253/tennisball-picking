@@ -424,6 +424,24 @@ run4資料裡「連續191秒球的位置完全不變」的怪現象（其實是�
     檢查方法：連 iPhone 熱點後 `iw dev wlan0 info | grep txpower` 不能是 0。
   - **已鎖住核心套件**（`sudo apt-mark hold nvidia-l4t-kernel nvidia-l4t-kernel-dtbs nvidia-l4t-kernel-headers`），
     `apt upgrade` 不會再動到它們。以後真的要升級核心：先 `sudo apt-mark unhold` 這三個，升級完照上面步驟重做修正。
+- **校園網路 nthupeap/eduroam 連不上的原因也找到並修好了（同日）**：開 wpa_supplicant debug 實測，
+  帳密驗證其實成功（`EAP-MSCHAPV2: Authentication succeeded`、`EAP-Success`），死在之後的 WPA 四次握手：
+  `RSN: PMKID mismatch - authentication server may have derived different MSK?!`。原因是 Jetson 的 OpenSSL 1.1.1
+  跟清大 RADIUS（`wlan.nthu.edu.tw`）協商出 **TLS 1.3**，但 wpa_supplicant 2.6 只會用 TLS 1.2 的方式推導 EAP 金鑰，
+  兩邊金鑰不一致 → Jetson 自己斷線。帳號、密碼（三份設定檔密碼雜湊與筆電一致）、憑證都沒問題。
+  - 修正：只讓 wpa_supplicant 最高用 TLS 1.2。`/etc/wpa_supplicant/openssl-wpa-tls12.cnf`（`MaxProtocol = TLSv1.2`）+
+    systemd drop-in `/etc/systemd/system/wpa_supplicant.service.d/no-tls13.conf`（`Environment=OPENSSL_CONF=...`），
+    不影響系統其他程式。兩個檔案在 [jetson_wifi_fix/](jetson_wifi_fix/)。wpa_supplicant 2.6 沒有原生的 `tls_disable_tlsv1_3` 選項，
+    NM 1.10 也不能關 TLS 1.3，所以走 OpenSSL 設定。
+  - 驗收：eduroam、nthupeap 都連上並可上網（10.10.10.184）；**重開機測試**：開機後約 55 秒就能經 Tailscale 連進去
+    （以前開機要先在兩個校園網路各卡 75 秒），自動連 nthupeap，txpower 22 dBm、TLS1.2 設定、省電關閉、netlog 都還在。
+  - 早上 nthupeap 那次「基地台不回認證」推測是剛從 iPhone 熱點切過去、發射功率還被夾在 0 dBm 所致（未驗證；修好後沒再出現）。
+    `FT: Invalid key management type` 是無害訊息（基地台支援 802.11r，但我們不用 FT），不是原因。
+- **四個網路現況（全部通過）**：Stacy_wifi ✅（經 Tailscale 傳影片 62MB/23 秒）、nthupeap ✅（重開機自動連）、eduroam ✅、
+  imoney ✅。imoney 也是 iPhone 熱點（同樣廣播 `-128 dBm`、172.20.10.x），連上後 txpower 22 dBm、無 `Limiting TX power`，
+  對手機送 4000 個 1400-byte 封包 0% 掉包。沒有 mac80211 修正的話 imoney 會跟 Stacy_wifi 一樣出問題。
+  - 測試陷阱：網路線（jetson-share）接著時，Tailscale 會自動改走網路線，傳檔測試就不會經過 WiFi（13MB 1 秒傳完即是此情況）。
+    要測 WiFi 傳輸，請拔網路線或改用 `ping -I wlan0` 這種綁定 WiFi 介面的方式。
 - **有線救援通道**：Jetson WiFi 失效時，用網路線直接接筆電，筆電啟用 NM 設定檔 `jetson-share`（`nmcli con up jetson-share`，
   筆電當 DHCP 並分享網路），Jetson 會拿到 `10.42.0.x`（今天是 `10.42.0.28`）。筆電原本的 `Wired connection 1`（固定 192.168.1.100）沒動。
 
