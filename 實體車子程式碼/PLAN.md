@@ -377,6 +377,29 @@ run4資料裡「連續191秒球的位置完全不變」的怪現象（其實是�
 **這個推論還沒有實測驗證**——CSV每個frame只有一個最終時間戳，沒辦法拆開「相機擷取/TensorRT推論/UART
 往返」各自花多少時間，要確認真正原因需要接上Jetson+相機+STM32即時跑，在程式碼裡加逐段計時印出來看，
 純看CSV事後分析做不到。Sean判斷這是視覺端（D同學）的負責範圍，之後有機會再查證，不急。
+## 2026-10-02 Jetson 斷線排查（熱點穩定性）
+
+**背景**：Sean 反映做實驗時 Jetson 會自己斷線，懷疑 iPhone 熱點；之後去球場仍要用手機熱點，目標是「熱點不斷線」。
+
+- **校園網路在實驗室位置兩個都連不上，已放棄**：`nthupeap` 卡在 802.11 認證階段（wpa_supplicant 每次都報
+  `FT: Invalid key management type`，推測是基地台開 802.11r 而 Ubuntu 18.04 的舊 wpa_supplicant 不相容，**未驗證**）；
+  `eduroam` 開機時試 75 秒失敗、手動切則在設定階段直接 `supplicant-failed`。兩個設定檔密碼都有存。
+  切換時用了「`nmcli con up X || nmcli con up Stacy_wifi`」背景執行的保險，失敗會自動退回熱點，Jetson 沒失聯過。
+- **找到的嫌疑：WiFi 省電模式原本是開的**（Intel 8265，NM 設定 `wifi.powersave = 3`）。
+  已關閉：`/etc/NetworkManager/conf.d/default-wifi-powersave-on.conf` 改成 `2`（原檔備份為 `.bak_20261002`），
+  每個已存 WiFi 設定檔也設 `802-11-wireless.powersave 2`。**這是唯一改動的變數**，之後觀察是否還會斷。
+- **連線記錄器**（程式在 [jetson_netlog/](jetson_netlog/)）：systemd 服務 `netlog.service`，開機自動執行，
+  每 5 秒寫一筆到 Jetson 的 `/home/hp/netlog/netlog_YYYYMMDD.csv`。判讀：`gw_ok=0` = Jetson↔手機 WiFi 斷；
+  `gw_ok=1, inet_ok=0` = 手機本身對外網路斷。時間線請以 `uptime_s` 為準（見下一點）。
+- **系統日誌改成永久保存**（`/etc/systemd/journald.conf.d/persistent.conf`，上限 200MB）。之前日誌只在記憶體裡，
+  重開機就消失，所以之前實驗的斷線查不到原因。
+- **Jetson 沒有 RTC，開機約 3.5 分鐘後 NTP 才校時**，校時前的日誌/CSV 時間會慢約 40 分鐘。看時間線要小心，
+  今天就因此一度把「熱點連著但沒流量」誤判成半小時，實際只有約 8 分鐘（17:35→17:43，之後熱點 BSSID 變了重連）。
+- **`tailscale status` 的 online/offline 會延遲**（Jetson 已經連得上時仍顯示 offline），判斷 Jetson 是否在線要用
+  `tailscale ping 100.104.92.104`。
+- **下一步（一次一個變數）**：先觀察關省電後實驗時是否還斷線；有斷就拉 netlog CSV + 永久日誌分析。
+  如果還是會斷，再調 iPhone 端（開「最大化相容性」改 2.4GHz）。
+
 ## 待確認事項（需要 Sean 回答，才能往下走）
 
 1. **[Sean 表示不想問同學，交給 Claude 自己想辦法]** STM32 那邊除了 `main.c`，有沒有完整 STM32CubeIDE 專案

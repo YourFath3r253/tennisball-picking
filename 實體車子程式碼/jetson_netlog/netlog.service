@@ -1,0 +1,13 @@
+[Unit]
+Description=Jetson WiFi connectivity logger (hotspot vs internet)
+After=network.target
+
+[Service]
+Type=simple
+User=hp
+ExecStart=/home/hp/netlog/netlog.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
