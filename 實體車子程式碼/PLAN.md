@@ -422,6 +422,8 @@ run4資料裡「連續191秒球的位置完全不變」的怪現象（其實是�
   - **注意**：`apt upgrade` 若更新 `nvidia-l4t-kernel` 會把修正蓋回原版（症狀會回來）。重做步驟：在 `~/kfix/kernel/kernel-4.9/net/mac80211`
     `make -C /lib/modules/$(uname -r)/build M=$PWD CONFIG_MAC80211=m modules -j4`，確認 vermagic 後覆蓋模組、`depmod -a`、重開機。
     檢查方法：連 iPhone 熱點後 `iw dev wlan0 info | grep txpower` 不能是 0。
+  - **已鎖住核心套件**（`sudo apt-mark hold nvidia-l4t-kernel nvidia-l4t-kernel-dtbs nvidia-l4t-kernel-headers`），
+    `apt upgrade` 不會再動到它們。以後真的要升級核心：先 `sudo apt-mark unhold` 這三個，升級完照上面步驟重做修正。
 - **有線救援通道**：Jetson WiFi 失效時，用網路線直接接筆電，筆電啟用 NM 設定檔 `jetson-share`（`nmcli con up jetson-share`，
   筆電當 DHCP 並分享網路），Jetson 會拿到 `10.42.0.x`（今天是 `10.42.0.28`）。筆電原本的 `Wired connection 1`（固定 192.168.1.100）沒動。
 
