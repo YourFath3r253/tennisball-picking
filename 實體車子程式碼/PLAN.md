@@ -400,6 +400,31 @@ run4資料裡「連續191秒球的位置完全不變」的怪現象（其實是�
 - **下一步（一次一個變數）**：先觀察關省電後實驗時是否還斷線；有斷就拉 netlog CSV + 永久日誌分析。
   如果還是會斷，再調 iPhone 端（開「最大化相容性」改 2.4GHz）。
 
+**同日稍晚：找到熱點斷線的根本原因（已實測證實）**
+- 傳影片時斷線，netlog 顯示「WiFi 顯示連著、訊號 -51~-72 dBm，但連 ping 手機都不通」，第二次開機後這個狀態持續 20 分鐘不會自己恢復。
+- **根本原因**：iPhone 熱點在 Country IE 宣告 `Channels [1 - 13] @ -128 dBm`（無效值）。Jetson 的 Linux 4.9 mac80211
+  （`net/mac80211/mlme.c` 的 `ieee80211_handle_pwr_constr`）照單全收：`max_t(int, 0, -128 - 0)` → 把發射功率夾到 **0 dBm**。
+  證據：每次連上 iPhone 熱點，核心日誌都有 `wlan0: Limiting TX power to 0 (-128 - 0) dBm as advertised by <iPhone BSSID>`；
+  `iw dev wlan0 info` 實測 `txpower 0.00 dBm`。結果是 Jetson 聽得到手機、手機聽不到 Jetson；大流量（傳影片）時最快爆出來。
+  早上 17:42 那次 `iwlwifi Microcode SW error / ADVANCED_SYSASSERT` 網卡韌體當機也發生在這種狀態下。
+- **省電模式不是原因**（早上關省電之前就已經發生同樣狀況），關掉也無害，維持關閉。
+- **校園網路不是同一個原因**：nthupeap/eduroam 的基地台廣播的是正常值（30~36 dBm），所以它們連不上是另一個問題，尚未解決。
+- **修正（已部署、已驗收）**：只改 mac80211 這個可載入模組（`/lib/modules/4.9.253-tegra/kernel/net/mac80211/mac80211.ko`），
+  忽略 ≤0 dBm 的無效功率值。修正檔在 [jetson_wifi_fix/](jetson_wifi_fix/)，原始碼用 NVIDIA 官方 L4T R32.7.1
+  `public_sources.tbz2`（Jetson `~/kfix/`，sha1 已驗證）。編譯與替換由 Sean 在 Jetson 上手動執行
+  （Claude Code 自動模式不允許替 Sean 編譯安裝外部下載的核心程式碼）。
+  - 驗收（19:0x）：連 Stacy_wifi 時 `txpower 22.00 dBm`（修正前 0.00），iPhone 仍廣播 -128 但核心不再出現 `Limiting TX power`；
+    筆電在 eduroam、Jetson 在 iPhone 熱點，經 Tailscale 傳 3 支影片 62MB / 23 秒、md5 全符合；
+    netlog 該次開機 97 筆中，真正斷線 0 次（2 筆是開機前 11 秒尚未連線，2 筆是傳輸塞滿頻寬時 ping 手機逾時但外網仍通）。
+  - 模組指紋：原版 `61555306ef6f72a75de30cb57dba94ef`（= nvidia-l4t-kernel 32.7.1 套件紀錄），修正版 `c7bf04cdf9dd233ecfed3cebf5b06548`。
+    原版備份在 Jetson `~/kfix/mac80211.ko.orig`（從官方 .deb 重新取出，安裝時第一次的備份被重複執行的指令覆蓋掉了）。
+  - **退回原版**：`sudo cp ~/kfix/mac80211.ko.orig /lib/modules/$(uname -r)/kernel/net/mac80211/mac80211.ko && sudo depmod -a && sudo reboot`
+  - **注意**：`apt upgrade` 若更新 `nvidia-l4t-kernel` 會把修正蓋回原版（症狀會回來）。重做步驟：在 `~/kfix/kernel/kernel-4.9/net/mac80211`
+    `make -C /lib/modules/$(uname -r)/build M=$PWD CONFIG_MAC80211=m modules -j4`，確認 vermagic 後覆蓋模組、`depmod -a`、重開機。
+    檢查方法：連 iPhone 熱點後 `iw dev wlan0 info | grep txpower` 不能是 0。
+- **有線救援通道**：Jetson WiFi 失效時，用網路線直接接筆電，筆電啟用 NM 設定檔 `jetson-share`（`nmcli con up jetson-share`，
+  筆電當 DHCP 並分享網路），Jetson 會拿到 `10.42.0.x`（今天是 `10.42.0.28`）。筆電原本的 `Wired connection 1`（固定 192.168.1.100）沒動。
+
 ## 待確認事項（需要 Sean 回答，才能往下走）
 
 1. **[Sean 表示不想問同學，交給 Claude 自己想辦法]** STM32 那邊除了 `main.c`，有沒有完整 STM32CubeIDE 專案
