@@ -1,0 +1,267 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="half_court_lines_world">
+
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <!-- gazebo_ros_state: 提供 /get_entity_state, /set_entity_state 服務，
+         撿球實驗腳本用它讀網球位置、判斷有沒有進籃，以及每次 trial 重置球的位置 -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+      <update_rate>10.0</update_rate>
+    </plugin>
+
+    <model name="court_walls">
+      <static>true</static>
+      <!-- 開放式網球場：牆只留半透明視覺當邊界參考，沒有碰撞 (真實場地沒有牆) -->
+      <link name="walls_link">
+        <visual name="front_v"><pose>12 0 0.5 0 0 0</pose><geometry><box><size>0.005 11 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
+        <visual name="back_v"><pose>-12 0 0.5 0 0 0</pose><geometry><box><size>0.005 11 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
+        <visual name="left_v"><pose>0 5.5 0.5 0 0 0</pose><geometry><box><size>24 0.005 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
+        <visual name="right_v"><pose>0 -5.5 0.5 0 0 0</pose><geometry><box><size>24 0.005 1</size></box></geometry><material><ambient>0 0.5 0 0.3</ambient><diffuse>0 0.5 0 0.3</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- 網球網：ITF 規格中央高 0.914 m、網柱高 1.07 m，網柱在雙打邊線外 0.914 m
+         (雙打寬 10.97 m -> 網柱在 y=±6.4 m，全長 12.8 m)。深灰色 (視覺不會當成球)，
+         有碰撞；1 m 高的實心板會擋住相機看到另一個半場的球，對應現實 YOLO 隔著網子
+         辨識不可靠的情況。 -->
+    <model name="tennis_net">
+      <static>true</static>
+      <link name="net_link">
+        <collision name="net_c"><pose>0 0 0.5 0 0 0</pose><geometry><box><size>0.05 12.8 1.0</size></box></geometry></collision>
+        <visual name="net_v"><pose>0 0 0.5 0 0 0</pose><geometry><box><size>0.05 12.8 1.0</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
+        <collision name="post_l_c"><pose>0 6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry></collision>
+        <visual name="post_l_v"><pose>0 6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+        <collision name="post_r_c"><pose>0 -6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry></collision>
+        <visual name="post_r_v"><pose>0 -6.4 0.535 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.07</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- D 同學提案：半場四條邊界各一種顏色 (experiments/gen_half_court_world.py 產生，定義在 tennis_bot/half_court.py)。只有外觀沒有碰撞，像貼在地上的色帶。 -->
+    <model name="court_lines">
+      <static>true</static>
+      <link name="lines_link">
+        <visual name="red_line"><pose>-11.8850 0.0000 0.0005 0 0 0</pose><geometry><box><size>0.0500 11.0200 0.001</size></box></geometry><material><ambient>1.0 0.0 0.0 1</ambient><diffuse>1.0 0.0 0.0 1</diffuse></material></visual>
+        <visual name="blue_line"><pose>-6.4425 5.4850 0.0005 0 0 0</pose><geometry><box><size>10.9350 0.0500 0.001</size></box></geometry><material><ambient>0.0 0.0 1.0 1</ambient><diffuse>0.0 0.0 1.0 1</diffuse></material></visual>
+        <visual name="magenta_line"><pose>-6.4425 -5.4850 0.0005 0 0 0</pose><geometry><box><size>10.9350 0.0500 0.001</size></box></geometry><material><ambient>1.0 0.0 1.0 1</ambient><diffuse>1.0 0.0 1.0 1</diffuse></material></visual>
+        <visual name="cyan_line"><pose>-1.0000 0.0000 0.0005 0 0 0</pose><geometry><box><size>0.0500 11.0200 0.001</size></box></geometry><material><ambient>0.0 1.0 1.0 1</ambient><diffuse>0.0 1.0 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="ball_1">
+      <pose>-5.148 1.206 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_2">
+      <pose>-8.848 2.875 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_3">
+      <pose>-7.961 -1.275 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_4">
+      <pose>-4.418 -1.389 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_5">
+      <pose>-2.292 -0.382 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_6">
+      <pose>-7.622 -4.498 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_7">
+      <pose>-4.056 -2.683 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_8">
+      <pose>-6.845 1.644 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_9">
+      <pose>-6.751 4.233 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="ball_10">
+      <pose>-7.426 -1.328 0.1 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.027</mass>
+          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <surface>
+            <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+            <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry><sphere><radius>0.033</radius></sphere></geometry>
+          <material><ambient>0.8 1.0 0.0 1</ambient><diffuse>0.8 1.0 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

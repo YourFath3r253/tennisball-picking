@@ -204,12 +204,13 @@ class GridPatrolNode(Node):
         # 不然會整趟路線平移掉 (曾經忘記傳送車體，跑出完全不對的巡邏路線)。
         # 所以這裡自己呼叫 /set_entity_state 把車體傳送到格 1，不依賴外部先手動
         # 跑 reset_run.py。
-        start_x, start_y = self.waypoints[0]
-        self._teleport_to_start(start_x, start_y)
-        # 傳送的是 base_link，里程計起點要放在軸心中點 (起始朝向 0，直接加偏移)
-        self.x = start_x + AXLE_MID_IN_BASE[0]
-        self.y = start_y + AXLE_MID_IN_BASE[1]
-        self.yaw = 0.0
+        start_x, start_y, start_yaw = self._start_pose()
+        self._teleport_to_start(start_x, start_y, start_yaw)
+        # 傳送的是 base_link，里程計起點要放在軸心中點 (偏移量要跟著起始朝向轉)
+        c, s_ = math.cos(start_yaw), math.sin(start_yaw)
+        self.x = start_x + AXLE_MID_IN_BASE[0] * c - AXLE_MID_IN_BASE[1] * s_
+        self.y = start_y + AXLE_MID_IN_BASE[0] * s_ + AXLE_MID_IN_BASE[1] * c
+        self.yaw = start_yaw
         self.wp_index = 0
 
         # ---- 輪速里程計 (car 自己以為的位置，拿去決定怎麼開) ----
@@ -223,12 +224,12 @@ class GridPatrolNode(Node):
         self._last_odom_time = None
         self.x_wall = self.x
         self.y_wall = self.y
-        self.yaw_wall = 0.0
+        self.yaw_wall = start_yaw
 
         # ---- 陀螺儀：yaw 在 _imu_cb 裡用三軸角速度做四元數積分，不用左右輪速差算 ----
         self._last_imu_stamp = None
         self._last_imu_time = None
-        self._gyro_q = (1.0, 0.0, 0.0, 0.0)  # (w, x, y, z)，起始朝向 0
+        self._gyro_q = (math.cos(start_yaw / 2), 0.0, 0.0, math.sin(start_yaw / 2))  # (w, x, y, z) = 起始朝向
 
         # ---- debug：追蹤中的目標球是幾號 (用真實座標反推，不是 vision_node 自己
         # 知道的，vision_node 只有像素座標，沒有球的身分) ----
@@ -308,7 +309,16 @@ class GridPatrolNode(Node):
 
         self.get_logger().info('開始巡邏。')
 
-    def _teleport_to_start(self, x, y):
+    def _start_pose(self):
+        """起點 (base_link 的 x, y, 朝向)。弓字路徑從格 1 開始、朝向 0；子類別 (例如邊界反彈) 可以改。"""
+        return self.waypoints[0][0], self.waypoints[0][1], 0.0
+
+    def _is_out_of_bounds(self, x, y):
+        """真實座標離場地太遠 -> 停止 (模擬才有的保護)。子類別可以換成自己的場地範圍。"""
+        return (not (X_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= x <= X_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
+                or not (Y_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= y <= Y_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M))
+
+    def _teleport_to_start(self, x, y, yaw=0.0):
         cli = self.create_client(SetEntityState, '/set_entity_state')
         if not cli.wait_for_service(timeout_sec=10.0):
             self.get_logger().error('/set_entity_state 服務沒回應，車體傳送失敗，Gazebo 有在跑嗎？')
@@ -318,11 +328,12 @@ class GridPatrolNode(Node):
         req.state.pose.position.x = x
         req.state.pose.position.y = y
         req.state.pose.position.z = 0.05
-        req.state.pose.orientation.w = 1.0
+        req.state.pose.orientation.z = math.sin(yaw / 2)
+        req.state.pose.orientation.w = math.cos(yaw / 2)
         future = cli.call_async(req)
         rclpy.spin_until_future_complete(self, future, timeout_sec=5.0)
         result = future.result()
-        self.get_logger().info(f'車體傳送到格 1 ({x:.3f}, {y:.3f})：{result.success if result else False}')
+        self.get_logger().info(f'車體傳送到起點 ({x:.3f}, {y:.3f}, {math.degrees(yaw):.0f}°)：{result.success if result else False}')
 
     # ---------------- 陀螺儀 ----------------
     def _publish_roller_cmd(self):
@@ -512,11 +523,7 @@ class GridPatrolNode(Node):
         self.real_yaw = yaw
 
         if not self.done:
-            out_of_bounds = (
-                not (X_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= self.real_x <= X_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
-                or not (Y_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= self.real_y <= Y_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
-            )
-            if out_of_bounds:
+            if self._is_out_of_bounds(self.real_x, self.real_y):
                 self._finish_run('出界')
         # 真實座標一到手就立刻記錄，里程計跟真實位置才是同一瞬間的值
         # (之前是另一個 0.5s timer 記錄，兩邊最多差 0.2~0.5 秒，車在動時會看起來像誤差)

@@ -4,11 +4,13 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, String
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
 import math # 新增 math 用於計算歐幾里得距離
+
+from tennis_bot.half_court import LINES as COURT_LINES
 
 # 除錯用：記錄每一幀的輪廓偵測狀況 (數量/面積)，用來確認漏球是不是視覺這一層造成的。
 # 固定路徑、每次啟動節點時覆寫，不用跟 grid_patrol_node 的 runN 資料夾綁在一起，
@@ -30,12 +32,27 @@ SAME_BALL_PX = 150
 ENTER_CONTOUR_AREA = 55   # 新抓目標的門檻 (跟原本 MIN_CONTOUR_AREA 一樣)
 LOCKED_CONTOUR_AREA = 15  # 已鎖定目標，面積掉到這以下才算真的看丟
 
+# ---- D 同學提案：四色邊界偵測 (半場世界 half_court_lines.world 才有色帶，全場世界永遠是 SAFE) ----
+# 只看畫面下方「離相機 BOUNDARY_TRIGGER_DIST_M 以內的地面」那一塊 (ROI)。相機高 0.15 m、水平朝前、
+# 焦距 381.4 px (640px / 80° 水平視角)，地面上前方 d 公尺的點落在第 240 + f*h/d 列：
+# d=0.6 m -> 第 335 列，所以 ROI = 第 335~479 列。某個顏色在 ROI 裡超過 BOUNDARY_MIN_PIXELS 個像素
+# = 那條邊界已經在 0.6 m 以內 -> EDGE。左右半邊像素比較多的那側 = 邊界在哪一側 (LEFT/RIGHT/CENTER)。
+# 發布格式模仿 D 同學實體車程式的 COURT,<SAFE|EDGE|OUT>,<LEFT|CENTER|RIGHT|NONE>,<比例>，
+# 多加顏色跟這張畫面的模擬時間戳：COURT,EDGE,LEFT,0.120,BLUE,123.456
+CAM_HEIGHT_M = 0.15
+FOCAL_PX = 320.0 / math.tan(math.radians(40.0))
+BOUNDARY_TRIGGER_DIST_M = 0.6
+BOUNDARY_ROI_TOP = int(240 + FOCAL_PX * CAM_HEIGHT_M / BOUNDARY_TRIGGER_DIST_M)
+BOUNDARY_MIN_PIXELS = 300
+BOUNDARY_SIDE_RATIO = 1.5  # 一側像素是另一側的 1.5 倍以上才算偏那一側，不然 CENTER
+
 class VisionNode(Node):
     def __init__(self):
         super().__init__('vision_node')
         self.subscription = self.create_subscription(Image, '/tennis_camera/image_raw', self.image_callback, 10)
         self.publisher_ = self.create_publisher(Point, '/target_position', 10)
         self.debug_publisher = self.create_publisher(Image, '/vision/debug_image', 10)
+        self.boundary_pub = self.create_publisher(String, '/court_boundary', 10)
         # grid_patrol_node 在盲衝(BLIND_DASH)結束時會發這個，收到才放開鎖定，
         # 讓「鎖定同一顆球，追到盲衝結束才換目標」這件事由狀態機那邊決定時機，
         # 不是 vision_node 自己每幀憑距離判斷。
@@ -158,6 +175,7 @@ class VisionNode(Node):
             target_msg.x, target_msg.y, target_msg.z = -1.0, -1.0, 0.0
 
         self.publisher_.publish(target_msg)
+        self._detect_boundary(hsv, cv_image, msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9)
 
         now = time.time()
         if now - self._last_debug_log_time >= DEBUG_LOG_MIN_INTERVAL_SEC:
@@ -178,6 +196,35 @@ class VisionNode(Node):
         cv2.imshow("Robot Camera View", cv_image) # 顯示畫好準星的彩色畫面
         #cv2.imshow("HSV Mask", mask)              # 顯示到底什麼東西被判定成黃色 (全黑中帶有白塊)
         cv2.waitKey(1)                            # 這是 OpenCV 更新畫面的關鍵，一定要加！
+
+    def _detect_boundary(self, hsv, cv_image, frame_stamp):
+        roi = hsv[BOUNDARY_ROI_TOP:, :]
+        roi_area = roi.shape[0] * roi.shape[1]
+        best = None  # (像素數, 顏色, 左半像素, 右半像素)
+        for color, d in COURT_LINES.items():
+            mask = None
+            for lo, hi in d['hsv']:
+                m = cv2.inRange(roi, np.array(lo), np.array(hi))
+                mask = m if mask is None else cv2.bitwise_or(mask, m)
+            n = int(cv2.countNonZero(mask))
+            if n >= BOUNDARY_MIN_PIXELS and (best is None or n > best[0]):
+                left = int(cv2.countNonZero(mask[:, :320]))
+                best = (n, color, left, n - left)
+        if best is None:
+            text = f'COURT,SAFE,NONE,0.000,NONE,{frame_stamp:.3f}'
+        else:
+            n, color, left, right = best
+            if left > BOUNDARY_SIDE_RATIO * right:
+                side = 'LEFT'
+            elif right > BOUNDARY_SIDE_RATIO * left:
+                side = 'RIGHT'
+            else:
+                side = 'CENTER'
+            text = f'COURT,EDGE,{side},{n / roi_area:.3f},{color},{frame_stamp:.3f}'
+            cv2.putText(cv_image, f'EDGE {color} {side}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+        cv2.line(cv_image, (0, BOUNDARY_ROI_TOP), (639, BOUNDARY_ROI_TOP), (255, 255, 255), 1)
+        self.boundary_pub.publish(String(data=text))
+
 
 def main(args=None):
     rclpy.init(args=args)

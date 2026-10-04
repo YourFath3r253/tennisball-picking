@@ -18,6 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'tennis_bot'))
 from grid_waypoints import court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, NET_X  # noqa: E402
+import half_court  # noqa: E402
 
 # 巡邏網格跟 grid_patrol_node 同一套 (開放式場地 24x11 m，格數由相機視野公式算)。
 # 球只放在場地內縮 1 公尺的範圍 (邊線附近的球現實上會滾出場外)。
@@ -88,7 +89,27 @@ BALL_TEMPLATE = """    <model name="{name}">
 """
 
 
-def write_world(positions, mass):
+def random_positions_half_court(rng, names):
+    """D 同學提案的半場：球在四條色帶往內縮 BALL_MARGIN_M 的範圍內，起點附近不放。"""
+    (lo_x, hi_x), (lo_y, hi_y) = half_court.ball_region()
+    sx, sy, _ = half_court.START_POSE
+    positions = []
+    attempts = 0
+    while len(positions) < len(names):
+        attempts += 1
+        if attempts > 100000:
+            raise RuntimeError('產生球位置太多次失敗，限制條件可能太嚴格')
+        x = rng.uniform(lo_x, hi_x)
+        y = rng.uniform(lo_y, hi_y)
+        if (x - sx) ** 2 + (y - sy) ** 2 < half_court.BALL_START_EXCLUSION_M ** 2:
+            continue
+        if any((x - px) ** 2 + (y - py) ** 2 < MIN_BALL_SPACING_M ** 2 for px, py in positions):
+            continue
+        positions.append((round(x, 3), round(y, 3)))
+    return dict(zip(names, positions))
+
+
+def write_world(positions, mass, world_path=None):
     """把 world 檔案裡所有 ball_* 模型整段換掉，改成 positions 裡的球 (球數任意)。"""
     inertia = round(0.4 * mass * 0.033 ** 2, 8)  # 實心球 I = 2/5 m r^2
     if mass <= 0.03:
@@ -96,7 +117,8 @@ def write_world(positions, mass):
     else:
         kp, kd = 100000000.0, 10.0
 
-    content = WORLD_PATH.read_text()
+    world_path = Path(world_path) if world_path else WORLD_PATH
+    content = world_path.read_text()
     blocks = list(re.finditer(r'[ \t]*<model name="ball_\d+">.*?</model>\n', content, re.S))
     if not blocks:
         raise RuntimeError('world 檔案裡找不到 ball_* 模型，不知道要插在哪')
@@ -105,7 +127,7 @@ def write_world(positions, mass):
         for name, (x, y) in positions.items()
     )
     content = content[:blocks[0].start()] + new_blocks + content[blocks[-1].end():]
-    WORLD_PATH.write_text(content)
+    world_path.write_text(content)
 
 
 def main():
@@ -116,6 +138,8 @@ def main():
     ap.add_argument('--load', type=str, default=None, help='從這個json檔讀位置，不重新隨機')
     ap.add_argument('--net-clearance', type=float, default=0.0, help='球離網子 (x=0) 至少多遠，0=不限制')
     ap.add_argument('--count', type=int, default=None, help='球數 (ball_1..ball_N)；不給就用預設 9 顆的名字')
+    ap.add_argument('--world', type=str, default=None, help='要寫入的 world 檔 (預設 tennis_court.world)')
+    ap.add_argument('--half-court', action='store_true', help='D 同學提案的半場範圍 (half_court.py)')
     args = ap.parse_args()
 
     if args.load:
@@ -123,12 +147,15 @@ def main():
     else:
         rng = random.Random(args.seed)
         names = [f'ball_{i}' for i in range(1, args.count + 1)] if args.count else DEFAULT_BALL_NAMES
-        positions = random_positions(rng, args.net_clearance, names)
+        if args.half_court:
+            positions = random_positions_half_court(rng, names)
+        else:
+            positions = random_positions(rng, args.net_clearance, names)
         if args.save:
             Path(args.save).parent.mkdir(parents=True, exist_ok=True)
             Path(args.save).write_text(json.dumps(positions, indent=2, ensure_ascii=False))
 
-    write_world(positions, args.mass)
+    write_world(positions, args.mass, args.world)
     print(json.dumps({'positions': positions, 'mass': args.mass}, ensure_ascii=False))
 
 
