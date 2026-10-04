@@ -139,6 +139,10 @@ NUM_BALLS = len(BALL_NAMES)
 
 DATA_ROOT = Path('/home/sean/ros2_ws/experiments/實驗數據')
 
+# TENNISBOT_HALF_ONLY=1：只走我方半場的弓字路徑 (16 格)，走完就結束。給 D 同學半場邊界提案當比較基準用。
+HALF_ONLY = os.environ.get('TENNISBOT_HALF_ONLY') == '1'
+
+
 
 def next_run_dir():
     """自動找下一個沒用過的 runN 資料夾，每次執行都存到新的一個，不會互相覆蓋。"""
@@ -193,6 +197,10 @@ class GridPatrolNode(Node):
         super().__init__('grid_patrol_node')
 
         self.waypoints, self.cell_numbers, cells = court_path_with_net()
+        if HALF_ONLY:
+            n = self.cell_numbers.index(0) if 0 in self.cell_numbers else len(self.cell_numbers)
+            self.waypoints, self.cell_numbers = self.waypoints[:n], self.cell_numbers[:n]
+            self.get_logger().info(f'只走我方半場：{n} 個路徑點')
         n_cells = len(cells)
         self.get_logger().info(
             f'格邊長上限 {CELL_MAX_M:.2f} m (2*0.8*R*sinθ)，網子在 x={NET_X}，車體離網至少 {NET_CLEARANCE_M} m -> '
