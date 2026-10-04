@@ -45,15 +45,16 @@
       <pose>-3.876 -3.142 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -66,15 +67,16 @@
       <pose>3.321 -3.848 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -87,15 +89,16 @@
       <pose>0.789 -1.209 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -108,15 +111,16 @@
       <pose>-9.724 0.067 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -129,15 +133,16 @@
       <pose>-10.175 -0.597 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -150,15 +155,16 @@
       <pose>-1.661 2.942 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -171,15 +177,16 @@
       <pose>-8.276 -2.491 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -192,15 +199,16 @@
       <pose>2.804 4.029 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -213,15 +221,16 @@
       <pose>1.696 -0.93 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <mass>0.0577</mass>
+          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">

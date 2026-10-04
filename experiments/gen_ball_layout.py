@@ -31,6 +31,24 @@ DEFAULT_BALL_NAMES = ['ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5',
 
 WORLD_PATH = Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'worlds' / 'tennis_court.world'
 
+# ---- 網球物理 (模擬真實化 R1)：照 ITF 規格，不再用 27 g 實心球 ----
+# 質量：ITF 56.0~59.4 g，取中間 57.7 g (舊值 27 g 只有真實的一半)。
+BALL_MASS_ITF = 0.0577
+BALL_RADIUS = 0.033
+# 轉動慣量：網球是約 3.2 mm 厚的橡膠殼 (外徑約 6.7 cm)，厚殼球
+# I = (2/5) m (ro^5 - ri^5) / (ro^3 - ri^3) ≈ 0.6 m r^2 (舊值用實心球 0.4 m r^2)。
+BALL_INERTIA_COEF = 0.6
+# 接觸剛性：ITF 前向變形 0.56~0.74 cm (8.165 kg = 80.1 N 壓力下)，取 0.65 cm
+# -> k ≈ 80.1 / 0.0065 ≈ 1.23e4 N/m (舊值 1e5，比真實硬 8 倍)。
+BALL_KP_ITF = 1.23e4
+BALL_KD = 1.0
+# 滾動阻力：真實網球毛氈滾動摩擦係數 μr ≈ 0.01~0.03 (Singh et al. 2008, arXiv:0809.4823)，
+# 但 ODE 沒有滾動摩擦，被撞到的球會一直滾 (run103 有球滾到 36 m 外、run109 滾到 289 m)。
+# 用 link 的角速度衰減近似 (每個物理步把角速度乘 1-c)，c 由 experiments/ball_roll_test.py 校正：
+# 目標是 0.3 m/s 推出去的球滾 ~0.75 m、1 m/s 滾 ~2.5 m (指數衰減 λ≈0.4/s，介於真實
+# 庫倫型滾動阻力在低速/高速的兩端之間)。
+BALL_ANGULAR_DECAY = 1.07e-3
+
 
 def cell1_bounds():
     _, _, cells = court_path_with_net()
@@ -71,6 +89,7 @@ BALL_TEMPLATE = """    <model name="{name}">
           <mass>{mass}</mass>
           <inertia><ixx>{inertia}</ixx><iyy>{inertia}</iyy><izz>{inertia}</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>{angular_decay}</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -90,18 +109,19 @@ BALL_TEMPLATE = """    <model name="{name}">
 
 def write_world(positions, mass):
     """把 world 檔案裡所有 ball_* 模型整段換掉，改成 positions 裡的球 (球數任意)。"""
-    inertia = round(0.4 * mass * 0.033 ** 2, 8)  # 實心球 I = 2/5 m r^2
-    if mass <= 0.03:
-        kp, kd = 100000.0, 1.0
+    inertia = round(BALL_INERTIA_COEF * mass * BALL_RADIUS ** 2, 9)
+    if mass > 1.0:
+        kp, kd = 100000000.0, 10.0  # 舊的「超重卡死球」測試用 (mass 10)
     else:
-        kp, kd = 100000000.0, 10.0
+        kp, kd = BALL_KP_ITF, BALL_KD
 
     content = WORLD_PATH.read_text()
     blocks = list(re.finditer(r'[ \t]*<model name="ball_\d+">.*?</model>\n', content, re.S))
     if not blocks:
         raise RuntimeError('world 檔案裡找不到 ball_* 模型，不知道要插在哪')
     new_blocks = ''.join(
-        BALL_TEMPLATE.format(name=name, x=x, y=y, mass=mass, inertia=inertia, kp=kp, kd=kd)
+        BALL_TEMPLATE.format(name=name, x=x, y=y, mass=mass, inertia=inertia, kp=kp, kd=kd,
+                             angular_decay=BALL_ANGULAR_DECAY)
         for name, (x, y) in positions.items()
     )
     content = content[:blocks[0].start()] + new_blocks + content[blocks[-1].end():]
@@ -110,7 +130,7 @@ def write_world(positions, mass):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--mass', type=float, required=True)
+    ap.add_argument('--mass', type=float, default=BALL_MASS_ITF, help='預設 ITF 57.7 g')
     ap.add_argument('--seed', type=int, default=None)
     ap.add_argument('--save', type=str, default=None, help='隨機產生新位置後存到這個json檔')
     ap.add_argument('--load', type=str, default=None, help='從這個json檔讀位置，不重新隨機')
