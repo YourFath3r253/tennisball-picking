@@ -60,6 +60,10 @@ class VisionNode(Node):
         self.locked_cx, self.locked_cy = None, None
 
     def image_callback(self, msg):
+        # 理想相機：Gazebo 每來一幀 (30Hz) 就立刻處理、立刻發布，沒有延遲
+        self._process_frame(msg)
+
+    def _process_frame(self, msg):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except Exception as e:
