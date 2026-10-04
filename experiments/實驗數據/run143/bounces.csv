@@ -1,0 +1,4 @@
+t,sim_t,color,side,turn_deg,during_state,real_x,real_y,yaw_deg
+26.23,26.04,CYAN,RIGHT,135,CRUISE,-1.686,-4.374,7.2
+131.53,83.13,BLUE,LEFT,-135,CRUISE,-2.139,4.956,16.9
+186.93,101.05,MAGENTA,LEFT,-135,CRUISE,-5.800,-4.772,-106.1

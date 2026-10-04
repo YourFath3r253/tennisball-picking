@@ -1,0 +1,5 @@
+reason=走完弓字路徑
+touched=9
+num_balls=10
+wall_sec=212.5
+sim_sec=211.2

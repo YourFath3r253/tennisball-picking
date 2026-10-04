@@ -1,0 +1,13 @@
+angle,seed,run_dir,result,layout_json
+90,501,run133,結束(逾時)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed501.json
+110,501,run134,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed501.json
+135,501,run135,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed501.json
+180,501,run136,結束(逾時)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed501.json
+90,502,run137,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed502.json
+110,502,run138,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed502.json
+135,502,run139,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed502.json
+180,502,run140,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed502.json
+90,503,run141,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed503.json
+110,503,run142,結束(逾時)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed503.json
+135,503,run143,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed503.json
+180,503,run144,結束(撿滿)：撿進後車廂,experiments/實驗數據/layouts/bounce_seed503.json

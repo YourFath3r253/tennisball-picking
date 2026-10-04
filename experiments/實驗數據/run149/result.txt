@@ -1,0 +1,7 @@
+reason=撿滿
+touched=10
+num_balls=10
+wall_sec=382.5
+sim_sec=380.0
+bounce_count=13
+bounce_angle_deg=110.0

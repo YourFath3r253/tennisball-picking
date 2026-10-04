@@ -1,0 +1,7 @@
+reason=逾時
+touched=7
+num_balls=10
+wall_sec=900.6
+sim_sec=900.0
+bounce_count=27
+bounce_angle_deg=180.0
