@@ -3,7 +3,25 @@
   <world name="tennis_court_world">
 
     <include><uri>model://sun</uri></include>
-    <include><uri>model://ground_plane</uri></include>
+    <!-- 球場地面 (模擬真實化 R2)：取代預設 ground_plane (摩擦係數 mu=100，等於完全不會滑)。
+         ITF 球場速度 CPR = 100(1-μ) + 150(0.81-e)，中速硬地 CPR 35~39、e≈0.81 -> μ≈0.61~0.65，
+         取 0.63。Gazebo/ODE 兩個表面接觸取 mu 較小值，所以：網球-地面 = 0.63；
+         驅動輪-地面 = 0.63 (橡膠對壓克力硬地文獻約 0.8~1.2，這裡偏保守)；
+         滾輪-網球 不經過地面，維持原本 1.0 (撿球機構驗證過的值不動)。外觀跟預設 ground_plane 一樣。 -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <surface><contact><collide_bitmask>0xffff</collide_bitmask></contact><friction><ode><mu>0.63</mu><mu2>0.63</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
 
     <!-- gazebo_ros_state: 提供 /get_entity_state, /set_entity_state 服務，
          撿球實驗腳本用它讀網球位置、判斷有沒有進籃，以及每次 trial 重置球的位置 -->
