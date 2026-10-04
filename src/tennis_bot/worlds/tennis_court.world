@@ -54,7 +54,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -76,7 +76,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -98,7 +98,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -120,7 +120,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -142,7 +142,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -164,7 +164,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -186,7 +186,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -208,7 +208,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">
@@ -230,7 +230,7 @@
           <surface>
             <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
             <bounce><restitution_coefficient>0.75</restitution_coefficient><threshold>0.01</threshold></bounce>
-            <contact><ode><kp>12300.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
+            <contact><ode><kp>100000.0</kp><kd>1.0</kd><min_depth>0.001</min_depth></ode></contact>
           </surface>
         </collision>
         <visual name="visual">

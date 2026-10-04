@@ -45,7 +45,13 @@ BALL_RADIUS = 0.033
 BALL_INERTIA_COEF = 0.6
 # 接觸剛性：ITF 前向變形 0.56~0.74 cm (8.165 kg = 80.1 N 壓力下)，取 0.65 cm
 # -> k ≈ 80.1 / 0.0065 ≈ 1.23e4 N/m (舊值 1e5，比真實硬 8 倍)。
+# 但是試過之後不採用：球躺在後車廂 (STL 網格碰撞) 裡時，ODE 軟接觸會抖動，陀螺儀積分跟著出錯。
+# 實測 (後車廂 6 顆球直線開 15 s，量陀螺儀積分 vs 真實航向)：kp=1.23e4 誤差 0.80~1.27°，
+# 加上用反彈係數 0.75 換算的阻尼 kd=3.3 還是 0.54°，kp=1e5 只有 -0.01~0.14°。
+# 整場 run119/120 航向誤差因此到 5.8~20.6° (baseline 0.57°)。這是 ODE 數值問題不是真實物理，
+# 所以剛性維持舊值 1e5 (球的變形量對撿球路徑/時間影響很小)。
 BALL_KP_ITF = 1.23e4
+BALL_KP = 1e5
 BALL_KD = 1.0
 # 滾動阻力：真實網球毛氈滾動摩擦係數 μr ≈ 0.01~0.03 (Singh et al. 2008, arXiv:0809.4823)，
 # 但 ODE 沒有滾動摩擦，被撞到的球會一直滾 (run103 有球滾到 36 m 外、run109 滾到 289 m)。
@@ -118,7 +124,7 @@ def write_world(positions, mass):
     if mass > 1.0:
         kp, kd = 100000000.0, 10.0  # 舊的「超重卡死球」測試用 (mass 10)
     else:
-        kp, kd = BALL_KP_ITF, BALL_KD
+        kp, kd = BALL_KP, BALL_KD
 
     content = WORLD_PATH.read_text()
     blocks = list(re.finditer(r'[ \t]*<model name="ball_\d+">.*?</model>\n', content, re.S))
