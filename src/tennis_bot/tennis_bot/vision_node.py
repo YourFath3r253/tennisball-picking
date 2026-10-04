@@ -41,11 +41,14 @@ LOCKED_CONTOUR_AREA = 15  # 已鎖定目標，面積掉到這以下才算真的�
 #   等效延遲 0.53~0.92 s (平均 0.70 s)，包含相機緩衝區舊幀 (OpenCV V4L2 預設 4 個 buffer，
 #   處理比相機慢時讀到的是好幾拍以前的畫面)、TensorRT 推論、UART、馬達反應。
 #   這裡的 FRAME_AGE 是「發布時用的那張畫面有多舊」，用 experiments/step_response_test.py
-#   校正到模擬裡量出來的等效延遲跟實體車一樣。
+#   校正到模擬裡量出來的等效延遲跟實體車一樣 (見下面)。
 CAMERA_MODEL = os.environ.get('TENNISBOT_CAMERA_MODEL', 'real')
 REAL_OUTPUT_INTERVALS = (0.11, 0.11, 0.45)
 REAL_INTERVAL_JITTER = 0.01
-REAL_FRAME_AGE = float(os.environ.get('TENNISBOT_CAMERA_LATENCY', '0.5'))
+# 校正結果 (experiments/step_response_test.py，K=0.02 飽和 0.6 rad/s，用跟分析實體車一樣的方法)：
+#   FRAME_AGE 0.40 -> 模擬等效延遲 0.55~0.56 s；0.45 -> 0.72 s；0.50 -> 0.79~0.81 s；實體車 0.70 s -> 取 0.45
+#   (理想相機量出來是 0：沒有 overshoot)
+REAL_FRAME_AGE = float(os.environ.get('TENNISBOT_CAMERA_LATENCY', '0.45'))
 
 class VisionNode(Node):
     def __init__(self):
