@@ -215,6 +215,7 @@ class GridPatrolNode(Node):
         # ---- 輪速里程計 (car 自己以為的位置，拿去決定怎麼開) ----
         self._have_odom = False
         self._last_stamp = None  # /joint_states 封包的模擬時間戳
+        self._first_stamp = None  # 第一筆 /joint_states 的模擬時間，算「模擬時間經過多久」用
         self._wheel_vel = {LEFT_WHEEL_JOINT: 0.0, RIGHT_WHEEL_JOINT: 0.0}
 
         # ---- debug 對照組：同一份輪速+陀螺儀，但用真實時鐘的 dt 積分 (舊做法)，
@@ -270,7 +271,9 @@ class GridPatrolNode(Node):
         ])
         self.touch_file = open(self.run_dir / 'ball_touches.csv', 'w', newline='')
         self.touch_writer = csv.writer(self.touch_file)
-        self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch'])
+        # elapsed_sec 是真實時鐘；sim_elapsed_sec 是模擬時間 (即時率 <1 時兩者會差，比較撿球時間用模擬時間)
+        self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch',
+                                    'sim_elapsed_sec'])
 
         # ---- debug：每次 _joint_state_cb 觸發時記錄 wall_dt vs sim_dt (封包時間戳)，
         # 累加起來的比值就是這次 run 的平均即時率 ----
@@ -359,6 +362,8 @@ class GridPatrolNode(Node):
                 if idx < len(msg.velocity):
                     self._wheel_vel[name] = msg.velocity[idx]
 
+        if self._first_stamp is None:
+            self._first_stamp = stamp
         wall_dt = (now - self._last_odom_time) if self._last_odom_time is not None else None
         sim_dt = (stamp - self._last_stamp) if self._last_stamp is not None else None
 
@@ -474,7 +479,8 @@ class GridPatrolNode(Node):
                 f'{name} 進後車廂！({self.touched_count}/{NUM_BALLS}) t={elapsed:.1f}s '
                 f'車廂內位置=({lx:.2f}, {ly:.2f}, {lz:.2f})')
             if not self.done:  # 非同步 callback，結束後才回來的話檔案已經關了，不要再寫
-                self.touch_writer.writerow([name, f'{elapsed:.2f}', self.wp_index, self._current_cell_number()])
+                self.touch_writer.writerow([name, f'{elapsed:.2f}', self.wp_index, self._current_cell_number(),
+                                            f'{self._sim_elapsed():.2f}'])
                 self.touch_file.flush()
 
             if self.state in ('ALIGN', 'APPROACH', 'BLIND_DASH'):
@@ -562,14 +568,23 @@ class GridPatrolNode(Node):
                                     f'{self.x_wall:.3f}', f'{self.y_wall:.3f}', f'{self.yaw_wall:.3f}'])
         self.traj_file.flush()
 
+    def _sim_elapsed(self):
+        if self._first_stamp is None or self._last_stamp is None:
+            return 0.0
+        return self._last_stamp - self._first_stamp
+
     def _finish_run(self, reason):
         self.done = True
         self.cmd_pub.publish(Twist())
         elapsed = time.time() - self.start_time
+        sim_elapsed = self._sim_elapsed()
         self.get_logger().info(
             f'結束({reason})：撿進後車廂 {self.touched_count}/{NUM_BALLS} 顆球，'
-            f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
+            f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s (模擬時間 {sim_elapsed:.1f}s)'
         )
+        with open(self.run_dir / 'result.txt', 'w') as f:
+            f.write(f'reason={reason}\ntouched={self.touched_count}\nnum_balls={NUM_BALLS}\n'
+                    f'wall_sec={elapsed:.1f}\nsim_sec={sim_elapsed:.1f}\n')
         self.real_pose_timer.cancel()
         self.traj_file.close()
         self.touch_file.close()

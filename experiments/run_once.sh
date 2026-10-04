@@ -2,6 +2,8 @@
 # 跑一次完整模擬 (目前 tennis_court.world 的球佈局)：清 /dev/shm 殘留 → 開 Gazebo →
 # vision_node → grid_patrol_node → 等 結束(...) → 畫圖。
 # 用法: bash experiments/run_once.sh [tag]   log 會放在 scratchpad，檔名帶 tag。
+# 可選環境變數: WORLD=xxx.world (預設 tennis_court.world)、GUI=false (只開 gzserver)、
+#              NODE=grid_patrol_node (要跑的主節點)、LAYOUT_JSON (隨機佈局)
 cd /home/sean/ros2_ws
 source /opt/ros/humble/setup.bash
 source /home/sean/ros2_ws/install/setup.bash
@@ -9,13 +11,15 @@ source /home/sean/ros2_ws/install/setup.bash
 TAG=${1:-once}
 SCRATCH=/tmp/claude-1000/-home-sean-ros2-ws/cfdbfabc-f4d0-4155-bb10-100d98577b2d/scratchpad
 mkdir -p "$SCRATCH"
-RUN_TIMEOUT_SEC=1500
+RUN_TIMEOUT_SEC=${RUN_TIMEOUT_SEC:-1500}
+WORLD=${WORLD:-tennis_court.world}
+GUI=${GUI:-true}
+NODE=${NODE:-grid_patrol_node}
 
 kill_all() {
     pkill -TERM -f "[g]zserver"
     pkill -TERM -f "[g]zclient"
-    pkill -TERM -f "[l]ib/tennis_bot/vision_node"
-    pkill -TERM -f "[l]ib/tennis_bot/grid_patrol_node"
+    pkill -TERM -f "[l]ib/tennis_bot/"
     sleep 3
     pkill -KILL -f "[g]zserver"
     pkill -KILL -f "[g]zclient"
@@ -34,7 +38,7 @@ echo "[$TAG] shm 殘留 清除前=$shm_before 清除後=$shm_after"
 
 before_n=$(latest_run_dir); before_n=${before_n:-0}
 
-nohup ros2 launch tennis_bot sim_launch.py > "$SCRATCH/gazebo_${TAG}.log" 2>&1 &
+nohup ros2 launch tennis_bot sim_launch.py world:="$WORLD" gui:="$GUI" > "$SCRATCH/gazebo_${TAG}.log" 2>&1 &
 for _ in $(seq 1 15); do
     grep -q "wheel transforms" "$SCRATCH/gazebo_${TAG}.log" 2>/dev/null && break
     sleep 2
@@ -51,27 +55,27 @@ if [ -n "$LAYOUT_JSON" ]; then
     # 隨機佈局 (球數可能不是 9)：把球名交給 grid_patrol_node
     export TENNISBOT_BALL_NAMES=$(python3 -c "import json,sys; print(','.join(json.load(open(sys.argv[1])).keys()))" "$LAYOUT_JSON")
 fi
-nohup ros2 run tennis_bot grid_patrol_node > "$SCRATCH/grid_${TAG}.log" 2>&1 &
+nohup ros2 run tennis_bot "$NODE" > "$SCRATCH/grid_${TAG}.log" 2>&1 &
 
 node_up=0
 for _ in $(seq 1 10); do
-    pgrep -f "[l]ib/tennis_bot/grid_patrol_node" > /dev/null && { node_up=1; break; }
+    pgrep -f "[l]ib/tennis_bot/$NODE" > /dev/null && { node_up=1; break; }
     sleep 1
 done
 if [ "$node_up" -ne 1 ]; then
-    echo "[$TAG] grid_patrol_node 沒有啟動"; kill_all; exit 1
+    echo "[$TAG] $NODE 沒有啟動"; kill_all; exit 1
 fi
 echo "[$TAG] 開始 $(date '+%H:%M:%S')"
 
 waited=0
 while [ $waited -lt $RUN_TIMEOUT_SEC ]; do
     grep -q "結束(" "$SCRATCH/grid_${TAG}.log" 2>/dev/null && break
-    pgrep -f "[l]ib/tennis_bot/grid_patrol_node" > /dev/null || break
+    pgrep -f "[l]ib/tennis_bot/$NODE" > /dev/null || break
     sleep 5
     waited=$((waited + 5))
 done
 reason=$(grep -o "結束([^)]*)[^$]*" "$SCRATCH/grid_${TAG}.log" 2>/dev/null | tail -1)
-pkill -INT -f "[l]ib/tennis_bot/grid_patrol_node"
+pkill -INT -f "[l]ib/tennis_bot/$NODE"
 sleep 3
 after_n=$(latest_run_dir); after_n=${after_n:-0}
 run_dir="run${after_n}"
