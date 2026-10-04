@@ -177,6 +177,29 @@ def quat_integrate(q, wx, wy, wz, dt):
     return tuple(v / n for v in nq)
 
 
+# ---- 陀螺儀 + 加速度計傾斜修正 (模擬 BNO080 Game Rotation Vector 的感測融合) ----
+# 純陀螺儀積分沒有重力參考，roll/pitch 誤差會一直累積，車子轉彎時再漏到航向：run119/120 煞車點頭
+# (~20°，baseline run121 也有) 之後傾斜誤差累積到 7~8°，航向誤差最大 20.6°。真實的 BNO080 輸出
+# 的 Game Rotation Vector 本來就有用加速度計修正 roll/pitch (Mahony/互補濾波這一類)，航向仍然
+# 只靠陀螺儀 (加速度計看不到航向)，所以這裡照做：只有量到的加速度接近 1g (沒有急加減速/撞擊)
+# 時，把「加速度計量到的上方」跟「四元數估計的上方」的夾角當誤差，乘上 TILT_KP 加回角速度。
+TILT_KP = 0.5
+TILT_ACCEL_GATE = (0.9 * 9.81, 1.1 * 9.81)
+
+
+def tilt_correction(q, ax, ay, az):
+    """回傳要加到車體角速度上的修正量 (ex, ey, ez)*TILT_KP；加速度不像純重力時回傳 0。"""
+    n = math.sqrt(ax * ax + ay * ay + az * az)
+    if not (TILT_ACCEL_GATE[0] < n < TILT_ACCEL_GATE[1]):
+        return 0.0, 0.0, 0.0
+    w, x, y, z = q
+    # 世界座標的上方 (0,0,1) 在車體座標系的表示 = 旋轉矩陣第三列
+    vx, vy, vz = 2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y)
+    mx, my, mz = ax / n, ay / n, az / n  # 加速度計靜止時量到的是朝上的 +g
+    ex, ey, ez = my * vz - mz * vy, mz * vx - mx * vz, mx * vy - my * vx
+    return TILT_KP * ex, TILT_KP * ey, TILT_KP * ez
+
+
 def quat_rotate_inverse(qx, qy, qz, qw, vx, vy, vz):
     cx, cy, cz, cw = -qx, -qy, -qz, qw
     tx = 2.0 * (cy * vz - cz * vy)
@@ -349,7 +372,9 @@ class GridPatrolNode(Node):
             if dt > 0.0015:
                 self._imu_gaps += 1
             if 0 < dt < 0.5:
-                self._gyro_q = quat_integrate(self._gyro_q, wx, wy, wz, dt)
+                a = msg.linear_acceleration
+                cx, cy, cz = tilt_correction(self._gyro_q, a.x, a.y, a.z)
+                self._gyro_q = quat_integrate(self._gyro_q, wx + cx, wy + cy, wz + cz, dt)
                 qw, qx, qy, qz = self._gyro_q
                 self.yaw = math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
             wall_dt = now - self._last_imu_time
