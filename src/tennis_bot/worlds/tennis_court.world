@@ -45,8 +45,8 @@
       <pose>-3.876 -3.142 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -67,8 +67,8 @@
       <pose>3.321 -3.848 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -89,8 +89,8 @@
       <pose>0.789 -1.209 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -111,8 +111,8 @@
       <pose>-9.724 0.067 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -133,8 +133,8 @@
       <pose>-10.175 -0.597 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -155,8 +155,8 @@
       <pose>-1.661 2.942 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -177,8 +177,8 @@
       <pose>-8.276 -2.491 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -199,8 +199,8 @@
       <pose>2.804 4.029 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
@@ -221,8 +221,8 @@
       <pose>1.696 -0.93 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
-          <mass>0.0577</mass>
-          <inertia><ixx>3.7701e-05</ixx><iyy>3.7701e-05</iyy><izz>3.7701e-05</izz></inertia>
+          <mass>0.027</mass>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
         <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">

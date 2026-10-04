@@ -33,7 +33,12 @@ WORLD_PATH = Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'wo
 
 # ---- 網球物理 (模擬真實化 R1)：照 ITF 規格，不再用 27 g 實心球 ----
 # 質量：ITF 56.0~59.4 g，取中間 57.7 g (舊值 27 g 只有真實的一半)。
+# 但是改成 57.7 g 之後目前的滾輪模型撿不起來 (experiments/roller_pickup/pickup_test.py 實測：
+# W=42.5/50/55、海綿 kp=150/300/600 共 12 次全部卡在車頭前面，0/12)。滾輪位置本來就跟 CAD 不同、
+# 海綿 k 值也是用 27 g 球調出來的，要等 A 同學的 3D 檔 (滾輪真實位置/角度) + 實測滾輪轉速才能重新
+# 鑑定滾輪模型。所以預設質量暫時維持 27 g，其他網球性質 (慣量、剛性、滾動阻力) 照 ITF/文獻。
 BALL_MASS_ITF = 0.0577
+BALL_MASS_DEFAULT = 0.027
 BALL_RADIUS = 0.033
 # 轉動慣量：網球是約 3.2 mm 厚的橡膠殼 (外徑約 6.7 cm)，厚殼球
 # I = (2/5) m (ro^5 - ri^5) / (ro^3 - ri^3) ≈ 0.6 m r^2 (舊值用實心球 0.4 m r^2)。
@@ -130,7 +135,8 @@ def write_world(positions, mass):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--mass', type=float, default=BALL_MASS_ITF, help='預設 ITF 57.7 g')
+    ap.add_argument('--mass', type=float, default=BALL_MASS_DEFAULT,
+                    help=f'預設 {BALL_MASS_DEFAULT} kg (ITF 是 {BALL_MASS_ITF}，滾輪模型目前撿不起來)')
     ap.add_argument('--seed', type=int, default=None)
     ap.add_argument('--save', type=str, default=None, help='隨機產生新位置後存到這個json檔')
     ap.add_argument('--load', type=str, default=None, help='從這個json檔讀位置，不重新隨機')
