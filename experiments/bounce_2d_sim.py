@@ -8,7 +8,7 @@
   (= 色帶進到 ROI) -> 原地轉 x 度；色帶在左半邊比較多往右轉，否則往左轉 (跟 node 一樣)
 - 逾時 900 s
 
-用法: python3 experiments/bounce_2d_sim.py [n_layouts] [角度們]
+用法: python3 experiments/bounce_2d_sim.py [n_layouts] [角度們] [球數]
   例: python3 experiments/bounce_2d_sim.py 200 "90 110 135 180"
 輸出每個角度：全部撿完的比例、撿完時間中位數/平均、平均撿到幾顆；並畫出 seed 501 的軌跡比較圖。
 """
@@ -72,7 +72,16 @@ def wrap(a):
     return math.atan2(math.sin(a), math.cos(a))
 
 
-def simulate(balls, angle_deg, record=False):
+def turn_angle(angle, rng):
+    """angle 是數字 = 固定角度；字串 'r110-160' = 每次在 110~160 度之間均勻隨機 (文獻上避免週期軌道的做法)。"""
+    if isinstance(angle, str) and angle.startswith('r'):
+        lo, hi = (float(v) for v in angle[1:].split('-'))
+        return rng.uniform(lo, hi)
+    return float(angle)
+
+
+def simulate(balls, angle_deg, record=False, seed=0):
+    rng = random.Random(seed)
     x, y, th = hc.START_POSE
     balls = list(balls)
     t = 0.0
@@ -104,8 +113,9 @@ def simulate(balls, angle_deg, record=False):
         side = boundary_side(x, y, th)
         if side is not None:
             sign = -1.0 if side == 'LEFT' else 1.0
-            th = wrap(th + sign * math.radians(angle_deg))
-            t += math.radians(angle_deg) / TURN_W
+            a = turn_angle(angle_deg, rng)
+            th = wrap(th + sign * math.radians(a))
+            t += math.radians(a) / TURN_W
             bounces += 1
             # 轉完如果還是看到邊界 (角落)，下一輪會再轉
             if bounces > 5000:
@@ -123,20 +133,21 @@ def simulate(balls, angle_deg, record=False):
 
 def main():
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 200
-    angles = [float(a) for a in (sys.argv[2].split() if len(sys.argv) > 2 else ['90', '110', '135', '180'])]
-    names = [f'ball_{i}' for i in range(1, 11)]
+    angles = [a if a.startswith('r') else float(a) for a in (sys.argv[2].split() if len(sys.argv) > 2 else ['90', '110', '135', '180'])]
+    n_balls = int(sys.argv[3]) if len(sys.argv) > 3 else 10
+    names = [f'ball_{i}' for i in range(1, n_balls + 1)]
     layouts = [list(random_positions_half_court(random.Random(seed), names).values())
                for seed in range(1000, 1000 + n)]
-    print(f'{n} 個隨機佈局 (10 顆球)，逾時 {TIMEOUT:.0f}s')
+    print(f'{n} 個隨機佈局 ({n_balls} 顆球)，逾時 {TIMEOUT:.0f}s')
     summary = {}
     for a in angles:
-        res = [simulate(b, a) for b in layouts]
+        res = [simulate(b, a, seed=i) for i, b in enumerate(layouts)]
         done = [r for r in res if r['done']]
         times = sorted(r['time'] for r in done)
         summary[a] = res
         med = times[len(times) // 2] if times else float('nan')
         mean = sum(times) / len(times) if times else float('nan')
-        print(f'  轉 {a:5.0f}°：全部撿完 {len(done):3d}/{n} ({100 * len(done) / n:5.1f}%)，'
+        print(f'  轉 {str(a):>9}°：全部撿完 {len(done):3d}/{n} ({100 * len(done) / n:5.1f}%)，'
               f'撿完時間 中位數 {med:6.1f}s 平均 {mean:6.1f}s，平均撿到 {sum(r["picked"] for r in res) / n:4.1f} 顆，'
               f'平均轉向 {sum(r["bounces"] for r in res) / n:5.1f} 次')
 
@@ -160,14 +171,14 @@ def main():
                 px, py = zip(*res['path'])
                 ax.plot(px, py, lw=0.6, color='tab:blue')
                 ax.scatter([b[0] for b in balls], [b[1] for b in balls], s=25, c='yellow', edgecolors='k', zorder=3)
-                title = f'{a:.0f}°  seed {seed}: ' + (f'{res["time"]:.0f}s' if res['done'] else f'{res["picked"]}/10 逾時')
+                title = f'{a}°  seed {seed}: ' + (f'{res["time"]:.0f}s' if res['done'] else f'{res["picked"]}/{n_balls} 逾時')
                 ax.set_title(title, fontsize=9)
                 ax.set_aspect('equal')
                 ax.set_xlim(-12.5, -0.5)
                 ax.set_ylim(-6, 6)
                 ax.tick_params(labelsize=6)
         plt.tight_layout()
-        out = Path('/home/sean/ros2_ws/experiments/實驗數據/bounce_2d_sim_paths.png')
+        out = Path('/home/sean/ros2_ws/experiments/實驗數據/bounce_2d_sim_paths_' + '_'.join(str(a) for a in angles) + '.png')
         plt.savefig(out, dpi=110)
         print(f'軌跡圖: {out}')
     except ImportError:
