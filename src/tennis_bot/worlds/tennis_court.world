@@ -3,7 +3,25 @@
   <world name="tennis_court_world">
 
     <include><uri>model://sun</uri></include>
-    <include><uri>model://ground_plane</uri></include>
+    <!-- 球場地面 (模擬真實化 R2)：取代預設 ground_plane (摩擦係數 mu=100，等於完全不會滑)。
+         ITF 球場速度 CPR = 100(1-μ) + 150(0.81-e)，中速硬地 CPR 35~39、e≈0.81 -> μ≈0.61~0.65，
+         取 0.63。Gazebo/ODE 兩個表面接觸取 mu 較小值，所以：網球-地面 = 0.63；
+         驅動輪-地面 = 0.63 (橡膠對壓克力硬地文獻約 0.8~1.2，這裡偏保守)；
+         滾輪-網球 不經過地面，維持原本 1.0 (撿球機構驗證過的值不動)。外觀跟預設 ground_plane 一樣。 -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <surface><contact><collide_bitmask>0xffff</collide_bitmask></contact><friction><ode><mu>0.63</mu><mu2>0.63</mu2></ode></friction></surface>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
 
     <!-- gazebo_ros_state: 提供 /get_entity_state, /set_entity_state 服務，
          撿球實驗腳本用它讀網球位置、判斷有沒有進籃，以及每次 trial 重置球的位置 -->
@@ -41,13 +59,696 @@
       </link>
     </model>
 
+    <!-- 輕微砂礫 (模擬真實化 R3，experiments/gen_grit.py 產生，seed=2026)：338 顆半埋小球，露出 1~4 mm -->
+    <model name="court_grit">
+      <static>true</static>
+      <link name="grit_link">
+        <collision name="g0_c"><pose>-9.903 0.033 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry></collision>
+        <visual name="g0_v"><pose>-9.903 0.033 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g1_c"><pose>-10.331 -3.597 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry></collision>
+        <visual name="g1_v"><pose>-10.331 -3.597 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g2_c"><pose>7.368 0.622 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g2_v"><pose>7.368 0.622 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g3_c"><pose>6.527 1.125 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g3_v"><pose>6.527 1.125 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g4_c"><pose>-10.121 4.118 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry></collision>
+        <visual name="g4_v"><pose>-10.121 4.118 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g5_c"><pose>4.815 2.332 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g5_v"><pose>4.815 2.332 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g6_c"><pose>12.478 5.581 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g6_v"><pose>12.478 5.581 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g7_c"><pose>0.353 -5.508 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g7_v"><pose>0.353 -5.508 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g8_c"><pose>-5.405 -0.553 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g8_v"><pose>-5.405 -0.553 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g9_c"><pose>2.013 -6.178 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g9_v"><pose>2.013 -6.178 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g10_c"><pose>-2.022 -1.316 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g10_v"><pose>-2.022 -1.316 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g11_c"><pose>-9.972 0.083 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g11_v"><pose>-9.972 0.083 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g12_c"><pose>-0.233 5.418 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g12_v"><pose>-0.233 5.418 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g13_c"><pose>11.082 -0.271 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g13_v"><pose>11.082 -0.271 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g14_c"><pose>-7.162 -4.823 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry></collision>
+        <visual name="g14_v"><pose>-7.162 -4.823 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g15_c"><pose>10.057 -5.167 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g15_v"><pose>10.057 -5.167 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g16_c"><pose>-0.465 -3.524 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g16_v"><pose>-0.465 -3.524 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g17_c"><pose>-1.123 -0.398 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g17_v"><pose>-1.123 -0.398 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g18_c"><pose>1.186 0.777 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g18_v"><pose>1.186 0.777 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g19_c"><pose>7.795 0.025 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g19_v"><pose>7.795 0.025 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g20_c"><pose>-1.740 -2.673 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g20_v"><pose>-1.740 -2.673 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g21_c"><pose>4.047 1.265 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry></collision>
+        <visual name="g21_v"><pose>4.047 1.265 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g22_c"><pose>-0.273 5.480 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g22_v"><pose>-0.273 5.480 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g23_c"><pose>0.293 4.240 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g23_v"><pose>0.293 4.240 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g24_c"><pose>10.589 4.308 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g24_v"><pose>10.589 4.308 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g25_c"><pose>-10.442 2.461 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry></collision>
+        <visual name="g25_v"><pose>-10.442 2.461 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g26_c"><pose>-1.224 6.048 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g26_v"><pose>-1.224 6.048 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g27_c"><pose>-0.542 -5.664 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g27_v"><pose>-0.542 -5.664 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g28_c"><pose>-10.487 3.218 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g28_v"><pose>-10.487 3.218 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g29_c"><pose>-12.635 -6.497 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g29_v"><pose>-12.635 -6.497 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g30_c"><pose>-10.840 3.819 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g30_v"><pose>-10.840 3.819 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g31_c"><pose>6.548 5.933 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g31_v"><pose>6.548 5.933 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g32_c"><pose>-8.976 -2.425 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g32_v"><pose>-8.976 -2.425 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g33_c"><pose>11.698 -0.104 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g33_v"><pose>11.698 -0.104 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g34_c"><pose>-7.204 1.143 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g34_v"><pose>-7.204 1.143 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g35_c"><pose>0.123 -5.402 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g35_v"><pose>0.123 -5.402 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g36_c"><pose>7.369 5.395 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry></collision>
+        <visual name="g36_v"><pose>7.369 5.395 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g37_c"><pose>8.008 0.260 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g37_v"><pose>8.008 0.260 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g38_c"><pose>-10.241 5.041 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry></collision>
+        <visual name="g38_v"><pose>-10.241 5.041 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g39_c"><pose>-3.812 3.504 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g39_v"><pose>-3.812 3.504 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g40_c"><pose>-4.478 -2.552 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g40_v"><pose>-4.478 -2.552 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g41_c"><pose>11.668 0.931 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g41_v"><pose>11.668 0.931 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g42_c"><pose>0.510 -0.863 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g42_v"><pose>0.510 -0.863 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g43_c"><pose>4.641 -5.596 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g43_v"><pose>4.641 -5.596 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g44_c"><pose>10.958 -5.912 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g44_v"><pose>10.958 -5.912 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g45_c"><pose>-1.253 3.311 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g45_v"><pose>-1.253 3.311 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g46_c"><pose>9.823 -4.821 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g46_v"><pose>9.823 -4.821 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g47_c"><pose>0.438 5.936 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g47_v"><pose>0.438 5.936 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g48_c"><pose>-2.861 -0.970 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g48_v"><pose>-2.861 -0.970 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g49_c"><pose>-5.072 -2.027 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g49_v"><pose>-5.072 -2.027 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g50_c"><pose>7.286 -1.095 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g50_v"><pose>7.286 -1.095 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g51_c"><pose>-0.467 -4.939 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g51_v"><pose>-0.467 -4.939 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g52_c"><pose>8.220 4.522 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g52_v"><pose>8.220 4.522 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g53_c"><pose>9.844 1.894 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g53_v"><pose>9.844 1.894 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g54_c"><pose>9.087 2.215 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g54_v"><pose>9.087 2.215 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g55_c"><pose>-8.924 0.806 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g55_v"><pose>-8.924 0.806 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g56_c"><pose>-10.148 2.808 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g56_v"><pose>-10.148 2.808 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g57_c"><pose>-7.425 -2.669 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g57_v"><pose>-7.425 -2.669 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g58_c"><pose>-10.362 -3.072 -0.0063 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g58_v"><pose>-10.362 -3.072 -0.0063 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g59_c"><pose>4.798 3.368 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g59_v"><pose>4.798 3.368 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g60_c"><pose>3.382 0.086 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g60_v"><pose>3.382 0.086 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g61_c"><pose>-5.433 -2.410 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g61_v"><pose>-5.433 -2.410 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g62_c"><pose>-2.297 5.175 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry></collision>
+        <visual name="g62_v"><pose>-2.297 5.175 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g63_c"><pose>-12.599 -5.246 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g63_v"><pose>-12.599 -5.246 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g64_c"><pose>4.831 0.994 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g64_v"><pose>4.831 0.994 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g65_c"><pose>7.274 1.394 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g65_v"><pose>7.274 1.394 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g66_c"><pose>11.043 -2.391 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g66_v"><pose>11.043 -2.391 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g67_c"><pose>12.457 4.919 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g67_v"><pose>12.457 4.919 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g68_c"><pose>4.716 5.509 -0.0017 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g68_v"><pose>4.716 5.509 -0.0017 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g69_c"><pose>-3.736 3.060 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g69_v"><pose>-3.736 3.060 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g70_c"><pose>5.078 -2.736 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g70_v"><pose>5.078 -2.736 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g71_c"><pose>-9.820 3.483 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g71_v"><pose>-9.820 3.483 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g72_c"><pose>1.096 -2.048 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g72_v"><pose>1.096 -2.048 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g73_c"><pose>-10.072 1.547 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g73_v"><pose>-10.072 1.547 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g74_c"><pose>-3.795 1.923 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g74_v"><pose>-3.795 1.923 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g75_c"><pose>2.031 -1.872 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g75_v"><pose>2.031 -1.872 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g76_c"><pose>-2.054 -3.646 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g76_v"><pose>-2.054 -3.646 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g77_c"><pose>4.201 5.651 -0.0045 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g77_v"><pose>4.201 5.651 -0.0045 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g78_c"><pose>-6.371 -4.580 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g78_v"><pose>-6.371 -4.580 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g79_c"><pose>-0.550 -3.070 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g79_v"><pose>-0.550 -3.070 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g80_c"><pose>2.435 4.414 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g80_v"><pose>2.435 4.414 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g81_c"><pose>11.994 0.183 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g81_v"><pose>11.994 0.183 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g82_c"><pose>6.618 -2.373 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g82_v"><pose>6.618 -2.373 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g83_c"><pose>12.431 -0.383 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g83_v"><pose>12.431 -0.383 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g84_c"><pose>9.415 5.554 -0.0054 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry></collision>
+        <visual name="g84_v"><pose>9.415 5.554 -0.0054 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g85_c"><pose>12.380 5.863 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g85_v"><pose>12.380 5.863 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g86_c"><pose>-4.064 -3.887 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g86_v"><pose>-4.064 -3.887 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g87_c"><pose>1.269 -0.337 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g87_v"><pose>1.269 -0.337 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g88_c"><pose>-8.115 1.664 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g88_v"><pose>-8.115 1.664 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g89_c"><pose>11.712 4.079 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0073</radius></sphere></geometry></collision>
+        <visual name="g89_v"><pose>11.712 4.079 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0073</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g90_c"><pose>7.680 1.809 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry></collision>
+        <visual name="g90_v"><pose>7.680 1.809 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g91_c"><pose>6.006 -4.707 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g91_v"><pose>6.006 -4.707 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g92_c"><pose>-12.523 -3.677 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0074</radius></sphere></geometry></collision>
+        <visual name="g92_v"><pose>-12.523 -3.677 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0074</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g93_c"><pose>1.888 5.922 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g93_v"><pose>1.888 5.922 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g94_c"><pose>0.431 1.873 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g94_v"><pose>0.431 1.873 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g95_c"><pose>-10.776 3.023 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g95_v"><pose>-10.776 3.023 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g96_c"><pose>-11.919 1.205 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry></collision>
+        <visual name="g96_v"><pose>-11.919 1.205 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g97_c"><pose>-5.384 0.535 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g97_v"><pose>-5.384 0.535 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g98_c"><pose>-8.094 3.211 -0.0012 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry></collision>
+        <visual name="g98_v"><pose>-8.094 3.211 -0.0012 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g99_c"><pose>-0.520 -1.006 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g99_v"><pose>-0.520 -1.006 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g100_c"><pose>12.455 6.459 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g100_v"><pose>12.455 6.459 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g101_c"><pose>-8.330 0.508 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g101_v"><pose>-8.330 0.508 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g102_c"><pose>0.390 4.970 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g102_v"><pose>0.390 4.970 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g103_c"><pose>-3.262 -1.716 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g103_v"><pose>-3.262 -1.716 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g104_c"><pose>2.860 -4.855 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g104_v"><pose>2.860 -4.855 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g105_c"><pose>9.723 2.946 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g105_v"><pose>9.723 2.946 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g106_c"><pose>3.836 -1.979 -0.0063 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry></collision>
+        <visual name="g106_v"><pose>3.836 -1.979 -0.0063 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g107_c"><pose>0.493 4.272 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g107_v"><pose>0.493 4.272 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g108_c"><pose>2.218 -5.427 -0.0059 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry></collision>
+        <visual name="g108_v"><pose>2.218 -5.427 -0.0059 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g109_c"><pose>-0.135 -2.444 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g109_v"><pose>-0.135 -2.444 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g110_c"><pose>-4.550 0.082 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g110_v"><pose>-4.550 0.082 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g111_c"><pose>5.820 4.644 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g111_v"><pose>5.820 4.644 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g112_c"><pose>7.966 -3.638 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g112_v"><pose>7.966 -3.638 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g113_c"><pose>7.467 -1.174 -0.0051 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g113_v"><pose>7.467 -1.174 -0.0051 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g114_c"><pose>-8.986 3.159 -0.0052 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g114_v"><pose>-8.986 3.159 -0.0052 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g115_c"><pose>-6.042 4.363 -0.0018 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g115_v"><pose>-6.042 4.363 -0.0018 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g116_c"><pose>-1.444 -4.610 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g116_v"><pose>-1.444 -4.610 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g117_c"><pose>12.278 0.797 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g117_v"><pose>12.278 0.797 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g118_c"><pose>-1.090 -1.284 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g118_v"><pose>-1.090 -1.284 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g119_c"><pose>4.527 -2.121 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g119_v"><pose>4.527 -2.121 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g120_c"><pose>10.622 4.516 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g120_v"><pose>10.622 4.516 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g121_c"><pose>1.207 -3.771 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g121_v"><pose>1.207 -3.771 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g122_c"><pose>10.995 2.918 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry></collision>
+        <visual name="g122_v"><pose>10.995 2.918 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g123_c"><pose>-6.443 -2.158 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g123_v"><pose>-6.443 -2.158 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g124_c"><pose>7.233 -0.313 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry></collision>
+        <visual name="g124_v"><pose>7.233 -0.313 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g125_c"><pose>-12.025 -3.642 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g125_v"><pose>-12.025 -3.642 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g126_c"><pose>-6.015 -6.269 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g126_v"><pose>-6.015 -6.269 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g127_c"><pose>-5.800 1.692 -0.0012 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry></collision>
+        <visual name="g127_v"><pose>-5.800 1.692 -0.0012 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g128_c"><pose>1.013 -6.352 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g128_v"><pose>1.013 -6.352 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g129_c"><pose>-7.295 -0.475 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry></collision>
+        <visual name="g129_v"><pose>-7.295 -0.475 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g130_c"><pose>-4.954 0.879 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g130_v"><pose>-4.954 0.879 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g131_c"><pose>1.538 -5.095 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g131_v"><pose>1.538 -5.095 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g132_c"><pose>-8.183 3.045 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry></collision>
+        <visual name="g132_v"><pose>-8.183 3.045 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g133_c"><pose>10.672 2.053 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g133_v"><pose>10.672 2.053 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g134_c"><pose>2.772 -3.180 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g134_v"><pose>2.772 -3.180 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g135_c"><pose>-12.045 -0.130 -0.0007 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g135_v"><pose>-12.045 -0.130 -0.0007 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g136_c"><pose>-6.400 3.315 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g136_v"><pose>-6.400 3.315 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g137_c"><pose>8.898 -1.301 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g137_v"><pose>8.898 -1.301 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g138_c"><pose>-2.318 -5.661 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g138_v"><pose>-2.318 -5.661 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g139_c"><pose>4.733 3.456 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry></collision>
+        <visual name="g139_v"><pose>4.733 3.456 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g140_c"><pose>-10.641 0.125 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g140_v"><pose>-10.641 0.125 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g141_c"><pose>-4.734 -2.085 -0.0008 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g141_v"><pose>-4.734 -2.085 -0.0008 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g142_c"><pose>9.451 -4.233 -0.0012 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g142_v"><pose>9.451 -4.233 -0.0012 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g143_c"><pose>9.660 0.267 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g143_v"><pose>9.660 0.267 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g144_c"><pose>2.843 -3.707 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g144_v"><pose>2.843 -3.707 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g145_c"><pose>0.209 0.345 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g145_v"><pose>0.209 0.345 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g146_c"><pose>-5.962 4.860 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry></collision>
+        <visual name="g146_v"><pose>-5.962 4.860 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g147_c"><pose>8.855 -2.265 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry></collision>
+        <visual name="g147_v"><pose>8.855 -2.265 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g148_c"><pose>2.996 0.508 -0.0020 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g148_v"><pose>2.996 0.508 -0.0020 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g149_c"><pose>12.474 2.974 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g149_v"><pose>12.474 2.974 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g150_c"><pose>4.082 -5.706 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g150_v"><pose>4.082 -5.706 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g151_c"><pose>7.527 5.733 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g151_v"><pose>7.527 5.733 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g152_c"><pose>1.048 -1.864 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry></collision>
+        <visual name="g152_v"><pose>1.048 -1.864 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g153_c"><pose>-11.605 -4.087 -0.0017 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g153_v"><pose>-11.605 -4.087 -0.0017 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g154_c"><pose>-0.267 0.599 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g154_v"><pose>-0.267 0.599 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g155_c"><pose>-3.532 0.556 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g155_v"><pose>-3.532 0.556 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g156_c"><pose>-8.970 -2.281 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g156_v"><pose>-8.970 -2.281 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g157_c"><pose>-12.803 -5.269 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g157_v"><pose>-12.803 -5.269 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g158_c"><pose>8.150 -3.156 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g158_v"><pose>8.150 -3.156 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g159_c"><pose>-8.025 4.114 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g159_v"><pose>-8.025 4.114 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g160_c"><pose>8.661 -4.281 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g160_v"><pose>8.661 -4.281 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g161_c"><pose>-7.469 -4.439 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry></collision>
+        <visual name="g161_v"><pose>-7.469 -4.439 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g162_c"><pose>-1.997 4.630 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g162_v"><pose>-1.997 4.630 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g163_c"><pose>3.363 -0.774 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g163_v"><pose>3.363 -0.774 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g164_c"><pose>-10.614 5.160 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g164_v"><pose>-10.614 5.160 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g165_c"><pose>-10.951 2.792 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g165_v"><pose>-10.951 2.792 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g166_c"><pose>-8.525 1.834 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g166_v"><pose>-8.525 1.834 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g167_c"><pose>12.559 -6.103 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g167_v"><pose>12.559 -6.103 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g168_c"><pose>10.755 3.763 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g168_v"><pose>10.755 3.763 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g169_c"><pose>-12.752 0.273 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g169_v"><pose>-12.752 0.273 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g170_c"><pose>-0.308 -4.707 -0.0045 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g170_v"><pose>-0.308 -4.707 -0.0045 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g171_c"><pose>12.211 -0.572 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry></collision>
+        <visual name="g171_v"><pose>12.211 -0.572 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g172_c"><pose>11.199 2.210 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g172_v"><pose>11.199 2.210 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g173_c"><pose>4.733 -0.507 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g173_v"><pose>4.733 -0.507 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g174_c"><pose>0.660 0.394 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g174_v"><pose>0.660 0.394 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g175_c"><pose>-12.032 1.173 -0.0005 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry></collision>
+        <visual name="g175_v"><pose>-12.032 1.173 -0.0005 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g176_c"><pose>1.674 -1.479 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g176_v"><pose>1.674 -1.479 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g177_c"><pose>-1.119 -0.278 -0.0004 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g177_v"><pose>-1.119 -0.278 -0.0004 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g178_c"><pose>-9.508 -5.133 -0.0018 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g178_v"><pose>-9.508 -5.133 -0.0018 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g179_c"><pose>-6.371 6.134 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g179_v"><pose>-6.371 6.134 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g180_c"><pose>2.651 -4.944 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g180_v"><pose>2.651 -4.944 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g181_c"><pose>5.648 -2.509 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g181_v"><pose>5.648 -2.509 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g182_c"><pose>10.313 2.476 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g182_v"><pose>10.313 2.476 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g183_c"><pose>9.059 -1.055 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry></collision>
+        <visual name="g183_v"><pose>9.059 -1.055 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g184_c"><pose>-1.598 3.494 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry></collision>
+        <visual name="g184_v"><pose>-1.598 3.494 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g185_c"><pose>-0.446 -6.287 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g185_v"><pose>-0.446 -6.287 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g186_c"><pose>-12.115 -0.450 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g186_v"><pose>-12.115 -0.450 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g187_c"><pose>0.555 -3.025 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g187_v"><pose>0.555 -3.025 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g188_c"><pose>-12.316 1.329 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g188_v"><pose>-12.316 1.329 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g189_c"><pose>-9.824 -1.710 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g189_v"><pose>-9.824 -1.710 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g190_c"><pose>-8.578 -1.230 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g190_v"><pose>-8.578 -1.230 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g191_c"><pose>12.738 -1.288 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry></collision>
+        <visual name="g191_v"><pose>12.738 -1.288 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g192_c"><pose>-6.170 3.905 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g192_v"><pose>-6.170 3.905 -0.0024 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g193_c"><pose>-10.802 -4.321 -0.0060 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry></collision>
+        <visual name="g193_v"><pose>-10.802 -4.321 -0.0060 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g194_c"><pose>8.896 3.940 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g194_v"><pose>8.896 3.940 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g195_c"><pose>1.292 -6.038 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g195_v"><pose>1.292 -6.038 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g196_c"><pose>5.040 4.432 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g196_v"><pose>5.040 4.432 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g197_c"><pose>11.881 5.228 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g197_v"><pose>11.881 5.228 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g198_c"><pose>12.247 -5.889 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g198_v"><pose>12.247 -5.889 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g199_c"><pose>-5.743 -6.405 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g199_v"><pose>-5.743 -6.405 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g200_c"><pose>11.045 -5.573 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g200_v"><pose>11.045 -5.573 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g201_c"><pose>1.234 0.217 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g201_v"><pose>1.234 0.217 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g202_c"><pose>-11.616 -1.924 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g202_v"><pose>-11.616 -1.924 -0.0038 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g203_c"><pose>-6.701 -6.303 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g203_v"><pose>-6.701 -6.303 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g204_c"><pose>4.547 -4.180 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g204_v"><pose>4.547 -4.180 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g205_c"><pose>0.126 -2.118 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g205_v"><pose>0.126 -2.118 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g206_c"><pose>-8.608 -5.299 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g206_v"><pose>-8.608 -5.299 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g207_c"><pose>-9.612 5.724 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g207_v"><pose>-9.612 5.724 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g208_c"><pose>8.392 -0.333 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g208_v"><pose>8.392 -0.333 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g209_c"><pose>-4.618 -0.065 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g209_v"><pose>-4.618 -0.065 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g210_c"><pose>-3.132 6.055 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry></collision>
+        <visual name="g210_v"><pose>-3.132 6.055 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g211_c"><pose>1.736 0.160 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g211_v"><pose>1.736 0.160 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g212_c"><pose>2.373 1.954 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g212_v"><pose>2.373 1.954 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g213_c"><pose>-6.636 -2.551 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g213_v"><pose>-6.636 -2.551 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g214_c"><pose>1.727 -2.511 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g214_v"><pose>1.727 -2.511 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g215_c"><pose>-4.094 3.071 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g215_v"><pose>-4.094 3.071 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g216_c"><pose>-6.691 -0.371 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g216_v"><pose>-6.691 -0.371 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g217_c"><pose>0.068 2.108 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g217_v"><pose>0.068 2.108 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g218_c"><pose>2.938 -2.456 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g218_v"><pose>2.938 -2.456 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g219_c"><pose>-1.448 -2.659 -0.0017 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g219_v"><pose>-1.448 -2.659 -0.0017 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g220_c"><pose>-12.870 1.134 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g220_v"><pose>-12.870 1.134 -0.0009 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g221_c"><pose>-1.460 -5.613 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g221_v"><pose>-1.460 -5.613 -0.0037 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g222_c"><pose>7.002 2.963 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0073</radius></sphere></geometry></collision>
+        <visual name="g222_v"><pose>7.002 2.963 -0.0056 0 0 0</pose><geometry><sphere><radius>0.0073</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g223_c"><pose>6.230 -1.164 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry></collision>
+        <visual name="g223_v"><pose>6.230 -1.164 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g224_c"><pose>-8.628 1.461 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry></collision>
+        <visual name="g224_v"><pose>-8.628 1.461 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0041</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g225_c"><pose>5.175 2.763 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g225_v"><pose>5.175 2.763 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g226_c"><pose>9.558 2.141 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g226_v"><pose>9.558 2.141 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g227_c"><pose>-2.986 1.320 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g227_v"><pose>-2.986 1.320 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g228_c"><pose>3.027 -2.563 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g228_v"><pose>3.027 -2.563 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g229_c"><pose>5.034 -1.981 -0.0060 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g229_v"><pose>5.034 -1.981 -0.0060 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g230_c"><pose>0.225 -6.013 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g230_v"><pose>0.225 -6.013 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g231_c"><pose>-8.584 -0.903 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g231_v"><pose>-8.584 -0.903 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g232_c"><pose>-3.246 -0.040 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry></collision>
+        <visual name="g232_v"><pose>-3.246 -0.040 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g233_c"><pose>-12.060 1.256 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g233_v"><pose>-12.060 1.256 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g234_c"><pose>-2.235 6.292 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g234_v"><pose>-2.235 6.292 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g235_c"><pose>8.564 5.803 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry></collision>
+        <visual name="g235_v"><pose>8.564 5.803 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0051</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g236_c"><pose>11.877 0.078 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0073</radius></sphere></geometry></collision>
+        <visual name="g236_v"><pose>11.877 0.078 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0073</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g237_c"><pose>-2.872 -3.633 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g237_v"><pose>-2.872 -3.633 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g238_c"><pose>3.193 5.324 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0074</radius></sphere></geometry></collision>
+        <visual name="g238_v"><pose>3.193 5.324 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0074</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g239_c"><pose>1.540 -1.587 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g239_v"><pose>1.540 -1.587 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g240_c"><pose>-12.242 -3.430 -0.0018 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g240_v"><pose>-12.242 -3.430 -0.0018 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g241_c"><pose>-0.705 4.083 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g241_v"><pose>-0.705 4.083 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g242_c"><pose>-12.192 -5.400 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g242_v"><pose>-12.192 -5.400 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g243_c"><pose>-9.799 1.319 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g243_v"><pose>-9.799 1.319 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g244_c"><pose>3.283 -1.087 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g244_v"><pose>3.283 -1.087 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g245_c"><pose>-10.485 -5.638 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g245_v"><pose>-10.485 -5.638 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g246_c"><pose>3.311 -5.206 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g246_v"><pose>3.311 -5.206 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g247_c"><pose>9.729 0.708 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g247_v"><pose>9.729 0.708 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g248_c"><pose>-9.760 -1.996 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry></collision>
+        <visual name="g248_v"><pose>-9.760 -1.996 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0046</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g249_c"><pose>9.225 -5.206 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry></collision>
+        <visual name="g249_v"><pose>9.225 -5.206 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g250_c"><pose>-1.987 5.814 -0.0013 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g250_v"><pose>-1.987 5.814 -0.0013 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g251_c"><pose>-2.001 6.390 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry></collision>
+        <visual name="g251_v"><pose>-2.001 6.390 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g252_c"><pose>-0.635 3.213 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry></collision>
+        <visual name="g252_v"><pose>-0.635 3.213 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0080</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g253_c"><pose>-1.868 -5.607 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g253_v"><pose>-1.868 -5.607 -0.0043 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g254_c"><pose>-1.960 -1.949 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g254_v"><pose>-1.960 -1.949 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g255_c"><pose>2.665 3.786 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g255_v"><pose>2.665 3.786 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g256_c"><pose>7.433 2.533 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g256_v"><pose>7.433 2.533 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g257_c"><pose>-2.327 1.739 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g257_v"><pose>-2.327 1.739 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g258_c"><pose>-4.702 4.652 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g258_v"><pose>-4.702 4.652 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g259_c"><pose>6.283 1.363 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g259_v"><pose>6.283 1.363 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g260_c"><pose>-12.115 1.425 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g260_v"><pose>-12.115 1.425 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g261_c"><pose>6.200 4.799 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g261_v"><pose>6.200 4.799 -0.0010 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g262_c"><pose>5.923 -0.757 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g262_v"><pose>5.923 -0.757 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g263_c"><pose>11.769 -2.453 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry></collision>
+        <visual name="g263_v"><pose>11.769 -2.453 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0075</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g264_c"><pose>10.857 1.311 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g264_v"><pose>10.857 1.311 -0.0034 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g265_c"><pose>10.949 1.792 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g265_v"><pose>10.949 1.792 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g266_c"><pose>-1.968 -0.497 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g266_v"><pose>-1.968 -0.497 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g267_c"><pose>-3.312 4.208 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g267_v"><pose>-3.312 4.208 -0.0027 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g268_c"><pose>2.193 0.902 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g268_v"><pose>2.193 0.902 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g269_c"><pose>-2.955 -1.941 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g269_v"><pose>-2.955 -1.941 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g270_c"><pose>-3.636 -0.442 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry></collision>
+        <visual name="g270_v"><pose>-3.636 -0.442 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0064</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g271_c"><pose>-5.357 6.183 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g271_v"><pose>-5.357 6.183 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g272_c"><pose>-4.398 -3.099 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry></collision>
+        <visual name="g272_v"><pose>-4.398 -3.099 -0.0016 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g273_c"><pose>5.451 -6.471 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g273_v"><pose>5.451 -6.471 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g274_c"><pose>-8.410 2.714 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g274_v"><pose>-8.410 2.714 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g275_c"><pose>1.032 -5.159 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g275_v"><pose>1.032 -5.159 -0.0039 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g276_c"><pose>3.053 -2.742 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g276_v"><pose>3.053 -2.742 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g277_c"><pose>-9.970 6.476 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry></collision>
+        <visual name="g277_v"><pose>-9.970 6.476 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g278_c"><pose>-11.133 1.161 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g278_v"><pose>-11.133 1.161 -0.0048 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g279_c"><pose>-9.440 6.112 -0.0052 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g279_v"><pose>-9.440 6.112 -0.0052 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g280_c"><pose>7.031 -2.768 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g280_v"><pose>7.031 -2.768 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g281_c"><pose>8.701 -0.765 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g281_v"><pose>8.701 -0.765 -0.0055 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g282_c"><pose>-9.111 1.814 -0.0064 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g282_v"><pose>-9.111 1.814 -0.0064 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g283_c"><pose>-2.673 -5.865 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry></collision>
+        <visual name="g283_v"><pose>-2.673 -5.865 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g284_c"><pose>8.355 -0.766 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g284_v"><pose>8.355 -0.766 -0.0032 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g285_c"><pose>-5.527 3.652 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g285_v"><pose>-5.527 3.652 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g286_c"><pose>-5.987 3.125 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g286_v"><pose>-5.987 3.125 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g287_c"><pose>-4.644 3.419 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry></collision>
+        <visual name="g287_v"><pose>-4.644 3.419 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0068</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g288_c"><pose>-10.321 -0.438 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry></collision>
+        <visual name="g288_v"><pose>-10.321 -0.438 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0043</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g289_c"><pose>-11.058 6.427 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry></collision>
+        <visual name="g289_v"><pose>-11.058 6.427 -0.0025 0 0 0</pose><geometry><sphere><radius>0.0055</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g290_c"><pose>-5.812 -3.655 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry></collision>
+        <visual name="g290_v"><pose>-5.812 -3.655 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0054</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g291_c"><pose>1.016 -5.054 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g291_v"><pose>1.016 -5.054 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g292_c"><pose>-0.936 -1.980 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry></collision>
+        <visual name="g292_v"><pose>-0.936 -1.980 -0.0057 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g293_c"><pose>-9.109 0.680 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry></collision>
+        <visual name="g293_v"><pose>-9.109 0.680 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0067</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g294_c"><pose>2.288 -0.378 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g294_v"><pose>2.288 -0.378 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g295_c"><pose>11.390 -0.342 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry></collision>
+        <visual name="g295_v"><pose>11.390 -0.342 -0.0049 0 0 0</pose><geometry><sphere><radius>0.0076</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g296_c"><pose>3.203 -2.769 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g296_v"><pose>3.203 -2.769 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g297_c"><pose>12.716 -2.013 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g297_v"><pose>12.716 -2.013 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g298_c"><pose>-0.683 5.484 -0.0062 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g298_v"><pose>-0.683 5.484 -0.0062 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g299_c"><pose>-1.189 5.062 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g299_v"><pose>-1.189 5.062 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g300_c"><pose>-7.596 -4.894 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g300_v"><pose>-7.596 -4.894 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g301_c"><pose>-11.132 -2.389 -0.0013 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry></collision>
+        <visual name="g301_v"><pose>-11.132 -2.389 -0.0013 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g302_c"><pose>5.254 4.331 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g302_v"><pose>5.254 4.331 -0.0058 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g303_c"><pose>-1.690 4.890 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g303_v"><pose>-1.690 4.890 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g304_c"><pose>-12.705 6.298 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry></collision>
+        <visual name="g304_v"><pose>-12.705 6.298 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0048</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g305_c"><pose>-4.722 -3.211 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g305_v"><pose>-4.722 -3.211 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g306_c"><pose>4.758 0.528 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g306_v"><pose>4.758 0.528 -0.0053 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g307_c"><pose>8.891 0.986 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry></collision>
+        <visual name="g307_v"><pose>8.891 0.986 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0060</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g308_c"><pose>4.939 -5.690 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g308_v"><pose>4.939 -5.690 -0.0030 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g309_c"><pose>-7.752 5.690 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry></collision>
+        <visual name="g309_v"><pose>-7.752 5.690 -0.0036 0 0 0</pose><geometry><sphere><radius>0.0062</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g310_c"><pose>7.738 0.485 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry></collision>
+        <visual name="g310_v"><pose>7.738 0.485 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0071</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g311_c"><pose>10.060 3.734 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g311_v"><pose>10.060 3.734 -0.0019 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g312_c"><pose>-11.640 1.279 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry></collision>
+        <visual name="g312_v"><pose>-11.640 1.279 -0.0023 0 0 0</pose><geometry><sphere><radius>0.0059</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g313_c"><pose>-0.700 -4.936 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry></collision>
+        <visual name="g313_v"><pose>-0.700 -4.936 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0077</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g314_c"><pose>11.893 -3.065 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry></collision>
+        <visual name="g314_v"><pose>11.893 -3.065 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0050</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g315_c"><pose>-7.602 6.321 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry></collision>
+        <visual name="g315_v"><pose>-7.602 6.321 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0058</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g316_c"><pose>-9.847 3.120 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g316_v"><pose>-9.847 3.120 -0.0041 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g317_c"><pose>-2.762 3.934 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry></collision>
+        <visual name="g317_v"><pose>-2.762 3.934 -0.0031 0 0 0</pose><geometry><sphere><radius>0.0066</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g318_c"><pose>5.230 -2.580 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry></collision>
+        <visual name="g318_v"><pose>5.230 -2.580 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0052</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g319_c"><pose>-2.012 -0.831 -0.0045 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry></collision>
+        <visual name="g319_v"><pose>-2.012 -0.831 -0.0045 0 0 0</pose><geometry><sphere><radius>0.0057</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g320_c"><pose>-3.226 -1.716 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry></collision>
+        <visual name="g320_v"><pose>-3.226 -1.716 -0.0022 0 0 0</pose><geometry><sphere><radius>0.0049</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g321_c"><pose>2.516 3.481 -0.0060 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g321_v"><pose>2.516 3.481 -0.0060 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g322_c"><pose>-4.749 2.784 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry></collision>
+        <visual name="g322_v"><pose>-4.749 2.784 -0.0035 0 0 0</pose><geometry><sphere><radius>0.0069</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g323_c"><pose>9.180 -2.201 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry></collision>
+        <visual name="g323_v"><pose>9.180 -2.201 -0.0028 0 0 0</pose><geometry><sphere><radius>0.0044</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g324_c"><pose>-6.032 -5.470 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry></collision>
+        <visual name="g324_v"><pose>-6.032 -5.470 -0.0015 0 0 0</pose><geometry><sphere><radius>0.0047</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g325_c"><pose>-7.137 -2.486 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry></collision>
+        <visual name="g325_v"><pose>-7.137 -2.486 -0.0021 0 0 0</pose><geometry><sphere><radius>0.0056</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g326_c"><pose>-11.884 -2.936 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry></collision>
+        <visual name="g326_v"><pose>-11.884 -2.936 -0.0042 0 0 0</pose><geometry><sphere><radius>0.0078</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g327_c"><pose>-5.456 -5.307 -0.0007 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry></collision>
+        <visual name="g327_v"><pose>-5.456 -5.307 -0.0007 0 0 0</pose><geometry><sphere><radius>0.0042</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g328_c"><pose>7.224 -2.130 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry></collision>
+        <visual name="g328_v"><pose>7.224 -2.130 -0.0040 0 0 0</pose><geometry><sphere><radius>0.0072</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g329_c"><pose>10.108 0.144 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry></collision>
+        <visual name="g329_v"><pose>10.108 0.144 -0.0047 0 0 0</pose><geometry><sphere><radius>0.0070</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g330_c"><pose>-9.889 2.416 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g330_v"><pose>-9.889 2.416 -0.0033 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g331_c"><pose>9.506 -3.287 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry></collision>
+        <visual name="g331_v"><pose>9.506 -3.287 -0.0026 0 0 0</pose><geometry><sphere><radius>0.0053</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g332_c"><pose>-4.743 -3.564 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry></collision>
+        <visual name="g332_v"><pose>-4.743 -3.564 -0.0046 0 0 0</pose><geometry><sphere><radius>0.0065</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g333_c"><pose>4.668 5.335 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry></collision>
+        <visual name="g333_v"><pose>4.668 5.335 -0.0044 0 0 0</pose><geometry><sphere><radius>0.0063</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g334_c"><pose>-0.492 -0.523 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry></collision>
+        <visual name="g334_v"><pose>-0.492 -0.523 -0.0029 0 0 0</pose><geometry><sphere><radius>0.0061</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g335_c"><pose>6.284 3.468 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry></collision>
+        <visual name="g335_v"><pose>6.284 3.468 -0.0011 0 0 0</pose><geometry><sphere><radius>0.0045</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g336_c"><pose>-2.661 -4.168 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry></collision>
+        <visual name="g336_v"><pose>-2.661 -4.168 -0.0050 0 0 0</pose><geometry><sphere><radius>0.0079</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+        <collision name="g337_c"><pose>-2.499 0.762 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry></collision>
+        <visual name="g337_v"><pose>-2.499 0.762 -0.0014 0 0 0</pose><geometry><sphere><radius>0.0040</radius></sphere></geometry><material><ambient>0.35 0.33 0.3 1</ambient><diffuse>0.35 0.33 0.3 1</diffuse></material></visual>
+      </link>
+    </model>
     <model name="ball_1">
       <pose>-3.876 -3.142 0.1 0 0 0</pose>
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -67,8 +768,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -88,8 +790,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -109,8 +812,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -130,8 +834,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -151,8 +856,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -172,8 +878,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -193,8 +900,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -214,8 +922,9 @@
       <link name="link">
         <inertial>
           <mass>0.027</mass>
-          <inertia><ixx>1.176e-05</ixx><iyy>1.176e-05</iyy><izz>1.176e-05</izz></inertia>
+          <inertia><ixx>1.7642e-05</ixx><iyy>1.7642e-05</iyy><izz>1.7642e-05</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>0.00107</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>

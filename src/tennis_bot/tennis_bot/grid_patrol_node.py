@@ -12,7 +12,7 @@
 速度，輪子半徑 0.04m、輪距 0.29m；轉向角速度改用 /imu 陀螺儀直接量到的角速度，
 不再用左右輪速差推算，因為輪子在原地轉向 (ALIGN) 或撞到東西時容易打滑，輪速
 差算出來的角速度會跟車體真實轉動的角度對不上)，不用 /odom、不用光達/AMCL。
-陀螺儀目前是理想 sensor (URDF 裡沒有加 <noise>)，先驗證這個方向有沒有用。「有沒有真的碰到球」則是用 Gazebo 的真實座標判斷 (base_link
+陀螺儀有雜訊+零點偏移 (URDF <noise>，對應 BNO080 規格)。「有沒有真的碰到球」則是用 Gazebo 的真實座標判斷 (base_link
 座標+姿態，轉換球的世界座標到局部座標系，檢查有沒有跟左右滾輪的位置
 重疊)，這兩個是分開的：車體自己「以為」在哪裡 (拿去決定怎麼轉彎)，
 跟「有沒有真的碰到」(拿去判斷有沒有成功) 用的資料來源不同。
@@ -181,6 +181,29 @@ def quat_integrate(q, wx, wy, wz, dt):
     return tuple(v / n for v in nq)
 
 
+# ---- 陀螺儀 + 加速度計傾斜修正 (模擬 BNO080 Game Rotation Vector 的感測融合) ----
+# 純陀螺儀積分沒有重力參考，roll/pitch 誤差會一直累積，車子轉彎時再漏到航向：run119/120 煞車點頭
+# (~20°，baseline run121 也有) 之後傾斜誤差累積到 7~8°，航向誤差最大 20.6°。真實的 BNO080 輸出
+# 的 Game Rotation Vector 本來就有用加速度計修正 roll/pitch (Mahony/互補濾波這一類)，航向仍然
+# 只靠陀螺儀 (加速度計看不到航向)，所以這裡照做：只有量到的加速度接近 1g (沒有急加減速/撞擊)
+# 時，把「加速度計量到的上方」跟「四元數估計的上方」的夾角當誤差，乘上 TILT_KP 加回角速度。
+TILT_KP = 0.5
+TILT_ACCEL_GATE = (0.9 * 9.81, 1.1 * 9.81)
+
+
+def tilt_correction(q, ax, ay, az):
+    """回傳要加到車體角速度上的修正量 (ex, ey, ez)*TILT_KP；加速度不像純重力時回傳 0。"""
+    n = math.sqrt(ax * ax + ay * ay + az * az)
+    if not (TILT_ACCEL_GATE[0] < n < TILT_ACCEL_GATE[1]):
+        return 0.0, 0.0, 0.0
+    w, x, y, z = q
+    # 世界座標的上方 (0,0,1) 在車體座標系的表示 = 旋轉矩陣第三列
+    vx, vy, vz = 2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y)
+    mx, my, mz = ax / n, ay / n, az / n  # 加速度計靜止時量到的是朝上的 +g
+    ex, ey, ez = my * vz - mz * vy, mz * vx - mx * vz, mx * vy - my * vx
+    return TILT_KP * ex, TILT_KP * ey, TILT_KP * ez
+
+
 def quat_rotate_inverse(qx, qy, qz, qw, vx, vy, vz):
     cx, cy, cz, cw = -qx, -qy, -qz, qw
     tx = 2.0 * (cy * vz - cz * vy)
@@ -238,6 +261,9 @@ class GridPatrolNode(Node):
         self._last_imu_stamp = None
         self._last_imu_time = None
         self._gyro_q = (math.cos(start_yaw / 2), 0.0, 0.0, math.sin(start_yaw / 2))  # (w, x, y, z) = 起始朝向
+        self._imu_gaps = 0  # debug：IMU 封包間隔 > 1.5 ms 的次數 (= 掉封包，1kHz 應該每 1 ms 一筆)
+        self.real_roll = None
+        self.real_pitch = None
 
         # ---- debug：追蹤中的目標球是幾號 (用真實座標反推，不是 vision_node 自己
         # 知道的，vision_node 只有像素座標，沒有球的身分) ----
@@ -277,6 +303,7 @@ class GridPatrolNode(Node):
             't', 'x', 'y', 'yaw', 'state', 'wp_index', 'cell_number',
             'real_x', 'real_y', 'real_yaw', 'target_ball_guess',
             'x_wall', 'y_wall', 'yaw_wall',
+            'real_roll', 'real_pitch', 'gyro_roll', 'gyro_pitch', 'imu_gaps',
         ])
         self.touch_file = open(self.run_dir / 'ball_touches.csv', 'w', newline='')
         self.touch_writer = csv.writer(self.touch_file)
@@ -361,8 +388,12 @@ class GridPatrolNode(Node):
         wx, wy, wz = msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z
         if self._last_imu_stamp is not None:
             dt = stamp - self._last_imu_stamp
+            if dt > 0.0015:
+                self._imu_gaps += 1
             if 0 < dt < 0.5:
-                self._gyro_q = quat_integrate(self._gyro_q, wx, wy, wz, dt)
+                a = msg.linear_acceleration
+                cx, cy, cz = tilt_correction(self._gyro_q, a.x, a.y, a.z)
+                self._gyro_q = quat_integrate(self._gyro_q, wx + cx, wy + cy, wz + cz, dt)
                 qw, qx, qy, qz = self._gyro_q
                 self.yaw = math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
             wall_dt = now - self._last_imu_time
@@ -529,6 +560,8 @@ class GridPatrolNode(Node):
         self.real_x = p.x + ox * math.cos(yaw) - oy * math.sin(yaw)
         self.real_y = p.y + ox * math.sin(yaw) + oy * math.cos(yaw)
         self.real_yaw = yaw
+        self.real_roll = math.atan2(2.0 * (o.w * o.x + o.y * o.z), 1.0 - 2.0 * (o.x * o.x + o.y * o.y))
+        self.real_pitch = math.asin(max(-1.0, min(1.0, 2.0 * (o.w * o.y - o.z * o.x))))
 
         if not self.done:
             if self._is_out_of_bounds(self.real_x, self.real_y):
@@ -580,13 +613,22 @@ class GridPatrolNode(Node):
         self.traj_writer.writerow([f'{elapsed:.2f}', f'{self.x:.3f}', f'{self.y:.3f}',
                                     f'{self.yaw:.3f}', self.state, self.wp_index, self._current_cell_number(),
                                     real_x, real_y, real_yaw, self._estimate_target_ball(),
-                                    f'{self.x_wall:.3f}', f'{self.y_wall:.3f}', f'{self.yaw_wall:.3f}'])
+                                    f'{self.x_wall:.3f}', f'{self.y_wall:.3f}', f'{self.yaw_wall:.3f}',
+                                    *self._tilt_debug(), self._imu_gaps])
         self.traj_file.flush()
 
     def _sim_elapsed(self):
         if self._first_stamp is None or self._last_stamp is None:
             return 0.0
         return self._last_stamp - self._first_stamp
+
+    def _tilt_debug(self):
+        # debug：車體真實 roll/pitch vs 陀螺儀積分出來的 roll/pitch (度)，看傾斜事件跟積分誤差
+        qw, qx, qy, qz = self._gyro_q
+        g_roll = math.atan2(2.0 * (qw * qx + qy * qz), 1.0 - 2.0 * (qx * qx + qy * qy))
+        g_pitch = math.asin(max(-1.0, min(1.0, 2.0 * (qw * qy - qz * qx))))
+        fmt = lambda v: '' if v is None else f'{math.degrees(v):.2f}'
+        return fmt(self.real_roll), fmt(self.real_pitch), fmt(g_roll), fmt(g_pitch)
 
     def _finish_run(self, reason):
         self.done = True

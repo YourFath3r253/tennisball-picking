@@ -32,6 +32,35 @@ DEFAULT_BALL_NAMES = ['ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5',
 
 WORLD_PATH = Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'worlds' / 'tennis_court.world'
 
+# ---- 網球物理 (模擬真實化 R1)：照 ITF 規格，不再用 27 g 實心球 ----
+# 質量：ITF 56.0~59.4 g，取中間 57.7 g (舊值 27 g 只有真實的一半)。
+# 但是改成 57.7 g 之後目前的滾輪模型撿不起來 (experiments/roller_pickup/pickup_test.py 實測：
+# W=42.5/50/55、海綿 kp=150/300/600 共 12 次全部卡在車頭前面，0/12)。滾輪位置本來就跟 CAD 不同、
+# 海綿 k 值也是用 27 g 球調出來的，要等 A 同學的 3D 檔 (滾輪真實位置/角度) + 實測滾輪轉速才能重新
+# 鑑定滾輪模型。所以預設質量暫時維持 27 g，其他網球性質 (慣量、剛性、滾動阻力) 照 ITF/文獻。
+BALL_MASS_ITF = 0.0577
+BALL_MASS_DEFAULT = 0.027
+BALL_RADIUS = 0.033
+# 轉動慣量：網球是約 3.2 mm 厚的橡膠殼 (外徑約 6.7 cm)，厚殼球
+# I = (2/5) m (ro^5 - ri^5) / (ro^3 - ri^3) ≈ 0.6 m r^2 (舊值用實心球 0.4 m r^2)。
+BALL_INERTIA_COEF = 0.6
+# 接觸剛性：ITF 前向變形 0.56~0.74 cm (8.165 kg = 80.1 N 壓力下)，取 0.65 cm
+# -> k ≈ 80.1 / 0.0065 ≈ 1.23e4 N/m (舊值 1e5，比真實硬 8 倍)。
+# 但是試過之後不採用：球躺在後車廂 (STL 網格碰撞) 裡時，ODE 軟接觸會抖動，陀螺儀積分跟著出錯。
+# 實測 (後車廂 6 顆球直線開 15 s，量陀螺儀積分 vs 真實航向)：kp=1.23e4 誤差 0.80~1.27°，
+# 加上用反彈係數 0.75 換算的阻尼 kd=3.3 還是 0.54°，kp=1e5 只有 -0.01~0.14°。
+# 整場 run119/120 航向誤差因此到 5.8~20.6° (baseline 0.57°)。這是 ODE 數值問題不是真實物理，
+# 所以剛性維持舊值 1e5 (球的變形量對撿球路徑/時間影響很小)。
+BALL_KP_ITF = 1.23e4
+BALL_KP = 1e5
+BALL_KD = 1.0
+# 滾動阻力：真實網球毛氈滾動摩擦係數 μr ≈ 0.01~0.03 (Singh et al. 2008, arXiv:0809.4823)，
+# 但 ODE 沒有滾動摩擦，被撞到的球會一直滾 (run103 有球滾到 36 m 外、run109 滾到 289 m)。
+# 用 link 的角速度衰減近似 (每個物理步把角速度乘 1-c)，c 由 experiments/ball_roll_test.py 校正：
+# 目標是 0.3 m/s 推出去的球滾 ~0.75 m、1 m/s 滾 ~2.5 m (指數衰減 λ≈0.4/s，介於真實
+# 庫倫型滾動阻力在低速/高速的兩端之間)。
+BALL_ANGULAR_DECAY = 1.07e-3
+
 
 def cell1_bounds():
     _, _, cells = court_path_with_net()
@@ -72,6 +101,7 @@ BALL_TEMPLATE = """    <model name="{name}">
           <mass>{mass}</mass>
           <inertia><ixx>{inertia}</ixx><iyy>{inertia}</iyy><izz>{inertia}</izz></inertia>
         </inertial>
+        <velocity_decay><linear>0</linear><angular>{angular_decay}</angular></velocity_decay>
         <collision name="collision">
           <geometry><sphere><radius>0.033</radius></sphere></geometry>
           <surface>
@@ -111,11 +141,11 @@ def random_positions_half_court(rng, names):
 
 def write_world(positions, mass, world_path=None):
     """把 world 檔案裡所有 ball_* 模型整段換掉，改成 positions 裡的球 (球數任意)。"""
-    inertia = round(0.4 * mass * 0.033 ** 2, 8)  # 實心球 I = 2/5 m r^2
-    if mass <= 0.03:
-        kp, kd = 100000.0, 1.0
+    inertia = round(BALL_INERTIA_COEF * mass * BALL_RADIUS ** 2, 9)
+    if mass > 1.0:
+        kp, kd = 100000000.0, 10.0  # 舊的「超重卡死球」測試用 (mass 10)
     else:
-        kp, kd = 100000000.0, 10.0
+        kp, kd = BALL_KP, BALL_KD
 
     world_path = Path(world_path) if world_path else WORLD_PATH
     content = world_path.read_text()
@@ -123,7 +153,8 @@ def write_world(positions, mass, world_path=None):
     if not blocks:
         raise RuntimeError('world 檔案裡找不到 ball_* 模型，不知道要插在哪')
     new_blocks = ''.join(
-        BALL_TEMPLATE.format(name=name, x=x, y=y, mass=mass, inertia=inertia, kp=kp, kd=kd)
+        BALL_TEMPLATE.format(name=name, x=x, y=y, mass=mass, inertia=inertia, kp=kp, kd=kd,
+                             angular_decay=BALL_ANGULAR_DECAY)
         for name, (x, y) in positions.items()
     )
     content = content[:blocks[0].start()] + new_blocks + content[blocks[-1].end():]
@@ -132,7 +163,8 @@ def write_world(positions, mass, world_path=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--mass', type=float, required=True)
+    ap.add_argument('--mass', type=float, default=BALL_MASS_DEFAULT,
+                    help=f'預設 {BALL_MASS_DEFAULT} kg (ITF 是 {BALL_MASS_ITF}，滾輪模型目前撿不起來)')
     ap.add_argument('--seed', type=int, default=None)
     ap.add_argument('--save', type=str, default=None, help='隨機產生新位置後存到這個json檔')
     ap.add_argument('--load', type=str, default=None, help='從這個json檔讀位置，不重新隨機')

@@ -13,7 +13,7 @@ mkdir -p "$LAYOUT_DIR"
 echo "seed,run_dir,result,layout_json" > "$MANIFEST"
 for seed in "$@"; do
     layout="$LAYOUT_DIR/${TAG}_seed${seed}.json"
-    python3 experiments/gen_ball_layout.py --mass 0.027 --seed "$seed" --save "$layout" $BALL_ARGS > /dev/null
+    python3 experiments/gen_ball_layout.py --mass ${BALL_MASS:-0.027} --seed "$seed" --save "$layout" $BALL_ARGS > /dev/null
     colcon build --packages-select tennis_bot > /dev/null 2>&1
     source install/setup.bash
     out=$(LAYOUT_JSON="$layout" bash experiments/run_once.sh "${TAG}_s${seed}" 2>&1)
@@ -23,7 +23,7 @@ for seed in "$@"; do
     echo "seed=$seed $run_dir $result"
 done
 # 跑完把 world 檔案還原成標準佈局
-python3 experiments/gen_ball_layout.py --mass 0.027 --load "$LAYOUT_DIR/standard.json" > /dev/null
+python3 experiments/gen_ball_layout.py --mass ${BALL_MASS:-0.027} --load "$LAYOUT_DIR/standard.json" > /dev/null
 colcon build --packages-select tennis_bot > /dev/null 2>&1
 echo "RANDOM_BATCH_DONE"
 cat "$MANIFEST"

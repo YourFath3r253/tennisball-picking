@@ -338,9 +338,12 @@
     </sensor>
   </gazebo>
 
-  <!-- 理想陀螺儀 (IMU)：直接量測車體真實角速度，不經過輪子，不受打滑影響。
-       沒有加 <noise> 區塊 = 完美無誤差，先驗證「陀螺儀角速度取代輪速角速度」
-       這個方向本身有沒有用，之後如果要驗證現實可行性，再加雜訊/偏移模型。
+  <!-- 陀螺儀 (IMU)：直接量測車體真實角速度，不經過輪子，不受打滑影響。
+       模擬真實化 R4：加上雜訊 + 零點偏移 (原本沒有 <noise> = 完美無誤差)，對應實體車 BNO080：
+       - 白雜訊：BNO080 沒公開陀螺儀雜訊密度，用同家族 BMI055 規格 0.014 °/s/√Hz，
+         1000Hz 取樣每筆標準差 = 0.014*√1000 = 0.44 °/s = 0.0077 rad/s
+       - 零點偏移：BNO080 規格書 Game Rotation Vector 航向漂移 0.5 °/min = 1.45e-4 rad/s，
+         當作校正後殘留的偏移 (Gazebo 每次開機隨機抽一個偏移值，正負號隨機)
        base_link 完全是空的 (沒有 inertial)，感測器直接掛上去 Gazebo 沒有正確
        產生 /imu topic，所以跟 camera_link 一樣另外開一個小 link 掛感測器。 -->
   <link name="imu_link">
@@ -361,7 +364,13 @@
       <always_on>true</always_on>
       <update_rate>1000</update_rate>
       <visualize>true</visualize>
-      <imu></imu>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></z>
+        </angular_velocity>
+      </imu>
       <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
         <ros>
           <namespace>/</namespace>
