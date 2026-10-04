@@ -1,5 +1,8 @@
 import csv
+import os
+import random
 import time
+from collections import deque
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -30,6 +33,20 @@ SAME_BALL_PX = 150
 ENTER_CONTOUR_AREA = 55   # 新抓目標的門檻 (跟原本 MIN_CONTOUR_AREA 一樣)
 LOCKED_CONTOUR_AREA = 15  # 已鎖定目標，面積掉到這以下才算真的看丟
 
+# ---- 真實相機模型 (模擬真實化 R5)：更新率 + 延遲照實體車實測 ----
+# 預設開啟；TENNISBOT_CAMERA_MODEL=ideal 可以關掉 (回到 Gazebo 30Hz 每幀立刻處理)。
+# 更新率：實體車 run10/12/13/14/15 共約 2700 幀的 CSV，視覺輸出平均 4.4 Hz，而且間隔是固定的
+#   三拍節奏 0.11 / 0.11 / 0.45 s (D 同學程式每 3 幀做一次球場邊界色彩分類，那一幀多花 ~0.34 s)。
+# 延遲：run12 (Kp=1.5) 8 次左右擺盪，用「衝過頭的角度 ÷ 衝過零點時的角速度」估出整個迴路的
+#   等效延遲 0.53~0.92 s (平均 0.70 s)，包含相機緩衝區舊幀 (OpenCV V4L2 預設 4 個 buffer，
+#   處理比相機慢時讀到的是好幾拍以前的畫面)、TensorRT 推論、UART、馬達反應。
+#   這裡的 FRAME_AGE 是「發布時用的那張畫面有多舊」，用 experiments/step_response_test.py
+#   校正到模擬裡量出來的等效延遲跟實體車一樣。
+CAMERA_MODEL = os.environ.get('TENNISBOT_CAMERA_MODEL', 'real')
+REAL_OUTPUT_INTERVALS = (0.11, 0.11, 0.45)
+REAL_INTERVAL_JITTER = 0.01
+REAL_FRAME_AGE = float(os.environ.get('TENNISBOT_CAMERA_LATENCY', '0.5'))
+
 class VisionNode(Node):
     def __init__(self):
         super().__init__('vision_node')
@@ -54,14 +71,45 @@ class VisionNode(Node):
         ])
         self._last_debug_log_time = 0.0
 
-        self.get_logger().info('Vision Node 升級版(目標鎖定)已啟動...')
+        # 真實相機模型用：最近 ~1.5 秒的畫面 (模擬時間戳, msg)，跟下一次輸出的模擬時間
+        self._frame_buffer = deque()
+        self._next_output_stamp = None
+        self._output_count = 0
+        self._rng = random.Random(0)
+
+        mode = (f'真實相機模型 (輸出間隔 {REAL_OUTPUT_INTERVALS} s，畫面延遲 {REAL_FRAME_AGE:.2f} s)'
+                if CAMERA_MODEL == 'real' else '理想相機 (30Hz、無延遲)')
+        self.get_logger().info(f'Vision Node 升級版(目標鎖定)已啟動... {mode}')
 
     def _reset_lock_cb(self, msg):
         self.locked_cx, self.locked_cy = None, None
 
     def image_callback(self, msg):
-        # 理想相機：Gazebo 每來一幀 (30Hz) 就立刻處理、立刻發布，沒有延遲
-        self._process_frame(msg)
+        if CAMERA_MODEL != 'real':
+            # 理想相機：Gazebo 每來一幀 (30Hz) 就立刻處理、立刻發布，沒有延遲
+            self._process_frame(msg)
+            return
+        # 真實相機：畫面先存起來，到了輸出時間才拿「FRAME_AGE 秒以前」的那張來處理。
+        # 全部用模擬時間 (影像時間戳)，即時率 <1 時延遲也不會被拉長。
+        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        self._frame_buffer.append((stamp, msg))
+        while self._frame_buffer and stamp - self._frame_buffer[0][0] > REAL_FRAME_AGE + 1.0:
+            self._frame_buffer.popleft()
+        if self._next_output_stamp is None:
+            self._next_output_stamp = stamp + REAL_FRAME_AGE
+        if stamp < self._next_output_stamp:
+            return
+        target = stamp - REAL_FRAME_AGE
+        chosen = self._frame_buffer[0][1]
+        for s, m in self._frame_buffer:
+            if s <= target:
+                chosen = m
+            else:
+                break
+        self._process_frame(chosen)
+        interval = REAL_OUTPUT_INTERVALS[self._output_count % len(REAL_OUTPUT_INTERVALS)]
+        self._output_count += 1
+        self._next_output_stamp = stamp + interval + self._rng.uniform(-REAL_INTERVAL_JITTER, REAL_INTERVAL_JITTER)
 
     def _process_frame(self, msg):
         try:
