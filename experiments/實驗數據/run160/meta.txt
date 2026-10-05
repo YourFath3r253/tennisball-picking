@@ -1,0 +1,7 @@
+start_epoch=1791198754.1789575
+steer_kp=1.5
+delay_comp=gyro
+delay_comp_sec=0.8
+mode=boundary_bounce
+bounce_angle_deg=135.0
+timeout_sec=900.0

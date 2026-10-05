@@ -9,8 +9,11 @@ Kp 單位跟實體車 main.c 的 STEER_KP 一樣 (rpm/度)，所以可以直接�
 擺盪時的等效延遲 (衝過頭角度 / 過零角速度)、擺幅。
 
 用法 (Gazebo + vision_node 要先開著，標準 9 顆球 world；motor_driver_node 由 sim_launch 帶起來)：
-  python3 experiments/step_response_stm32.py <out.csv> <Kp> [bearing_deg=29] [duration=20]
+  python3 experiments/step_response_stm32.py <out.csv> <Kp> [bearing_deg=29] [duration=20] [comp=off|gyro|encoder] [D=0.8]
+相機延遲補償 (comp)：見 experiments/delay_comp_design.py。收到 BALL 時目標航向 psi* = psi(現在-D) - 角度，
+之後每 10 ms 用最新轉角 (陀螺儀 /imu 或編碼器積分 /wheel_rpm) 算誤差 e = psi* - psi，y = Kp*e。
 """
+from collections import deque
 import csv
 import math
 import sys
@@ -20,6 +23,7 @@ from pathlib import Path
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
+from sensor_msgs.msg import Imu
 from std_msgs.msg import Float32MultiArray, String
 from gazebo_msgs.srv import GetEntityState, SetEntityState
 
@@ -31,13 +35,24 @@ ROBOT_X, ROBOT_Y = -6.0, 0.0
 CAM_IN_BASE = (0.10, -0.135)
 BALL_DIST = 0.8
 STEER_WHEEL_MAX = 45.0
+WHEEL_R, WHEEL_L = 0.052, 0.243  # 實體車幾何 (main.c)，編碼器積分轉角用
 OTHER_BALLS = ['ball_2', 'ball_3', 'ball_4', 'ball_5', 'ball_7', 'ball_8', 'ball_9', 'ball_10', 'ball_6']
 
 
 class StepTest(Node):
-    def __init__(self, out, kp, bearing_deg, duration):
+    def __init__(self, out, kp, bearing_deg, duration, comp='off', delay=0.8):
         super().__init__('step_response_stm32')
         self.kp, self.duration = kp, duration
+        self.comp, self.delay = comp, delay
+        self.sim_now = None
+        self.gyro_yaw = 0.0      # deg，逆時針正
+        self.enc_yaw = 0.0
+        self._last_imu = None
+        self._last_rpm_t = None
+        self.hist = deque(maxlen=3000)  # (sim_t, gyro_yaw, enc_yaw)
+        self.psi_target = None
+        self.create_subscription(Imu, '/imu', self._imu_cb, 50)
+        self.create_timer(0.01, self._comp_tick)
         self.bearing0 = math.radians(bearing_deg)
         self.wheel_pub = self.create_publisher(Float32MultiArray, '/wheel_target_rpm', 10)
         self.get_cli = self.create_client(GetEntityState, '/get_entity_state')
@@ -51,11 +66,50 @@ class StepTest(Node):
         self.armed = False
         self.create_subscription(Point, '/target_position', self._target_cb, 10)
         self.create_subscription(String, '/jetson_uart', self._uart_cb, 10)
-        self.create_subscription(Float32MultiArray, '/wheel_rpm', lambda m: setattr(self, 'rpm', list(m.data)), 10)
+        self.create_subscription(Float32MultiArray, '/wheel_rpm', self._rpm_cb, 10)
         self.f = open(out, 'w', newline='')
         self.w = csv.writer(self.f)
         self.w.writerow(['t', 'raw_bearing_deg', 'uart_bearing_deg', 'true_bearing_deg', 'new_vision',
                          'target_left', 'actual_left', 'target_right', 'actual_right'])
+
+    def _imu_cb(self, m):
+        st = m.header.stamp.sec + m.header.stamp.nanosec * 1e-9
+        if self._last_imu is not None and 0 < st - self._last_imu < 0.5:
+            self.gyro_yaw += math.degrees(m.angular_velocity.z) * (st - self._last_imu)
+        self._last_imu = st
+        self.sim_now = st
+        self.hist.append((st, self.gyro_yaw, self.enc_yaw))
+
+    def _rpm_cb(self, m):
+        self.rpm = list(m.data)
+        if self.sim_now is None:
+            return
+        if self._last_rpm_t is not None and 0 < self.sim_now - self._last_rpm_t < 0.5:
+            wl = m.data[1] * 2 * math.pi / 60.0
+            wr = m.data[3] * 2 * math.pi / 60.0
+            self.enc_yaw += math.degrees(WHEEL_R * (wr - wl) / WHEEL_L) * (self.sim_now - self._last_rpm_t)
+        self._last_rpm_t = self.sim_now
+
+    def _meas(self, row=None):
+        if row is None:
+            return self.gyro_yaw if self.comp == 'gyro' else self.enc_yaw
+        return row[1] if self.comp == 'gyro' else row[2]
+
+    def _yaw_at(self, t):
+        val = None
+        for row in self.hist:
+            if row[0] <= t:
+                val = self._meas(row)
+            else:
+                break
+        return self._meas() if val is None else val
+
+    def _comp_tick(self):
+        if not self.armed or self.comp == 'off' or self.psi_target is None:
+            return
+        y = self.kp * (self.psi_target - self._meas())
+        half = max(-STEER_WHEEL_MAX, min(STEER_WHEEL_MAX, y / 2.0))
+        self._wheels(-half, half if half != 0.0 else 1e-6)
 
     def _target_cb(self, m):
         if m.z == 1.0:
@@ -69,10 +123,14 @@ class StepTest(Node):
         if line.startswith('BALL,'):
             ang = float(line.split(',')[2])
             self.uart = ang
+            if self.comp != 'off' and self.sim_now is not None:
+                self.psi_target = self._yaw_at(self.sim_now - self.delay) - ang
+                return
             y = self.kp * (0.0 - ang)
             half = max(-STEER_WHEEL_MAX, min(STEER_WHEEL_MAX, y / 2.0))
             self._wheels(-half, half)
         elif line.startswith('BALL_OFF'):
+            self.psi_target = None
             self._wheels(0.0, 0.0)
 
     def _wheels(self, l, r):
@@ -140,13 +198,15 @@ def main():
     out, kp = sys.argv[1], float(sys.argv[2])
     bearing = float(sys.argv[3]) if len(sys.argv) > 3 else 29.0
     duration = float(sys.argv[4]) if len(sys.argv) > 4 else 20.0
+    comp = sys.argv[5] if len(sys.argv) > 5 else 'off'
+    delay = float(sys.argv[6]) if len(sys.argv) > 6 else 0.8
     rclpy.init()
-    node = StepTest(out, kp, bearing, duration)
+    node = StepTest(out, kp, bearing, duration, comp, delay)
     node.run()
     rclpy.shutdown()
     m = analyze(out)
     fmt = lambda v: '-' if v is None else f'{v:.2f}'
-    print(f'Kp={kp}: rise(±4°) {fmt(m["rise"])} s, overshoot {fmt(m["over"])}°, '
+    print(f'Kp={kp} comp={comp} D={delay}: rise(±4°) {fmt(m["rise"])} s, overshoot {fmt(m["over"])}°, '
           f'等效延遲 {fmt(m["tau"])} s, 擺幅 {fmt(m["amp"])}°', flush=True)
 
 
