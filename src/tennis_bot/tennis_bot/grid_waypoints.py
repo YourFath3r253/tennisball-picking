@@ -16,7 +16,8 @@ COURT_Y_RANGE = (-5.5, 5.5)
 # (URDF horizontal_fov 1.396 rad = 80° -> θ = 40°)，0.8 是安全係數 (相鄰格子視野重疊，
 # 不漏球)。車走在格子中心線上，左右各看得到 0.8*R*sinθ，剛好蓋滿整格。
 CAMERA_RANGE_M = 3.0
-CAMERA_HALF_FOV_DEG = 40.0
+# 2026-10-05 相機改成對應 D 同學實測：水平視角 66.6° -> θ = 33.3° (原本 80° -> 40°)，格邊長 3.09 -> 2.63 m
+CAMERA_HALF_FOV_DEG = math.degrees(math.atan(256.0 / 390.0))
 COVERAGE_SAFETY = 0.8
 CELL_MAX_M = 2 * COVERAGE_SAFETY * CAMERA_RANGE_M * math.sin(math.radians(CAMERA_HALF_FOV_DEG))
 

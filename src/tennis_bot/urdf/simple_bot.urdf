@@ -312,14 +312,17 @@
 <joint name="camera_joint" type="fixed">
     <parent link="front_chassis"/>
     <child link="camera_link"/>
-    <origin xyz="0.135 0.1 0.13" rpy="0 0 1.5708"/> 
+    <!-- 相機對應 D 同學實測校正 (2026-10-05)：D 程式 image_cx=283 (512 寬的畫面中心是 256)，正前方的球出現在中心右邊 27 px，
+         等於相機光軸往左偏 atan(27/390)=3.96° -> 這裡 yaw 多加 0.0691 rad -->
+    <origin xyz="0.135 0.1 0.13" rpy="0 0 1.6399"/> 
 </joint>
 
 <gazebo reference="camera_link">
     <sensor type="camera" name="tennis_camera">
       <update_rate>30.0</update_rate>
       <camera name="head">
-        <horizontal_fov>1.396</horizontal_fov>
+        <!-- D 同學程式 FOCAL_LENGTH_PX=390 (512x384 輸入) -> 水平視角 2*atan(256/390) = 66.6° = 1.1626 rad (原本 80°) -->
+        <horizontal_fov>1.1626</horizontal_fov>
         <image>
           <width>640</width>
           <height>480</height>

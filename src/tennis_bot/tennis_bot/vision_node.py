@@ -32,8 +32,10 @@ SAME_BALL_PX = 150
 # 40px^2 以下都還算同一顆」，中間留緩衝帶，減少單純因為面積抖動造成的閃爍。
 # 這個做法在真實相機上也適用 (YOLOv8信心值分數用同樣的雙門檻邏輯一樣成立)，
 # 不是只有模擬用的招。
-ENTER_CONTOUR_AREA = 55   # 新抓目標的門檻 (跟原本 MIN_CONTOUR_AREA 一樣)
-LOCKED_CONTOUR_AREA = 15  # 已鎖定目標，面積掉到這以下才算真的看丟
+# 2026-10-05 相機視角 80° -> 66.6° (對應 D 同學實測)，焦距 381.4 -> 487.5 px，同一顆球看起來變大
+# (487.5/381.4)^2 = 1.63 倍，門檻跟著放大，維持「3 m 才開始抓」：55 -> 90、15 -> 25。
+ENTER_CONTOUR_AREA = 90   # 新抓目標的門檻 (≈ 3 m)
+LOCKED_CONTOUR_AREA = 25  # 已鎖定目標，面積掉到這以下才算真的看丟
 
 # ---- D 同學提案：四色邊界偵測 (半場世界 half_court_lines.world 才有色帶，全場世界永遠是 SAFE) ----
 # 只看畫面下方「離相機 BOUNDARY_TRIGGER_DIST_M 以內的地面」那一塊 (ROI)。相機高 0.15 m、水平朝前、
@@ -43,7 +45,19 @@ LOCKED_CONTOUR_AREA = 15  # 已鎖定目標，面積掉到這以下才算真的�
 # 發布格式模仿 D 同學實體車程式的 COURT,<SAFE|EDGE|OUT>,<LEFT|CENTER|RIGHT|NONE>,<比例>，
 # 多加顏色跟這張畫面的模擬時間戳：COURT,EDGE,LEFT,0.120,BLUE,123.456
 CAM_HEIGHT_M = 0.15
-FOCAL_PX = 320.0 / math.tan(math.radians(40.0))
+# ---- 相機參數對應 D 同學的實測校正 (2026-10-05) ----
+# D 同學程式 (realtime_camera_trt_distance_uart_nodisplay.py)：FOCAL_LENGTH_PX=390、image_cx=283，
+# 都是 512x384 畫面的值；換成 640x480：焦距 487.5 px (水平視角 66.6°，URDF 同步改)，
+# 「正前方」在第 353.75 行 (URDF 相機往左偏 3.96° 來重現這個偏移)。
+CAM_HFOV_DEG = 2.0 * math.degrees(math.atan(256.0 / 390.0))   # 66.6°
+FOCAL_PX = 320.0 / math.tan(math.radians(CAM_HFOV_DEG / 2.0))  # 487.5 px
+CAM_CX = 320.0 + (283.0 - 256.0) * 640.0 / 512.0               # 353.75 px
+# D 同學 6/21 靜態測試 (球放 50 cm 正中/左/右，實體車子程式碼/舊視覺數據_20260919分析)：
+#   距離平均 47.0~48.0 cm (低估約 5.6%，標準差 0.24~0.52 cm)，角度標準差 0.27~0.89°。
+# 模擬照這個加：距離乘 0.944 再加 1% 雜訊、角度加 0.6° 雜訊 (每一幀獨立)。
+DIST_BIAS = 0.944
+DIST_NOISE_FRAC = 0.01
+BEARING_NOISE_DEG = 0.6
 BOUNDARY_TRIGGER_DIST_M = 0.6
 BOUNDARY_ROI_TOP = int(240 + FOCAL_PX * CAM_HEIGHT_M / BOUNDARY_TRIGGER_DIST_M)
 BOUNDARY_MIN_PIXELS = 300
@@ -59,8 +73,10 @@ BOUNDARY_SIDE_RATIO = 1.5  # 一側像素是另一側的 1.5 倍以上才算偏�
 #   這裡的 FRAME_AGE 是「發布時用的那張畫面有多舊」，用 experiments/step_response_test.py
 #   校正到模擬裡量出來的等效延遲跟實體車一樣 (見下面)。
 CAMERA_MODEL = os.environ.get('TENNISBOT_CAMERA_MODEL', 'real')
-REAL_OUTPUT_INTERVALS = (0.11, 0.11, 0.45)
-REAL_INTERVAL_JITTER = 0.01
+# 2026-10-05 用 5 個 run、3199 個連續幀重新量：短間隔 0.1107±0.0037 s、長間隔 0.4525±0.0308 s，
+# 嚴格「短短長」循環 (1053 次，只有 4 次長長、7 次短短短)，平均 4.45 Hz。
+REAL_OUTPUT_INTERVALS = (0.111, 0.111, 0.453)
+REAL_INTERVAL_JITTER = (0.004, 0.004, 0.031)   # 各自的標準差 (常態分布)
 # 校正結果 (experiments/step_response_test.py，K=0.02 飽和 0.6 rad/s，用跟分析實體車一樣的方法)：
 #   FRAME_AGE 0.40 -> 模擬等效延遲 0.55~0.56 s；0.45 -> 0.72 s；0.50 -> 0.79~0.81 s；實體車 0.70 s -> 取 0.45
 #   (理想相機量出來是 0：沒有 overshoot)
@@ -146,7 +162,8 @@ class VisionNode(Node):
         self._process_frame(chosen)
         interval = REAL_OUTPUT_INTERVALS[self._output_count % len(REAL_OUTPUT_INTERVALS)]
         self._output_count += 1
-        self._next_output_stamp = stamp + interval + self._rng.uniform(-REAL_INTERVAL_JITTER, REAL_INTERVAL_JITTER)
+        jitter = REAL_INTERVAL_JITTER[(self._output_count - 1) % len(REAL_INTERVAL_JITTER)]
+        self._next_output_stamp = stamp + max(0.03, interval + self._rng.gauss(0.0, jitter))
 
     def _process_frame(self, msg):
         try:
@@ -272,9 +289,9 @@ class VisionNode(Node):
             _, _, w, h = cv2.boundingRect(contour)
             ball_px = math.sqrt(max(1.0, w * h))
             z_cm = BALL_DIAMETER_CM * FOCAL_PX / ball_px
-            x_cm = (cx - 320.0) * z_cm / FOCAL_PX
-            dist = math.hypot(x_cm, z_cm)
-            bearing = math.degrees(math.atan2(x_cm, z_cm))
+            x_cm = (cx - CAM_CX) * z_cm / FOCAL_PX
+            dist = math.hypot(x_cm, z_cm) * DIST_BIAS * (1.0 + self._rng.gauss(0.0, DIST_NOISE_FRAC))
+            bearing = math.degrees(math.atan2(x_cm, z_cm)) + self._rng.gauss(0.0, BEARING_NOISE_DEG)
             if self._uart_smooth is None:
                 self._uart_smooth = (dist, bearing)
             else:
@@ -304,7 +321,7 @@ class VisionNode(Node):
                 mask = m if mask is None else cv2.bitwise_or(mask, m)
             n = int(cv2.countNonZero(mask))
             if n >= BOUNDARY_MIN_PIXELS and (best is None or n > best[0]):
-                left = int(cv2.countNonZero(mask[:, :320]))
+                left = int(cv2.countNonZero(mask[:, :int(CAM_CX)]))  # 以車頭正前方 (不是畫面中心) 分左右
                 best = (n, color, left, n - left)
         if best is None:
             text = f'COURT,SAFE,NONE,0.000,NONE,{frame_stamp:.3f}'
