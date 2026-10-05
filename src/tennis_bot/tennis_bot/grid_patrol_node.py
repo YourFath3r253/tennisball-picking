@@ -1,9 +1,12 @@
 """格點路徑巡邏，四個狀態：
 
   A 巡邏 (PATROL)      沿 32 格弓字型路徑走，0.4 m/s、轉向角速度上限 0.6 rad/s
-  B 對準 (ALIGN)       發現球，原地左右轉，P control 對準畫面中心 (kp=0.005)
-  C 接近 (APPROACH)    對準後往前走，邊走邊用簡單PID修正方向 (球中心偏離畫面
-                        中心的像素誤差)，一路走到相機看不到球為止
+  B 對準 (ALIGN)       發現球，原地左右轉，實體車 STM32 的連續 P 轉向 (STEER_KP=0.6 rpm/度)
+  C 接近 (APPROACH)    對準後往前走，邊走邊用簡單PID修正方向 (球的角度)，一路走到相機看不到球為止
+
+輸入/輸出跟實體車同一套介面 (2026-10-05)：吃 /jetson_uart 的 D 同學 UART 字串 (BALL,距離,角度 /
+BALL_OFF / COURT,...)，送 /wheel_target_rpm 左右輪目標 rpm 給 motor_driver_node (STM32 輪速 PID +
+馬達模型)，不再直接發 /cmd_vel。詳見下方「跟實體車一樣的介面」註解。
   D 盲衝 (BLIND_DASH)  相機看不到球 (死角範圍) 後固定時間直衝，蓋過死角距離
   E 原路倒車 (RETURNING) 追球 (B/C/D) 結束後，把追球期間送出的指令倒過來重播一遍，
                         不靠里程計，直接原路退回巡邏路線再繼續 PATROL
@@ -31,11 +34,12 @@ from pathlib import Path
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Point, Twist
+from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState, Imu
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, Float32MultiArray, String
 from gazebo_msgs.srv import GetEntityState, SetEntityState
 
+from tennis_bot.motor_model import TargetRamp, body_to_wheel_rpm
 from tennis_bot.grid_waypoints import (
     court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, CELL_MAX_M,
     NET_X, NET_CLEARANCE_M, NET_BYPASS_Y)
@@ -79,7 +83,21 @@ RIGHT_WHEEL_JOINT = 'right_wheel_joint'
 PATROL_SPEED = 0.4
 PATROL_MAX_OMEGA = 0.6
 
+# ---- 跟實體車一樣的介面 (2026-10-05) ----
+# 輸入：/jetson_uart，D 同學 Jetson 程式送給 STM32 的同一套字串 (BALL,<距離cm>,<角度deg> / BALL_OFF /
+#       COURT,...)，角度球在右邊為正。以前是吃 vision_node 的像素座標 /target_position。
+# 輸出：/wheel_target_rpm [左, 右]，等於 STM32 的 pid_left/right.target_rpm，由 motor_driver_node
+#       (STM32 輪速 PID + 馬達模型) 去轉；以前是直接發 /cmd_vel 給 Gazebo (下多少就瞬間多少)。
+#       車體速度 -> 輪速用實體車幾何 (輪半徑 0.052、輪距 0.243)。直走/巡邏照 B 同學 Chassis_Forward 的
+#       軟起步 (15 rpm 起跳、每次最多 +8 rpm，見 motor_model.TargetRamp)。
+# 看丟判定：BALL 每次視覺輸出才來一筆 (實測間隔最長 0.45 s)，超過 LOST_BALL_GRACE_SEC 沒來、或收到 BALL_OFF 才算看丟。
+
 # ---- 狀態 B 對準 ----
+# 2026-10-05 改成實體車 STM32 的連續 P 轉向 (Chassis_SteerP)：y = STEER_KP*(0-角度)，左輪 -y/2、右輪 +y/2，
+# 單輪飽和 ±45 rpm。STEER_KP=0.6 是 9/21 實體車驗證、Sean 採用的值 (rise ~3.5 s)。
+STEER_KP = 0.6            # rpm / 度
+STEER_WHEEL_MAX = 45.0    # rpm
+ALIGN_DONE_DEG = 5.0      # 角度小於這個就從對準換成接近
 # 純 P 控制。曾經以為兩顆球角度接近時的擺盪是控制過衝，加了D項沒有效果——
 # 真正原因是 vision_node 那邊鎖定的目標本身在兩顆球之間切換，不是同一顆球的
 # 誤差訊號在震盪，D項對不連續跳動的訊號沒有意義。改用 vision 端更嚴格的鎖定
@@ -87,17 +105,19 @@ PATROL_MAX_OMEGA = 0.6
 ALIGN_KP = 0.005
 ALIGN_MAX_OMEGA = 0.6
 PX_PER_RAD = 458.5  # 640px / 1.396rad 相機水平視角
-ALIGN_THRESHOLD_PX = math.radians(5.0) * PX_PER_RAD  # ~40px，對應 5 度
+ALIGN_THRESHOLD_PX = math.radians(5.0) * PX_PER_RAD  # ~40px，對應 5 度 (舊的像素版，現在用 ALIGN_DONE_DEG)
+PX_PER_DEG = PX_PER_RAD * math.pi / 180.0  # 8.0 px/度，舊的像素增益換算成每度用
 
 # ---- 狀態 C 接近 ----
 APPROACH_SPEED = 0.3
-LOST_BALL_GRACE_SEC = 0.3  # 單幀漏檢的寬限期，避免雜訊誤判成「已經看不到了」
+# 0.3 -> 0.6：UART 版沒有「這一幀沒看到」的訊息，只能看 BALL 多久沒來；實測視覺輸出間隔最長 0.45 s
+LOST_BALL_GRACE_SEC = 0.6
 # 原本 APPROACH 是完全不修正方向的直走，ALIGN 交接時殘留的 ±5° 誤差在距離遠時
 # (接近3m偵測極限) 會被放大成明顯的橫向偏移。改成簡單 PID，邊走邊用同一個像素
 # 誤差(球中心離畫面中心多遠)修正角速度，先用一組保守的參數試試看。
-APPROACH_PID_KP = 0.0025
+APPROACH_PID_KP = 0.0025 * PX_PER_DEG   # rad/s 每度 (原本 0.0025 rad/s 每像素)
 APPROACH_PID_KI = 0.0
-APPROACH_PID_KD = 0.0008
+APPROACH_PID_KD = 0.0008 * PX_PER_DEG
 APPROACH_MAX_OMEGA = 0.3
 
 # ---- 狀態 D 盲衝 ----
@@ -274,9 +294,16 @@ class GridPatrolNode(Node):
         self._approach_prev_error = 0.0
         self._approach_prev_time = None
 
-        # ---- 視覺 ----
-        self.last_target = None
+        # ---- 視覺 (UART 協定) ----
         self.last_seen_time = None
+        self.ball_angle_deg = 0.0    # 球的角度，右邊為正 (D 同學協定)
+        self.ball_dist_cm = 0.0
+        self._ball_off = True
+        self._court = None           # 最新一筆 COURT：(state, side, ratio, color, 收到的時間)
+
+        # ---- 輸出：左右輪目標 rpm (斜坡) ----
+        self._ramp_l = TargetRamp()
+        self._ramp_r = TargetRamp()
 
         # ---- 狀態機 ----
         self.state = 'PATROL'  # PATROL / ALIGN / APPROACH / BLIND_DASH / RETURNING
@@ -322,13 +349,19 @@ class GridPatrolNode(Node):
             f.write(f'start_epoch={self.start_time}\n')
         self.done = False
 
-        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.wheel_pub = self.create_publisher(Float32MultiArray, '/wheel_target_rpm', 10)
         self.roller_pub = self.create_publisher(Twist, '/roller_cmd', 10)
         self.roller_timer = self.create_timer(0.1, self._publish_roller_cmd)  # 滾輪常轉
         self.vision_reset_pub = self.create_publisher(Empty, '/vision_reset_lock', 10)
         self.create_subscription(JointState, '/joint_states', self._joint_state_cb, 10)
         self.create_subscription(Imu, '/imu', self._imu_cb, 10)
-        self.create_subscription(Point, '/target_position', self._target_cb, 10)
+        self.create_subscription(String, '/jetson_uart', self._uart_cb, 10)
+        # 模擬的 STM32 RPM telemetry (motor_driver_node)，跟實體車 runXX_rpm.csv 一樣記下來
+        self.rpm_file = open(self.run_dir / 'wheel_rpm.csv', 'w', newline='')
+        self.rpm_writer = csv.writer(self.rpm_file)
+        self.rpm_writer.writerow(['t', 'target_left_rpm', 'actual_left_rpm', 'target_right_rpm', 'actual_right_rpm',
+                                  'pwm_left', 'pwm_right', 'state'])
+        self.create_subscription(Float32MultiArray, '/wheel_rpm', self._wheel_rpm_cb, 10)
 
         self.get_entity_cli = self.create_client(GetEntityState, '/get_entity_state')
 
@@ -445,19 +478,69 @@ class GridPatrolNode(Node):
         self._last_odom_time = now
         self._last_stamp = stamp
 
-    # ---------------- 視覺 ----------------
-    def _target_cb(self, msg):
-        self.last_target = msg
-        if msg.z == 1.0:
-            self.last_seen_time = self.get_clock().now().nanoseconds / 1e9
-            if self._vision_ignore_until is not None and self.last_seen_time < self._vision_ignore_until:
+    # ---------------- 視覺 (Jetson -> STM32 的 UART 字串) ----------------
+    def _uart_cb(self, msg):
+        line = msg.data.strip()
+        now = self.get_clock().now().nanoseconds / 1e9
+        if line.startswith('BALL,'):
+            try:
+                _, d, a = line.split(',')[:3]
+                self.ball_dist_cm, self.ball_angle_deg = float(d), float(a)
+            except ValueError:
                 return
-            if self.state == 'PATROL':
-                self.state = 'ALIGN'
-                self.chase_cmd_log = []
-                guess = self._estimate_target_ball()
-                self.get_logger().info(
-                    f'發現網球 -> 對準 (猜是{guess or "?"}，目前在往格 {self.cell_numbers[self.wp_index]} 的路上)')
+            self.last_seen_time = now
+            self._ball_off = False
+            self._on_ball_seen(now)
+        elif line.startswith('BALL_OFF'):
+            self._ball_off = True
+        elif line.startswith('COURT,'):
+            parts = line.split(',')
+            if len(parts) >= 5:
+                try:
+                    self._court = (parts[1], parts[2], float(parts[3]), parts[4], now)
+                except ValueError:
+                    pass
+
+    def _on_ball_seen(self, now):
+        if self._vision_ignore_until is not None and now < self._vision_ignore_until:
+            return
+        if self.state == 'PATROL':
+            self.state = 'ALIGN'
+            self.chase_cmd_log = []
+            guess = self._estimate_target_ball()
+            self.get_logger().info(
+                f'發現網球 -> 對準 (猜是{guess or "?"}，目前在往格 {self.cell_numbers[self.wp_index]} 的路上)')
+
+    def _ball_visible(self, now):
+        return (self.last_seen_time is not None and not self._ball_off
+                and now - self.last_seen_time < LOST_BALL_GRACE_SEC)
+
+    # ---------------- 輸出：左右輪目標 rpm ----------------
+    def _publish_wheels(self, left, right):
+        msg = Float32MultiArray()
+        msg.data = [float(left), float(right)]
+        self.wheel_pub.publish(msg)
+
+    def _drive(self, v, w):
+        """車體 (v, ω) -> 實體車輪速 -> 斜坡 (B 同學軟起步) -> STM32 目標。"""
+        left, right = body_to_wheel_rpm(v, w)
+        self._publish_wheels(self._ramp_l.update(left), self._ramp_r.update(right))
+
+    def _set_wheels(self, left, right):
+        """直接設定左右輪目標 (= Chassis_SteerP，原地轉向用，不經過斜坡)。"""
+        self._ramp_l.current, self._ramp_r.current = left, right
+        self._publish_wheels(left, right)
+
+    def _stop(self):
+        """= Chassis_Stop()：目標歸零 (馬達模型那邊會清積分)。"""
+        self._ramp_l.current = self._ramp_r.current = 0.0
+        self._publish_wheels(0.0, 0.0)
+
+    def _wheel_rpm_cb(self, msg):
+        if self.done or len(msg.data) < 6:
+            return
+        self.rpm_writer.writerow([f'{time.time() - self.start_time:.3f}'] + [f'{v:.2f}' for v in msg.data[:6]]
+                                 + [self.state])
 
     # ---------------- 撿球判定 (球有沒有躺在後車廂裡，用真實座標) ----------------
     # 每個 tick 只查「一顆」球 (輪流)，不是一次查全部：之前每 0.1 秒對每顆球各發一次
@@ -582,10 +665,9 @@ class GridPatrolNode(Node):
     # 是近似值 (用 base_link 的位置/朝向，沒有扣掉相機本身 0.135m 的左右偏移)，
     # 只用來debug，不是精確判定。
     def _estimate_target_ball(self):
-        if (self.last_target is None or self.last_target.z != 1.0
-                or self.real_x is None or self.real_yaw is None):
+        if self.last_seen_time is None or self.real_x is None or self.real_yaw is None:
             return ''
-        implied_bearing = (320.0 - self.last_target.x) / PX_PER_RAD
+        implied_bearing = -math.radians(self.ball_angle_deg)  # 協定角度右邊為正，這裡左邊為正
         best_name, best_diff = '', None
         for name, (bx, by) in self._ball_real_positions.items():
             if name not in self.remaining_balls:
@@ -632,7 +714,7 @@ class GridPatrolNode(Node):
 
     def _finish_run(self, reason):
         self.done = True
-        self.cmd_pub.publish(Twist())
+        self._stop()
         elapsed = time.time() - self.start_time
         sim_elapsed = self._sim_elapsed()
         self.get_logger().info(
@@ -645,6 +727,7 @@ class GridPatrolNode(Node):
         self.real_pose_timer.cancel()
         self.traj_file.close()
         self.touch_file.close()
+        self.rpm_file.close()
         self.dt_debug_file.close()
         self._final_basket_audit()
 
@@ -733,15 +816,13 @@ class GridPatrolNode(Node):
             return
         target_angle = math.atan2(target_y - self.y, target_x - self.x)
         err = angle_diff(target_angle, self.yaw)
-        twist = Twist()
-        twist.angular.z = max(-PATROL_MAX_OMEGA, min(PATROL_MAX_OMEGA, err * 1.2))
+        omega = max(-PATROL_MAX_OMEGA, min(PATROL_MAX_OMEGA, err * 1.2))
         speed_scale = max(0.0, 1.0 - abs(err) / (math.pi / 2))
-        twist.linear.x = PATROL_SPEED * speed_scale
-        self.cmd_pub.publish(twist)
+        self._drive(PATROL_SPEED * speed_scale, omega)
 
     # ---- 狀態 B ----
     def _do_align(self, now):
-        if self.last_target is None or self.last_target.z != 1.0:
+        if not self._ball_visible(now):
             # 對準階段還沒開始靠近，看丟目標不是進了死角，是真的沒有目標了
             # (雜訊或球本來就不在那)，放棄追這顆球，回去巡邏
             if self._ball_truly_lost(now):
@@ -749,14 +830,12 @@ class GridPatrolNode(Node):
                 self.get_logger().info(f'對準時看丟目標 -> 放棄，{how}')
                 self._start_return()
             return
-        error_x = 320.0 - self.last_target.x
-        twist = Twist()
-        if abs(error_x) > ALIGN_THRESHOLD_PX:
-            omega = max(-ALIGN_MAX_OMEGA, min(ALIGN_MAX_OMEGA, error_x * ALIGN_KP))
-            twist.angular.z = omega
-            twist.linear.x = 0.0
-            self.cmd_pub.publish(twist)
-            self.chase_cmd_log.append((twist.linear.x, twist.angular.z))
+        if abs(self.ball_angle_deg) > ALIGN_DONE_DEG:
+            # 實體車 STM32 的連續 P 轉向 (main.c Chassis_SteerP(-half_y, half_y))
+            y = STEER_KP * (0.0 - self.ball_angle_deg)
+            half = max(-STEER_WHEEL_MAX, min(STEER_WHEEL_MAX, y / 2.0))
+            self._set_wheels(-half, half)
+            self.chase_cmd_log.append((-half, half))
         else:
             self.state = 'APPROACH'
             self._approach_integral = 0.0
@@ -765,8 +844,8 @@ class GridPatrolNode(Node):
 
     # ---- 狀態 C ----
     def _do_approach(self, now):
-        if self.last_target is not None and self.last_target.z == 1.0:
-            error_x = 320.0 - self.last_target.x
+        if self._ball_visible(now):
+            error_x = -self.ball_angle_deg  # 度，球在左邊為正 (變數名沿用舊的像素版)
             dt = now - self._approach_prev_time if self._approach_prev_time is not None else 0.1
             dt = dt if 0 < dt < 0.5 else 0.1
             self._approach_integral += error_x * dt
@@ -778,29 +857,22 @@ class GridPatrolNode(Node):
             self._approach_prev_error = error_x
             self._approach_prev_time = now
 
-            twist = Twist()
-            twist.linear.x = APPROACH_SPEED
-            twist.angular.z = omega
-            self.cmd_pub.publish(twist)
-            self.chase_cmd_log.append((twist.linear.x, twist.angular.z))
-        elif self._ball_truly_lost(now):
+            self._drive(APPROACH_SPEED, omega)
+            self.chase_cmd_log.append((self._ramp_l.current, self._ramp_r.current))
+        else:
             # 已經在直走接近了，看不到了 = 進了相機死角，交給盲衝蓋過去
             self.state = 'BLIND_DASH'
             self.blind_dash_until = now + BLIND_DASH_DURATION_SEC
             self.get_logger().info('看不到球了 (死角) -> 盲衝')
 
     def _ball_truly_lost(self, now):
-        time_since_seen = now - self.last_seen_time if self.last_seen_time is not None else float('inf')
-        return time_since_seen >= LOST_BALL_GRACE_SEC
+        return not self._ball_visible(now)
 
     # ---- 狀態 D ----
     def _do_blind_dash(self, now):
         if now < self.blind_dash_until:
-            twist = Twist()
-            twist.linear.x = BLIND_DASH_SPEED
-            twist.angular.z = 0.0
-            self.cmd_pub.publish(twist)
-            self.chase_cmd_log.append((twist.linear.x, twist.angular.z))
+            self._drive(BLIND_DASH_SPEED, 0.0)
+            self.chase_cmd_log.append((self._ramp_l.current, self._ramp_r.current))
         else:
             self.vision_reset_pub.publish(Empty())  # 盲衝結束才放開視覺的目標鎖定
             self._start_return()
@@ -824,12 +896,9 @@ class GridPatrolNode(Node):
             self.chase_cmd_log = []
             self.state = 'PATROL'
             return
-        linear_x, angular_z = self.chase_cmd_log[self.return_index]
+        left, right = self.chase_cmd_log[self.return_index]  # 追球時送出的左右輪目標，反過來重播
         self.return_index -= 1
-        twist = Twist()
-        twist.linear.x = -linear_x
-        twist.angular.z = -angular_z
-        self.cmd_pub.publish(twist)
+        self._set_wheels(-left, -right)
 
 
 def main(args=None):

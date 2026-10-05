@@ -64,7 +64,19 @@ REAL_INTERVAL_JITTER = 0.01
 # 校正結果 (experiments/step_response_test.py，K=0.02 飽和 0.6 rad/s，用跟分析實體車一樣的方法)：
 #   FRAME_AGE 0.40 -> 模擬等效延遲 0.55~0.56 s；0.45 -> 0.72 s；0.50 -> 0.79~0.81 s；實體車 0.70 s -> 取 0.45
 #   (理想相機量出來是 0：沒有 overshoot)
-REAL_FRAME_AGE = float(os.environ.get('TENNISBOT_CAMERA_LATENCY', '0.45'))
+# 2026-10-05 重新校正為 0.60：改成實體車的完整資料流之後 (D 同學程式的 EMA 平滑 + STM32 輪速 PID + 馬達模型，
+#   見 experiments/實驗數據/motor_model_fit.md)，跟馬達參數一起用 Kp=0.3/0.6/1.5 三組實體車數據擬合出 0.60。
+REAL_FRAME_AGE = float(os.environ.get('TENNISBOT_CAMERA_LATENCY', '0.60'))
+
+# ---- 實體車的 UART 協定 (D 同學 realtime_camera_trt_distance_uart_nodisplay.py 原樣照做) ----
+# 實體車：Jetson 每一幀算出最近那顆球的距離/角度，EMA 平滑 (alpha=0.35) 之後，連續偵測到 2 幀才開始送
+#   "BALL,<距離cm>,<角度deg>"，之後每幀都送；連續 5 幀沒看到才送 "BALL_OFF"。角度：球在右邊為正。
+# 模擬：同樣的字串發在 /jetson_uart (std_msgs/String)，控制節點只吃這個 topic (等於 STM32 收 UART)。
+# 球場邊界 (D 同學提案) 也用 D 同學的格式 COURT,<SAFE|EDGE>,<LEFT|CENTER|RIGHT|NONE>,<比例>，後面多一欄顏色。
+BALL_DIAMETER_CM = 6.7
+UART_EMA_ALPHA = 0.35
+BALL_ON_CONFIRM_FRAMES = 2
+BALL_OFF_CONFIRM_FRAMES = 5
 
 class VisionNode(Node):
     def __init__(self):
@@ -73,6 +85,11 @@ class VisionNode(Node):
         self.publisher_ = self.create_publisher(Point, '/target_position', 10)
         self.debug_publisher = self.create_publisher(Image, '/vision/debug_image', 10)
         self.boundary_pub = self.create_publisher(String, '/court_boundary', 10)
+        self.uart_pub = self.create_publisher(String, '/jetson_uart', 10)
+        self._uart_smooth = None       # (dist_cm, bearing_deg) EMA
+        self._detected_streak = 0
+        self._missing_streak = 0
+        self._motor_on = False
         # grid_patrol_node 在盲衝(BLIND_DASH)結束時會發這個，收到才放開鎖定，
         # 讓「鎖定同一顆球，追到盲衝結束才換目標」這件事由狀態機那邊決定時機，
         # 不是 vision_node 自己每幀憑距離判斷。
@@ -226,6 +243,7 @@ class VisionNode(Node):
             target_msg.x, target_msg.y, target_msg.z = -1.0, -1.0, 0.0
 
         self.publisher_.publish(target_msg)
+        self._send_ball_uart(ball_found, best_contour, cx)
         self._detect_boundary(hsv, cv_image, msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9)
 
         now = time.time()
@@ -247,6 +265,33 @@ class VisionNode(Node):
         cv2.imshow("Robot Camera View", cv_image) # 顯示畫好準星的彩色畫面
         #cv2.imshow("HSV Mask", mask)              # 顯示到底什麼東西被判定成黃色 (全黑中帶有白塊)
         cv2.waitKey(1)                            # 這是 OpenCV 更新畫面的關鍵，一定要加！
+
+    def _send_ball_uart(self, ball_found, contour, cx):
+        """照 D 同學程式送 BALL / BALL_OFF (距離用球的外框大小推算，跟 D 同學 estimate_ball_position 同一套)。"""
+        if ball_found and contour is not None:
+            _, _, w, h = cv2.boundingRect(contour)
+            ball_px = math.sqrt(max(1.0, w * h))
+            z_cm = BALL_DIAMETER_CM * FOCAL_PX / ball_px
+            x_cm = (cx - 320.0) * z_cm / FOCAL_PX
+            dist = math.hypot(x_cm, z_cm)
+            bearing = math.degrees(math.atan2(x_cm, z_cm))
+            if self._uart_smooth is None:
+                self._uart_smooth = (dist, bearing)
+            else:
+                a = UART_EMA_ALPHA
+                self._uart_smooth = (a * dist + (1 - a) * self._uart_smooth[0],
+                                     a * bearing + (1 - a) * self._uart_smooth[1])
+            self._detected_streak += 1
+            self._missing_streak = 0
+            if self._detected_streak >= BALL_ON_CONFIRM_FRAMES:
+                self._motor_on = True
+                self.uart_pub.publish(String(data='BALL,%.1f,%.1f' % self._uart_smooth))
+        else:
+            self._detected_streak = 0
+            self._missing_streak += 1
+            if self._motor_on and self._missing_streak >= BALL_OFF_CONFIRM_FRAMES:
+                self.uart_pub.publish(String(data='BALL_OFF'))
+                self._motor_on = False
 
     def _detect_boundary(self, hsv, cv_image, frame_stamp):
         roi = hsv[BOUNDARY_ROI_TOP:, :]
@@ -275,6 +320,8 @@ class VisionNode(Node):
             cv2.putText(cv_image, f'EDGE {color} {side}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         cv2.line(cv_image, (0, BOUNDARY_ROI_TOP), (639, BOUNDARY_ROI_TOP), (255, 255, 255), 1)
         self.boundary_pub.publish(String(data=text))
+        # UART 版：D 同學的 COURT 格式 + 顏色 (沒有時間戳，實體車 STM32 也拿不到畫面時間)
+        self.uart_pub.publish(String(data=','.join(text.split(',')[:5])))
 
 
 def main(args=None):

@@ -25,8 +25,7 @@ import os
 import time
 
 import rclpy
-from geometry_msgs.msg import Twist
-from std_msgs.msg import Empty, String
+from std_msgs.msg import Empty
 
 from tennis_bot import half_court
 from tennis_bot.grid_patrol_node import (
@@ -41,6 +40,9 @@ TURN_DONE_DEG = 3.0
 CRUISE_HEADING_KP = 1.2
 NET_LINE_COLOR = 'CYAN'
 OUT_OF_LINES_MARGIN_M = 1.5  # 真實座標離四條線超過這個距離就算出界 (保護用)
+# 轉完之後多久內不理 COURT EDGE：UART 字串沒有拍攝時間，轉完後先收到的幾筆其實是轉向途中拍的舊畫面
+# (畫面延遲 0.60 s)，會誤判成「又碰到邊界」再轉一次。實體車 STM32 也拿不到拍攝時間，只能這樣等。
+COURT_SETTLE_SEC = 0.7
 
 
 class BoundaryBounceNode(GridPatrolNode):
@@ -48,11 +50,9 @@ class BoundaryBounceNode(GridPatrolNode):
         super().__init__()
         self.state = 'CRUISE'
         self.cruise_heading = self.yaw
-        self._cruise_since_stamp = 0.0
+        self._cruise_since = 0.0
         self.turn_target = None
         self.bounce_count = 0
-        self._boundary = None  # (state, side, ratio, color, frame_stamp)
-        self.create_subscription(String, '/court_boundary', self._boundary_cb, 10)
 
         self.bounce_file = open(self.run_dir / 'bounces.csv', 'w', newline='')
         self.bounce_writer = csv.writer(self.bounce_file)
@@ -74,24 +74,14 @@ class BoundaryBounceNode(GridPatrolNode):
     def _heading_into_net(self):
         return False  # 不用里程計判斷網子，改由網前色帶 (CYAN) 處理
 
-    # ---- 感測 ----
-    def _boundary_cb(self, msg):
-        parts = msg.data.split(',')
-        if len(parts) < 6 or parts[0] != 'COURT':
-            return
-        self._boundary = (parts[1], parts[2], float(parts[3]), parts[4], float(parts[5]))
-
+    # ---- 感測 (COURT / BALL 都從 /jetson_uart 來，見 GridPatrolNode._uart_cb) ----
     def _fresh_edge(self):
-        """最新一筆邊界訊息是 EDGE，而且是「這段 CRUISE 開始之後」拍的畫面 (避免用到轉向前的舊畫面)。"""
-        b = self._boundary
-        return b if b is not None and b[0] == 'EDGE' and b[4] > self._cruise_since_stamp else None
+        """最新一筆 COURT 是 EDGE，而且是這段 CRUISE 開始 COURT_SETTLE_SEC 之後才收到的。"""
+        c = self._court
+        return c if c is not None and c[0] == 'EDGE' and c[4] >= self._cruise_since + COURT_SETTLE_SEC else None
 
-    def _target_cb(self, msg):
-        self.last_target = msg
-        if msg.z != 1.0:
-            return
-        self.last_seen_time = self.get_clock().now().nanoseconds / 1e9
-        if self._vision_ignore_until is not None and self.last_seen_time < self._vision_ignore_until:
+    def _on_ball_seen(self, now):
+        if self._vision_ignore_until is not None and now < self._vision_ignore_until:
             return
         if self.state in ('CRUISE', 'TURN'):
             self.get_logger().info(f'發現網球 -> 對準 (猜是{self._estimate_target_ball() or "?"}，原本在 {self.state})')
@@ -139,7 +129,7 @@ class BoundaryBounceNode(GridPatrolNode):
     def _enter_cruise(self, heading):
         self.state = 'CRUISE'
         self.cruise_heading = heading
-        self._cruise_since_stamp = self._last_stamp if self._last_stamp is not None else 0.0
+        self._cruise_since = self.get_clock().now().nanoseconds / 1e9
 
     def _do_cruise(self):
         edge = self._fresh_edge()
@@ -147,10 +137,8 @@ class BoundaryBounceNode(GridPatrolNode):
             self._begin_turn(edge)
             return
         err = angle_diff(self.cruise_heading, self.yaw)
-        twist = Twist()
-        twist.angular.z = max(-PATROL_MAX_OMEGA, min(PATROL_MAX_OMEGA, CRUISE_HEADING_KP * err))
-        twist.linear.x = PATROL_SPEED * max(0.0, 1.0 - abs(err) / (math.pi / 2))
-        self.cmd_pub.publish(twist)
+        omega = max(-PATROL_MAX_OMEGA, min(PATROL_MAX_OMEGA, CRUISE_HEADING_KP * err))
+        self._drive(PATROL_SPEED * max(0.0, 1.0 - abs(err) / (math.pi / 2)), omega)
 
     def _begin_turn(self, edge):
         _, side, _, color, _ = edge
@@ -162,7 +150,7 @@ class BoundaryBounceNode(GridPatrolNode):
         prev_state = self.state
         self.state = 'TURN'
         self.bounce_count += 1
-        self.cmd_pub.publish(Twist())
+        self._stop()
         self.get_logger().info(
             f'邊界 {color}({half_court.LINES.get(color, {}).get("label", "?")}) 在 {side} -> '
             f'轉 {math.degrees(turn):+.0f}° (第 {self.bounce_count} 次)')
@@ -180,14 +168,12 @@ class BoundaryBounceNode(GridPatrolNode):
         if abs(err) > math.radians(150):
             err = abs(err) * self._turn_sign
         if abs(err) < math.radians(TURN_DONE_DEG):
-            self.cmd_pub.publish(Twist())
+            self._stop()
             self._enter_cruise(self.turn_target)
             return
         omega = TURN_KP * err
         omega = math.copysign(max(TURN_MIN_OMEGA, min(TURN_MAX_OMEGA, abs(omega))), omega)
-        twist = Twist()
-        twist.angular.z = omega
-        self.cmd_pub.publish(twist)
+        self._drive(0.0, omega)
 
     def _finish_run(self, reason):
         was_done = self.done
