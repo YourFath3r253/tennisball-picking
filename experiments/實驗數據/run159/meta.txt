@@ -1,0 +1,4 @@
+start_epoch=1791198336.5209785
+steer_kp=1.5
+delay_comp=gyro
+delay_comp_sec=0.8

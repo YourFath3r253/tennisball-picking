@@ -30,6 +30,7 @@ import csv
 import math
 import os
 import time
+from collections import deque
 from pathlib import Path
 
 import rclpy
@@ -95,9 +96,21 @@ PATROL_MAX_OMEGA = 0.6
 # ---- 狀態 B 對準 ----
 # 2026-10-05 改成實體車 STM32 的連續 P 轉向 (Chassis_SteerP)：y = STEER_KP*(0-角度)，左輪 -y/2、右輪 +y/2，
 # 單輪飽和 ±45 rpm。STEER_KP=0.6 是 9/21 實體車驗證、Sean 採用的值 (rise ~3.5 s)。
-STEER_KP = 0.6            # rpm / 度
+STEER_KP = float(os.environ.get('TENNISBOT_STEER_KP', '0.6'))  # rpm / 度
 STEER_WHEEL_MAX = 45.0    # rpm
 ALIGN_DONE_DEG = 5.0      # 角度小於這個就從對準換成接近
+
+# ---- 相機延遲補償 (簡化版 Smith predictor，2026-10-05，設計見 experiments/delay_comp_design.py) ----
+# 問題：BALL 的角度是約 0.6 s 前的畫面 (再加 EMA)，車子這段時間已經轉了，照舊角度轉 Kp 一大就擺盪。
+# 做法 (實體車 STM32 也做得到)：收到 BALL,角度 b 時，認為畫面是 DELAY_COMP_SEC 秒前拍的，
+#   目標航向 psi* = psi(現在 - D) - b；之後每 20 ms 用最新轉角算 e = psi* - psi，y = STEER_KP * e。
+# 轉角來源：gyro (陀螺儀，模擬裡就是 /imu 積分的 self.yaw) 或 encoder (編碼器積分，像 main.c 的
+#   chassis_angle_deg；原地轉輪胎側滑，會高估轉角)。off = 原本只在收到 BALL 時用角度直接轉。
+# Gazebo 步階測試 (29°)：補償 gyro D=0.8 Kp=1.5 穩定在 ±4° 內 1.60 s、overshoot 1.8°；
+#   無補償 Kp=0.6 5.74 s、4.3°；無補償 Kp=1.5 一直擺盪。
+DELAY_COMP = os.environ.get('TENNISBOT_DELAY_COMP', 'off')   # off / gyro / encoder
+DELAY_COMP_SEC = float(os.environ.get('TENNISBOT_DELAY_COMP_SEC', '0.8'))
+WHEEL_R_REAL, WHEEL_L_REAL = 0.052, 0.243  # 編碼器積分轉角用 (實體車幾何)
 # 純 P 控制。曾經以為兩顆球角度接近時的擺盪是控制過衝，加了D項沒有效果——
 # 真正原因是 vision_node 那邊鎖定的目標本身在兩顆球之間切換，不是同一顆球的
 # 誤差訊號在震盪，D項對不連續跳動的訊號沒有意義。改用 vision 端更嚴格的鎖定
@@ -282,6 +295,13 @@ class GridPatrolNode(Node):
         self._last_imu_time = None
         self._gyro_q = (math.cos(start_yaw / 2), 0.0, 0.0, math.sin(start_yaw / 2))  # (w, x, y, z) = 起始朝向
         self._imu_gaps = 0  # debug：IMU 封包間隔 > 1.5 ms 的次數 (= 掉封包，1kHz 應該每 1 ms 一筆)
+        # 延遲補償用：最近 3 秒的 (模擬時間, 陀螺儀轉角(不折回), 編碼器積分轉角)，單位 rad
+        self._yaw_unwrapped = start_yaw
+        self._yaw_unwrapped_last = start_yaw
+        self._enc_yaw = start_yaw
+        self._last_rpm_stamp = None
+        self._heading_hist = deque(maxlen=3000)
+        self._psi_target = None
         self.real_roll = None
         self.real_pitch = None
 
@@ -374,6 +394,10 @@ class GridPatrolNode(Node):
         self.real_pose_timer = self.create_timer(0.2, self._poll_real_pose)  # 每次回來就寫一筆 trajectory
 
         self.control_timer = self.create_timer(0.1, self._control_loop)
+        if DELAY_COMP != 'off':
+            self.create_timer(0.02, self._align_fast_tick)
+        with open(self.run_dir / 'meta.txt', 'a') as f:
+            f.write(f'steer_kp={STEER_KP}\ndelay_comp={DELAY_COMP}\ndelay_comp_sec={DELAY_COMP_SEC}\n')
 
         self.get_logger().info('開始巡邏。')
 
@@ -429,6 +453,9 @@ class GridPatrolNode(Node):
                 self._gyro_q = quat_integrate(self._gyro_q, wx + cx, wy + cy, wz + cz, dt)
                 qw, qx, qy, qz = self._gyro_q
                 self.yaw = math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
+                self._yaw_unwrapped += angle_diff(self.yaw, self._yaw_unwrapped_last)
+                self._yaw_unwrapped_last = self.yaw
+                self._heading_hist.append((stamp, self._yaw_unwrapped, self._enc_yaw))
             wall_dt = now - self._last_imu_time
             if 0 < wall_dt < 0.5:
                 self.yaw_wall += wz * wall_dt  # 對照組維持舊做法 (只積 z 軸、真實時鐘 dt)
@@ -490,9 +517,14 @@ class GridPatrolNode(Node):
                 return
             self.last_seen_time = now
             self._ball_off = False
+            if DELAY_COMP != 'off' and self._last_imu_stamp is not None:
+                # 目標航向 = 拍照當下的轉角 - 球的角度 (右邊為正，所以減)
+                self._psi_target = self._heading_at(self._last_imu_stamp - DELAY_COMP_SEC) \
+                    - math.radians(self.ball_angle_deg)
             self._on_ball_seen(now)
         elif line.startswith('BALL_OFF'):
             self._ball_off = True
+            self._psi_target = None
         elif line.startswith('COURT,'):
             parts = line.split(',')
             if len(parts) >= 5:
@@ -536,7 +568,43 @@ class GridPatrolNode(Node):
         self._ramp_l.current = self._ramp_r.current = 0.0
         self._publish_wheels(0.0, 0.0)
 
+    def _heading_now(self):
+        return self._yaw_unwrapped if DELAY_COMP == 'gyro' else self._enc_yaw
+
+    def _heading_at(self, t):
+        """t 時刻 (模擬時間) 的轉角，延遲補償用。"""
+        idx = 1 if DELAY_COMP == 'gyro' else 2
+        val = None
+        for row in self._heading_hist:
+            if row[0] <= t:
+                val = row[idx]
+            else:
+                break
+        return self._heading_now() if val is None else val
+
+    def _comp_error_deg(self):
+        """補償後的「球的角度」(右邊為正，跟 BALL 的角度同號)。"""
+        return math.degrees(self._heading_now() - self._psi_target)
+
+    def _align_fast_tick(self):
+        """延遲補償開著時，ALIGN 每 20 ms 用最新轉角更新轉向 (實體車就是 STM32 每 10 ms 一次)。"""
+        if self.done or self.state != 'ALIGN' or DELAY_COMP == 'off' or self._psi_target is None:
+            return
+        b_hat = self._comp_error_deg()
+        if abs(b_hat) <= ALIGN_DONE_DEG:
+            return
+        y = STEER_KP * (0.0 - b_hat)
+        half = max(-STEER_WHEEL_MAX, min(STEER_WHEEL_MAX, y / 2.0))
+        self._set_wheels(-half, half if half != 0.0 else 1e-6)
+
     def _wheel_rpm_cb(self, msg):
+        # 編碼器積分轉角 (實體車 main.c chassis_angle_deg 的做法)，延遲補償選 encoder 時用
+        if len(msg.data) >= 4 and self._last_imu_stamp is not None:
+            if self._last_rpm_stamp is not None and 0 < self._last_imu_stamp - self._last_rpm_stamp < 0.5:
+                wl = msg.data[1] * 2 * math.pi / 60.0
+                wr = msg.data[3] * 2 * math.pi / 60.0
+                self._enc_yaw += WHEEL_R_REAL * (wr - wl) / WHEEL_L_REAL * (self._last_imu_stamp - self._last_rpm_stamp)
+            self._last_rpm_stamp = self._last_imu_stamp
         if self.done or len(msg.data) < 6:
             return
         self.rpm_writer.writerow([f'{time.time() - self.start_time:.3f}'] + [f'{v:.2f}' for v in msg.data[:6]]
@@ -829,6 +897,15 @@ class GridPatrolNode(Node):
                 how = '原路倒車回去' if RETURN_REPLAY_ENABLED else '直接走回巡邏路徑'
                 self.get_logger().info(f'對準時看丟目標 -> 放棄，{how}')
                 self._start_return()
+            return
+        if DELAY_COMP != 'off' and self._psi_target is not None:
+            # 延遲補償：轉向由 _align_fast_tick 每 20 ms 更新，這裡只判斷要不要換成 APPROACH
+            if abs(self._comp_error_deg()) > ALIGN_DONE_DEG:
+                return
+            self.state = 'APPROACH'
+            self._approach_integral = 0.0
+            self._approach_prev_error = 0.0
+            self._approach_prev_time = None
             return
         if abs(self.ball_angle_deg) > ALIGN_DONE_DEG:
             # 實體車 STM32 的連續 P 轉向 (main.c Chassis_SteerP(-half_y, half_y))
