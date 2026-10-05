@@ -253,7 +253,8 @@
       <ros>
         <namespace>/</namespace>
       </ros>
-      <update_rate>30</update_rate>
+      <!-- 100 Hz：馬達模型 (motor_driver_node) 用這個封包時間戳當 10 ms 時鐘，跟 STM32 TIM6 同頻率 -->
+      <update_rate>100</update_rate>
       <joint_name>left_wheel_joint</joint_name>
       <joint_name>right_wheel_joint</joint_name>
       <joint_name>left_roller_joint</joint_name>
@@ -283,10 +284,12 @@
       </ros>
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
-      <wheel_separation>0.27</wheel_separation>
+      <!-- 0.29 = 模擬車左右驅動輪的真實距離 (原本寫 0.27，車體實際轉速只有指令的 0.27/0.29=93%)。
+           加速度不在這裡限制 (0 = 不限制)：底盤加減速改由 motor_driver_node 的 STM32 PID + 馬達模型決定。 -->
+      <wheel_separation>0.29</wheel_separation>
       <wheel_diameter>0.08</wheel_diameter>
       <max_wheel_torque>2.0</max_wheel_torque>
-      <max_wheel_acceleration>1.0</max_wheel_acceleration>
+      <max_wheel_acceleration>0.0</max_wheel_acceleration>
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
       <publish_wheel_tf>true</publish_wheel_tf>

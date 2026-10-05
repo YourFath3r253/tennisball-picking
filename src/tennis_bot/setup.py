@@ -41,6 +41,7 @@ setup(
             'ball_toucher = tennis_bot.ball_toucher:main',
             'grid_patrol_node = tennis_bot.grid_patrol_node:main',
             'boundary_bounce_node = tennis_bot.boundary_bounce_node:main',
+            'motor_driver_node = tennis_bot.motor_driver_node:main',
         ],
     },
 )

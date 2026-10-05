@@ -54,6 +54,13 @@ def _launch_setup(context):
             arguments=['-topic', 'robot_description', '-entity', 'tennis_bot', '-x', '-6.0', '-y', '0.0'],
             output='screen'
         ),
+
+        # 5. 模擬的 STM32 + 底盤馬達：收 /wheel_target_rpm，發 /cmd_vel 給 diff_drive (見 motor_driver_node.py)
+        Node(
+            package='tennis_bot',
+            executable='motor_driver_node',
+            output='screen'
+        ),
     ]
 
 
