@@ -1,0 +1,5 @@
+reason=撿滿
+touched=10
+num_balls=10
+wall_sec=248.3
+sim_sec=246.8

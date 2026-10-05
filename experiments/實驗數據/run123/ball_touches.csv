@@ -1,0 +1,10 @@
+ball_name,elapsed_sec,wp_index_at_touch,cell_number_at_touch,sim_elapsed_sec
+ball_2,49.71,5,7,49.67
+ball_9,55.81,5,7,55.76
+ball_4,76.41,5,7,76.33
+ball_1,144.01,11,12,143.92
+ball_3,171.51,12,16,171.39
+ball_8,273.31,18,29,273.16
+ball_5,289.61,18,29,289.44
+ball_10,301.31,18,29,301.14
+ball_7,364.41,23,27,364.21

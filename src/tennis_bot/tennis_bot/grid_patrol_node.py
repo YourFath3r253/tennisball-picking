@@ -12,7 +12,7 @@
 速度，輪子半徑 0.04m、輪距 0.29m；轉向角速度改用 /imu 陀螺儀直接量到的角速度，
 不再用左右輪速差推算，因為輪子在原地轉向 (ALIGN) 或撞到東西時容易打滑，輪速
 差算出來的角速度會跟車體真實轉動的角度對不上)，不用 /odom、不用光達/AMCL。
-陀螺儀目前是理想 sensor (URDF 裡沒有加 <noise>)，先驗證這個方向有沒有用。「有沒有真的碰到球」則是用 Gazebo 的真實座標判斷 (base_link
+陀螺儀有雜訊+零點偏移 (URDF <noise>，對應 BNO080 規格)。「有沒有真的碰到球」則是用 Gazebo 的真實座標判斷 (base_link
 座標+姿態，轉換球的世界座標到局部座標系，檢查有沒有跟左右滾輪的位置
 重疊)，這兩個是分開的：車體自己「以為」在哪裡 (拿去決定怎麼轉彎)，
 跟「有沒有真的碰到」(拿去判斷有沒有成功) 用的資料來源不同。
@@ -139,6 +139,10 @@ NUM_BALLS = len(BALL_NAMES)
 
 DATA_ROOT = Path('/home/sean/ros2_ws/experiments/實驗數據')
 
+# TENNISBOT_HALF_ONLY=1：只走我方半場的弓字路徑 (16 格)，走完就結束。給 D 同學半場邊界提案當比較基準用。
+HALF_ONLY = os.environ.get('TENNISBOT_HALF_ONLY') == '1'
+
+
 
 def next_run_dir():
     """自動找下一個沒用過的 runN 資料夾，每次執行都存到新的一個，不會互相覆蓋。"""
@@ -177,6 +181,29 @@ def quat_integrate(q, wx, wy, wz, dt):
     return tuple(v / n for v in nq)
 
 
+# ---- 陀螺儀 + 加速度計傾斜修正 (模擬 BNO080 Game Rotation Vector 的感測融合) ----
+# 純陀螺儀積分沒有重力參考，roll/pitch 誤差會一直累積，車子轉彎時再漏到航向：run119/120 煞車點頭
+# (~20°，baseline run121 也有) 之後傾斜誤差累積到 7~8°，航向誤差最大 20.6°。真實的 BNO080 輸出
+# 的 Game Rotation Vector 本來就有用加速度計修正 roll/pitch (Mahony/互補濾波這一類)，航向仍然
+# 只靠陀螺儀 (加速度計看不到航向)，所以這裡照做：只有量到的加速度接近 1g (沒有急加減速/撞擊)
+# 時，把「加速度計量到的上方」跟「四元數估計的上方」的夾角當誤差，乘上 TILT_KP 加回角速度。
+TILT_KP = 0.5
+TILT_ACCEL_GATE = (0.9 * 9.81, 1.1 * 9.81)
+
+
+def tilt_correction(q, ax, ay, az):
+    """回傳要加到車體角速度上的修正量 (ex, ey, ez)*TILT_KP；加速度不像純重力時回傳 0。"""
+    n = math.sqrt(ax * ax + ay * ay + az * az)
+    if not (TILT_ACCEL_GATE[0] < n < TILT_ACCEL_GATE[1]):
+        return 0.0, 0.0, 0.0
+    w, x, y, z = q
+    # 世界座標的上方 (0,0,1) 在車體座標系的表示 = 旋轉矩陣第三列
+    vx, vy, vz = 2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y)
+    mx, my, mz = ax / n, ay / n, az / n  # 加速度計靜止時量到的是朝上的 +g
+    ex, ey, ez = my * vz - mz * vy, mz * vx - mx * vz, mx * vy - my * vx
+    return TILT_KP * ex, TILT_KP * ey, TILT_KP * ez
+
+
 def quat_rotate_inverse(qx, qy, qz, qw, vx, vy, vz):
     cx, cy, cz, cw = -qx, -qy, -qz, qw
     tx = 2.0 * (cy * vz - cz * vy)
@@ -193,6 +220,10 @@ class GridPatrolNode(Node):
         super().__init__('grid_patrol_node')
 
         self.waypoints, self.cell_numbers, cells = court_path_with_net()
+        if HALF_ONLY:
+            n = self.cell_numbers.index(0) if 0 in self.cell_numbers else len(self.cell_numbers)
+            self.waypoints, self.cell_numbers = self.waypoints[:n], self.cell_numbers[:n]
+            self.get_logger().info(f'只走我方半場：{n} 個路徑點')
         n_cells = len(cells)
         self.get_logger().info(
             f'格邊長上限 {CELL_MAX_M:.2f} m (2*0.8*R*sinθ)，網子在 x={NET_X}，車體離網至少 {NET_CLEARANCE_M} m -> '
@@ -204,17 +235,19 @@ class GridPatrolNode(Node):
         # 不然會整趟路線平移掉 (曾經忘記傳送車體，跑出完全不對的巡邏路線)。
         # 所以這裡自己呼叫 /set_entity_state 把車體傳送到格 1，不依賴外部先手動
         # 跑 reset_run.py。
-        start_x, start_y = self.waypoints[0]
-        self._teleport_to_start(start_x, start_y)
-        # 傳送的是 base_link，里程計起點要放在軸心中點 (起始朝向 0，直接加偏移)
-        self.x = start_x + AXLE_MID_IN_BASE[0]
-        self.y = start_y + AXLE_MID_IN_BASE[1]
-        self.yaw = 0.0
+        start_x, start_y, start_yaw = self._start_pose()
+        self._teleport_to_start(start_x, start_y, start_yaw)
+        # 傳送的是 base_link，里程計起點要放在軸心中點 (偏移量要跟著起始朝向轉)
+        c, s_ = math.cos(start_yaw), math.sin(start_yaw)
+        self.x = start_x + AXLE_MID_IN_BASE[0] * c - AXLE_MID_IN_BASE[1] * s_
+        self.y = start_y + AXLE_MID_IN_BASE[0] * s_ + AXLE_MID_IN_BASE[1] * c
+        self.yaw = start_yaw
         self.wp_index = 0
 
         # ---- 輪速里程計 (car 自己以為的位置，拿去決定怎麼開) ----
         self._have_odom = False
         self._last_stamp = None  # /joint_states 封包的模擬時間戳
+        self._first_stamp = None  # 第一筆 /joint_states 的模擬時間，算「模擬時間經過多久」用
         self._wheel_vel = {LEFT_WHEEL_JOINT: 0.0, RIGHT_WHEEL_JOINT: 0.0}
 
         # ---- debug 對照組：同一份輪速+陀螺儀，但用真實時鐘的 dt 積分 (舊做法)，
@@ -222,12 +255,15 @@ class GridPatrolNode(Node):
         self._last_odom_time = None
         self.x_wall = self.x
         self.y_wall = self.y
-        self.yaw_wall = 0.0
+        self.yaw_wall = start_yaw
 
         # ---- 陀螺儀：yaw 在 _imu_cb 裡用三軸角速度做四元數積分，不用左右輪速差算 ----
         self._last_imu_stamp = None
         self._last_imu_time = None
-        self._gyro_q = (1.0, 0.0, 0.0, 0.0)  # (w, x, y, z)，起始朝向 0
+        self._gyro_q = (math.cos(start_yaw / 2), 0.0, 0.0, math.sin(start_yaw / 2))  # (w, x, y, z) = 起始朝向
+        self._imu_gaps = 0  # debug：IMU 封包間隔 > 1.5 ms 的次數 (= 掉封包，1kHz 應該每 1 ms 一筆)
+        self.real_roll = None
+        self.real_pitch = None
 
         # ---- debug：追蹤中的目標球是幾號 (用真實座標反推，不是 vision_node 自己
         # 知道的，vision_node 只有像素座標，沒有球的身分) ----
@@ -267,10 +303,13 @@ class GridPatrolNode(Node):
             't', 'x', 'y', 'yaw', 'state', 'wp_index', 'cell_number',
             'real_x', 'real_y', 'real_yaw', 'target_ball_guess',
             'x_wall', 'y_wall', 'yaw_wall',
+            'real_roll', 'real_pitch', 'gyro_roll', 'gyro_pitch', 'imu_gaps',
         ])
         self.touch_file = open(self.run_dir / 'ball_touches.csv', 'w', newline='')
         self.touch_writer = csv.writer(self.touch_file)
-        self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch'])
+        # elapsed_sec 是真實時鐘；sim_elapsed_sec 是模擬時間 (即時率 <1 時兩者會差，比較撿球時間用模擬時間)
+        self.touch_writer.writerow(['ball_name', 'elapsed_sec', 'wp_index_at_touch', 'cell_number_at_touch',
+                                    'sim_elapsed_sec'])
 
         # ---- debug：每次 _joint_state_cb 觸發時記錄 wall_dt vs sim_dt (封包時間戳)，
         # 累加起來的比值就是這次 run 的平均即時率 ----
@@ -305,7 +344,16 @@ class GridPatrolNode(Node):
 
         self.get_logger().info('開始巡邏。')
 
-    def _teleport_to_start(self, x, y):
+    def _start_pose(self):
+        """起點 (base_link 的 x, y, 朝向)。弓字路徑從格 1 開始、朝向 0；子類別 (例如邊界反彈) 可以改。"""
+        return self.waypoints[0][0], self.waypoints[0][1], 0.0
+
+    def _is_out_of_bounds(self, x, y):
+        """真實座標離場地太遠 -> 停止 (模擬才有的保護)。子類別可以換成自己的場地範圍。"""
+        return (not (X_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= x <= X_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
+                or not (Y_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= y <= Y_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M))
+
+    def _teleport_to_start(self, x, y, yaw=0.0):
         cli = self.create_client(SetEntityState, '/set_entity_state')
         if not cli.wait_for_service(timeout_sec=10.0):
             self.get_logger().error('/set_entity_state 服務沒回應，車體傳送失敗，Gazebo 有在跑嗎？')
@@ -315,11 +363,12 @@ class GridPatrolNode(Node):
         req.state.pose.position.x = x
         req.state.pose.position.y = y
         req.state.pose.position.z = 0.05
-        req.state.pose.orientation.w = 1.0
+        req.state.pose.orientation.z = math.sin(yaw / 2)
+        req.state.pose.orientation.w = math.cos(yaw / 2)
         future = cli.call_async(req)
         rclpy.spin_until_future_complete(self, future, timeout_sec=5.0)
         result = future.result()
-        self.get_logger().info(f'車體傳送到格 1 ({x:.3f}, {y:.3f})：{result.success if result else False}')
+        self.get_logger().info(f'車體傳送到起點 ({x:.3f}, {y:.3f}, {math.degrees(yaw):.0f}°)：{result.success if result else False}')
 
     # ---------------- 陀螺儀 ----------------
     def _publish_roller_cmd(self):
@@ -339,8 +388,12 @@ class GridPatrolNode(Node):
         wx, wy, wz = msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z
         if self._last_imu_stamp is not None:
             dt = stamp - self._last_imu_stamp
+            if dt > 0.0015:
+                self._imu_gaps += 1
             if 0 < dt < 0.5:
-                self._gyro_q = quat_integrate(self._gyro_q, wx, wy, wz, dt)
+                a = msg.linear_acceleration
+                cx, cy, cz = tilt_correction(self._gyro_q, a.x, a.y, a.z)
+                self._gyro_q = quat_integrate(self._gyro_q, wx + cx, wy + cy, wz + cz, dt)
                 qw, qx, qy, qz = self._gyro_q
                 self.yaw = math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
             wall_dt = now - self._last_imu_time
@@ -359,6 +412,8 @@ class GridPatrolNode(Node):
                 if idx < len(msg.velocity):
                     self._wheel_vel[name] = msg.velocity[idx]
 
+        if self._first_stamp is None:
+            self._first_stamp = stamp
         wall_dt = (now - self._last_odom_time) if self._last_odom_time is not None else None
         sim_dt = (stamp - self._last_stamp) if self._last_stamp is not None else None
 
@@ -474,7 +529,8 @@ class GridPatrolNode(Node):
                 f'{name} 進後車廂！({self.touched_count}/{NUM_BALLS}) t={elapsed:.1f}s '
                 f'車廂內位置=({lx:.2f}, {ly:.2f}, {lz:.2f})')
             if not self.done:  # 非同步 callback，結束後才回來的話檔案已經關了，不要再寫
-                self.touch_writer.writerow([name, f'{elapsed:.2f}', self.wp_index, self._current_cell_number()])
+                self.touch_writer.writerow([name, f'{elapsed:.2f}', self.wp_index, self._current_cell_number(),
+                                            f'{self._sim_elapsed():.2f}'])
                 self.touch_file.flush()
 
             if self.state in ('ALIGN', 'APPROACH', 'BLIND_DASH'):
@@ -504,13 +560,11 @@ class GridPatrolNode(Node):
         self.real_x = p.x + ox * math.cos(yaw) - oy * math.sin(yaw)
         self.real_y = p.y + ox * math.sin(yaw) + oy * math.cos(yaw)
         self.real_yaw = yaw
+        self.real_roll = math.atan2(2.0 * (o.w * o.x + o.y * o.z), 1.0 - 2.0 * (o.x * o.x + o.y * o.y))
+        self.real_pitch = math.asin(max(-1.0, min(1.0, 2.0 * (o.w * o.y - o.z * o.x))))
 
         if not self.done:
-            out_of_bounds = (
-                not (X_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= self.real_x <= X_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
-                or not (Y_RANGE[0] - OUT_OF_BOUNDS_MARGIN_M <= self.real_y <= Y_RANGE[1] + OUT_OF_BOUNDS_MARGIN_M)
-            )
-            if out_of_bounds:
+            if self._is_out_of_bounds(self.real_x, self.real_y):
                 self._finish_run('出界')
         # 真實座標一到手就立刻記錄，里程計跟真實位置才是同一瞬間的值
         # (之前是另一個 0.5s timer 記錄，兩邊最多差 0.2~0.5 秒，車在動時會看起來像誤差)
@@ -559,17 +613,35 @@ class GridPatrolNode(Node):
         self.traj_writer.writerow([f'{elapsed:.2f}', f'{self.x:.3f}', f'{self.y:.3f}',
                                     f'{self.yaw:.3f}', self.state, self.wp_index, self._current_cell_number(),
                                     real_x, real_y, real_yaw, self._estimate_target_ball(),
-                                    f'{self.x_wall:.3f}', f'{self.y_wall:.3f}', f'{self.yaw_wall:.3f}'])
+                                    f'{self.x_wall:.3f}', f'{self.y_wall:.3f}', f'{self.yaw_wall:.3f}',
+                                    *self._tilt_debug(), self._imu_gaps])
         self.traj_file.flush()
+
+    def _sim_elapsed(self):
+        if self._first_stamp is None or self._last_stamp is None:
+            return 0.0
+        return self._last_stamp - self._first_stamp
+
+    def _tilt_debug(self):
+        # debug：車體真實 roll/pitch vs 陀螺儀積分出來的 roll/pitch (度)，看傾斜事件跟積分誤差
+        qw, qx, qy, qz = self._gyro_q
+        g_roll = math.atan2(2.0 * (qw * qx + qy * qz), 1.0 - 2.0 * (qx * qx + qy * qy))
+        g_pitch = math.asin(max(-1.0, min(1.0, 2.0 * (qw * qy - qz * qx))))
+        fmt = lambda v: '' if v is None else f'{math.degrees(v):.2f}'
+        return fmt(self.real_roll), fmt(self.real_pitch), fmt(g_roll), fmt(g_pitch)
 
     def _finish_run(self, reason):
         self.done = True
         self.cmd_pub.publish(Twist())
         elapsed = time.time() - self.start_time
+        sim_elapsed = self._sim_elapsed()
         self.get_logger().info(
             f'結束({reason})：撿進後車廂 {self.touched_count}/{NUM_BALLS} 顆球，'
-            f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s'
+            f'走了 {self.wp_index}/{len(self.waypoints)} 格，耗時 {elapsed:.1f}s (模擬時間 {sim_elapsed:.1f}s)'
         )
+        with open(self.run_dir / 'result.txt', 'w') as f:
+            f.write(f'reason={reason}\ntouched={self.touched_count}\nnum_balls={NUM_BALLS}\n'
+                    f'wall_sec={elapsed:.1f}\nsim_sec={sim_elapsed:.1f}\n')
         self.real_pose_timer.cancel()
         self.traj_file.close()
         self.touch_file.close()

@@ -17,6 +17,7 @@ from matplotlib.collections import LineCollection
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'src' / 'tennis_bot' / 'tennis_bot'))
 from grid_waypoints import court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, NET_X, NET_POST_Y
+import half_court
 
 X_RANGE = COURT_X_RANGE
 Y_RANGE = COURT_Y_RANGE
@@ -28,8 +29,9 @@ ALL_BALLS = {
     'ball_10': (1.70, -0.93),
 }
 
-STATE_COLORS = {'PATROL': 'tab:blue', 'ALIGN': 'orange', 'APPROACH': 'red',
-                 'BLIND_DASH': 'purple', 'RECOVER': 'brown'}
+STATE_COLORS = {'PATROL': 'tab:blue', 'CRUISE': 'tab:blue', 'TURN': 'tab:cyan', 'ALIGN': 'orange',
+                'APPROACH': 'red', 'BLIND_DASH': 'purple', 'RECOVER': 'brown'}
+LINE_PLOT_COLORS = {'RED': 'red', 'BLUE': 'blue', 'MAGENTA': 'magenta', 'CYAN': 'darkturquoise'}
 
 
 def plot_run(run_dir, extra_markers=None, balls=None):
@@ -66,18 +68,32 @@ def plot_run(run_dir, extra_markers=None, balls=None):
     touched_names = {t['ball_name'] for t in touches}
     touch_time = {t['ball_name']: float(t['elapsed_sec']) for t in touches}
 
-    fig, ax = plt.subplots(figsize=(14, 7))
+    meta = (run_dir / 'meta.txt').read_text() if (run_dir / 'meta.txt').exists() else ''
+    bounce_mode = 'mode=boundary_bounce' in meta
 
-    ax.add_patch(patches.Rectangle((X_RANGE[0], Y_RANGE[0]), X_RANGE[1] - X_RANGE[0], Y_RANGE[1] - Y_RANGE[0],
-                                    linewidth=2, edgecolor='green', facecolor='none', label='Court (open, no wall)'))
+    fig, ax = plt.subplots(figsize=(10, 9) if bounce_mode else (14, 7))
+
     ax.plot([NET_X, NET_X], [-NET_POST_Y, NET_POST_Y], color='black', linewidth=3, label='Net', zorder=1)
-
-    _, _, cells = court_path_with_net()
-    for cx0, cy0, cell_w, cell_h, cell_num in cells:
-        ax.add_patch(patches.Rectangle((cx0, cy0), cell_w, cell_h, linewidth=0.6,
-                                        edgecolor='silver', facecolor='none', zorder=0))
-        ax.text(cx0 + cell_w / 2, cy0 + cell_h / 2, str(cell_num),
-                ha='center', va='center', fontsize=7, color='silver', zorder=0)
+    if bounce_mode:
+        # D 同學提案：半場四色邊界
+        for color, d in half_court.LINES.items():
+            (x0, y0), (x1, y1) = d['seg']
+            ax.plot([x0, x1], [y0, y1], color=LINE_PLOT_COLORS[color], linewidth=3, zorder=1,
+                    label=f'{color} line')
+        bounce_path = run_dir / 'bounces.csv'
+        if bounce_path.exists():
+            bounces = [b for b in csv.DictReader(open(bounce_path)) if b['real_x']]
+            ax.scatter([float(b['real_x']) for b in bounces], [float(b['real_y']) for b in bounces],
+                       marker='D', s=30, c='black', zorder=5, label=f'Boundary turn ({len(bounces)})')
+    else:
+        ax.add_patch(patches.Rectangle((X_RANGE[0], Y_RANGE[0]), X_RANGE[1] - X_RANGE[0], Y_RANGE[1] - Y_RANGE[0],
+                                        linewidth=2, edgecolor='green', facecolor='none', label='Court (open, no wall)'))
+        _, _, cells = court_path_with_net()
+        for cx0, cy0, cell_w, cell_h, cell_num in cells:
+            ax.add_patch(patches.Rectangle((cx0, cy0), cell_w, cell_h, linewidth=0.6,
+                                            edgecolor='silver', facecolor='none', zorder=0))
+            ax.text(cx0 + cell_w / 2, cy0 + cell_h / 2, str(cell_num),
+                    ha='center', va='center', fontsize=7, color='silver', zorder=0)
 
     # 用線段連起來 (不是散點)，每一段依當下 state 上色，這樣狀態切換的地方顏色會
     # 自然轉換，又不會像分開畫散點那樣把不同時段的同一個 state 錯誤地連在一起。
@@ -144,8 +160,12 @@ def plot_run(run_dir, extra_markers=None, balls=None):
     ax.set_xlabel('x (m)')
     ax.set_ylabel('y (m)')
     ax.set_title(f'{run_dir.name} - Real Trajectory + Balls ({len(touched_names)}/{len(balls)} touched)')
-    ax.set_xlim(-13, 13)
-    ax.set_ylim(-9, 9)
+    if bounce_mode:
+        ax.set_xlim(-13.5, 1.0)
+        ax.set_ylim(-7.5, 7.5)
+    else:
+        ax.set_xlim(-13, 13)
+        ax.set_ylim(-9, 9)
     ax.set_aspect('equal')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.08), ncol=4, fontsize=9)
     ax.grid(True, alpha=0.3)

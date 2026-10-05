@@ -1,0 +1,5 @@
+reason=出界
+touched=5
+num_balls=10
+wall_sec=145.6
+sim_sec=80.0

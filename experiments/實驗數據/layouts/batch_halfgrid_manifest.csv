@@ -1,0 +1,4 @@
+layout,run_dir,result
+experiments/實驗數據/layouts/bounce_seed501.json,run145,結束(撿滿)：撿進後車廂
+experiments/實驗數據/layouts/bounce_seed502.json,run146,結束(出界)：撿進後車廂
+experiments/實驗數據/layouts/bounce_seed503.json,run147,結束(走完弓字路徑)：撿進後車廂

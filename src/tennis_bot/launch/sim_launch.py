@@ -1,16 +1,21 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction, SetEnvironmentVariable
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-def generate_launch_description():
+
+def _launch_setup(context):
     pkg_share = get_package_share_directory('tennis_bot')
-    
+
     # 1. 指定你的 URDF 與 World 檔案路徑
-    urdf_file = os.path.join(pkg_share, 'urdf', 'simple_bot.urdf') 
-    world_file = os.path.join(pkg_share, 'worlds', 'tennis_court.world') # 新增這行
-    
+    # world 參數：預設是全場+網子的 tennis_court.world，其他場地 (例如半場邊界線) 用 world:=檔名 切換
+    urdf_file = os.path.join(pkg_share, 'urdf', 'simple_bot.urdf')
+    world_file = os.path.join(pkg_share, 'worlds', LaunchConfiguration('world').perform(context))
+    # gui:=false 只開 gzserver (不開畫面)，批次實驗用，相機感測器照樣會算圖
+    gui = LaunchConfiguration('gui').perform(context).lower() in ('1', 'true', 'yes')
+
     with open(urdf_file, 'r') as infp:
         robot_desc = infp.read()
 
@@ -19,15 +24,16 @@ def generate_launch_description():
     gazebo_model_path = os.environ.get('GAZEBO_MODEL_PATH', '')
     new_model_path = install_dir if not gazebo_model_path else f"{gazebo_model_path}:{install_dir}"
 
-    return LaunchDescription([
+    return [
         # 1. 設定環境變數
         SetEnvironmentVariable(name='GAZEBO_MODEL_PATH', value=new_model_path),
-        
+
         # 2. 啟動 Gazebo，並在指令最後面加上 world_file 路徑
         # libgazebo_ros_init.so 負責發布 /clock，沒有它 use_sim_time 會卡在 0，
         # AMCL / RViz2 的 TF 對不上時間軸就會斷鏈
         ExecuteProcess(
-            cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so', world_file],
+            cmd=['gazebo' if gui else 'gzserver', '--verbose',
+                 '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so', world_file],
             output='screen'
         ),
 
@@ -38,7 +44,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{'robot_description': robot_desc, 'use_sim_time': True}]
         ),
-        
+
         # 4. 啟動 Spawn Entity (負責把機器人放進剛開好的網球場裡)
         Node(
             package='gazebo_ros',
@@ -47,5 +53,13 @@ def generate_launch_description():
             # grid_patrol_node 開始時會再傳送到格 1
             arguments=['-topic', 'robot_description', '-entity', 'tennis_bot', '-x', '-6.0', '-y', '0.0'],
             output='screen'
-        )
+        ),
+    ]
+
+
+def generate_launch_description():
+    return LaunchDescription([
+        DeclareLaunchArgument('world', default_value='tennis_court.world'),
+        DeclareLaunchArgument('gui', default_value='true'),
+        OpaqueFunction(function=_launch_setup),
     ])

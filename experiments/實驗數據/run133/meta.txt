@@ -1,0 +1,4 @@
+start_epoch=1791129393.1799564
+mode=boundary_bounce
+bounce_angle_deg=90.0
+timeout_sec=900.0
