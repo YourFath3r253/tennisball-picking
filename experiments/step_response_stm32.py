@@ -30,7 +30,9 @@ from gazebo_msgs.srv import GetEntityState, SetEntityState
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fit_motor_model import metrics  # noqa: E402
 
-PX_PER_RAD = 458.5
+# 相機參數跟 vision_node 一致 (2026-10-05 對應 D 同學校正：焦距 487.5 px、正前方在第 353.75 行)
+CAM_FOCAL_PX = 320.0 / math.tan(math.atan(256.0 / 390.0))
+CAM_CX = 320.0 + (283.0 - 256.0) * 640.0 / 512.0
 ROBOT_X, ROBOT_Y = -6.0, 0.0
 CAM_IN_BASE = (0.10, -0.135)
 BALL_DIST = 0.8
@@ -113,7 +115,7 @@ class StepTest(Node):
 
     def _target_cb(self, m):
         if m.z == 1.0:
-            self.raw = math.degrees((m.x - 320.0) / PX_PER_RAD)
+            self.raw = math.degrees(math.atan((m.x - CAM_CX) / CAM_FOCAL_PX))
             self.raw_new = True
 
     def _uart_cb(self, m):
