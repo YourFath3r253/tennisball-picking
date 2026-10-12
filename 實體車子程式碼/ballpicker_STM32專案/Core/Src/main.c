@@ -96,6 +96,14 @@ float chassis_angle_deg = 0.0f;
 uint8_t avoiding = 0;          // 避線狀態標誌 (1: 正在避線, 0: 正常)
 uint32_t avoid_start_time = 0; // 避線煞車的起始時間
 uint8_t has_ball = 0;          // 記錄目前畫面上是否有球 (1: 有, 0: 沒有)
+// [Sean 2026-10-12] GY-BNO08X 陀螺儀：UART-RVC 模式，USART1 只收 (PA10)，115200，每秒 100 筆
+UART_HandleTypeDef huart1;
+uint8_t gyro_rx_byte;
+volatile float gyro_yaw_raw_deg = 0.0f;   // 感測器原始 yaw，範圍 ±180
+volatile float gyro_angle_deg = 0.0f;     // 展開後的連續角度，轉超過 180 度不會跳號
+volatile uint32_t gyro_last_tick = 0;
+volatile uint32_t gyro_packet_count = 0;
+volatile uint32_t gyro_checksum_errors = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,6 +121,9 @@ void Chassis_SpinRight(float turn_rpm);
 void Chassis_Forward(float forward_rpm);
 void Chassis_Stop(void);
 void Chassis_TurnPrecise(float target_angle_change, float spin_rpm);
+void Gyro_Init(void);
+void Gyro_ParseByte(uint8_t b);
+void Telemetry_Poll(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -207,6 +218,7 @@ int main(void)
 
     // 5. 啟動 TIM6 的 10ms 硬體中斷
     HAL_TIM_Base_Start_IT(&htim6);
+    Gyro_Init(); // [Sean 2026-10-12]
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -218,6 +230,7 @@ int main(void)
         float current_avoid_angle = -360.0f;
       while (1)
       {
+                Telemetry_Poll(); // [Sean 2026-10-12] 每 100ms 回傳陀螺儀/編碼器/輪速
                 // 偵測 Nucleo 板子上的藍色按鈕是否被按下 (防卡球排除機制)
                 if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
                 {
@@ -1019,6 +1032,7 @@ void Chassis_TurnPrecise(float target_angle_change, float spin_rpm)
         }
 
         // 短暫延遲避免卡死 CPU，讓背景 TIM6 中斷持續積分角度
+        Telemetry_Poll(); // [Sean 2026-10-12] 轉向中主迴圈被卡住，這裡補送
         HAL_Delay(10);
     }
 
@@ -1027,6 +1041,12 @@ void Chassis_TurnPrecise(float target_angle_change, float spin_rpm)
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+    if (huart->Instance == USART1) // [Sean 2026-10-12] 陀螺儀
+    {
+        Gyro_ParseByte(gyro_rx_byte);
+        HAL_UART_Receive_IT(&huart1, &gyro_rx_byte, 1);
+        return;
+    }
     if (huart->Instance == USART2)
     {
         if (command_ready == 0)
@@ -1059,6 +1079,97 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
         HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
     }
+}
+// ========================================================
+// [Sean 2026-10-12] GY-BNO08X UART-RVC 陀螺儀
+// 接線：VCC->3V3、GND->GND、SDA/MISO/TX->PA10(D2)、PS0->3V3、PS1->GND
+// 封包 19 bytes：0xAA 0xAA, index, yaw(int16, 0.01度), pitch, roll, ax, ay, az, MI, MR, 保留, checksum
+// checksum = byte[2]..byte[17] 加總取低 8 位
+// ========================================================
+void Gyro_ParseByte(uint8_t b)
+{
+    static uint8_t buf[19];
+    static uint8_t idx = 0;
+
+    if (idx == 0) { if (b == 0xAA) buf[idx++] = b; return; }
+    if (idx == 1) { if (b == 0xAA) buf[idx++] = b; else idx = 0; return; }
+    buf[idx++] = b;
+    if (idx < 19) return;
+    idx = 0;
+
+    uint8_t sum = 0;
+    for (int i = 2; i < 18; i++) sum += buf[i];
+    if (sum != buf[18]) { gyro_checksum_errors++; return; }
+
+    float yaw = (float)(int16_t)(buf[3] | (buf[4] << 8)) * 0.01f;
+    if (gyro_packet_count > 0)
+    {
+        float d = yaw - gyro_yaw_raw_deg;
+        if (d > 180.0f)  d -= 360.0f;
+        if (d < -180.0f) d += 360.0f;
+        gyro_angle_deg += d;
+    }
+    gyro_yaw_raw_deg = yaw;
+    gyro_last_tick = HAL_GetTick();
+    gyro_packet_count++;
+}
+
+void Gyro_Init(void)
+{
+    GPIO_InitTypeDef g = {0};
+    __HAL_RCC_USART1_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    g.Pin = GPIO_PIN_10;              // USART1_RX；PA9(TX) 給 TIM1 編碼器用，不動
+    g.Mode = GPIO_MODE_AF_PP;
+    g.Pull = GPIO_PULLUP;
+    g.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    g.Alternate = GPIO_AF7_USART1;
+    HAL_GPIO_Init(GPIOA, &g);
+
+    huart1.Instance = USART1;
+    huart1.Init.BaudRate = 115200;
+    huart1.Init.WordLength = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits = UART_STOPBITS_1;
+    huart1.Init.Parity = UART_PARITY_NONE;
+    huart1.Init.Mode = UART_MODE_RX;
+    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart1) != HAL_OK) return;
+
+    HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
+    HAL_UART_Receive_IT(&huart1, &gyro_rx_byte, 1);
+}
+
+void USART1_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&huart1);
+}
+
+// 收資料出錯 (例如 overrun) 時 HAL 會停止接收，這裡重新開始，避免陀螺儀資料從此中斷
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART1)
+    {
+        HAL_UART_Receive_IT(&huart1, &gyro_rx_byte, 1);
+    }
+}
+
+// 每 100ms 回傳一行，非阻塞；上一筆還沒送完就跳過這次
+// GYRO,時間ms,陀螺儀角度,編碼器角度,陀螺儀正常(0/1),左目標rpm,左實際rpm,右目標rpm,右實際rpm
+void Telemetry_Poll(void)
+{
+    static uint32_t last_ms = 0;
+    static char tx[112];
+    uint32_t now = HAL_GetTick();
+    if (now - last_ms < 100) return;
+    if (huart2.gState != HAL_UART_STATE_READY) return;
+    last_ms = now;
+    int ok = (gyro_packet_count > 0) && (now - gyro_last_tick < 200);
+    int n = sprintf(tx, "GYRO,%lu,%.2f,%.2f,%d,%.1f,%.1f,%.1f,%.1f\n",
+                    now, gyro_angle_deg, chassis_angle_deg, ok,
+                    pid_left.target_rpm, rpm_left_filter, pid_right.target_rpm, rpm_right_filter);
+    HAL_UART_Transmit_IT(&huart2, (uint8_t *)tx, n);
 }
 /* USER CODE END 4 */
 
