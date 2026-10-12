@@ -71,10 +71,6 @@ uint8_t dejam_active = 0;
 // 🚀 新增：用來儲存 Jetson 傳來的球距離 (cm) 與 角度 (度)
 float ball_distance_cm = 0.0f;
 float ball_angle_deg = 0.0f;
-// 👇 新增：用來儲存球場邊界狀態
-char court_state[10] = "SAFE";
-char court_dir[10] = "NONE";
-float court_outside_ratio = 0.0f;
 // 宣告變數來儲存左右輪的編碼器數值
 int16_t chassis_enc_left = 0;
 int16_t chassis_enc_right = 0;
@@ -95,13 +91,11 @@ PID_Controller pid_right;
 const float WHEEL_RADIUS = 0.052f; // 輪胎半徑 35mm (0.035公尺)
 const float WHEEL_TRACK  = 0.243f;  // 左右輪心間距 250mm (0.25公尺)
 
-// [Sean 2026-09-21] 連續P控制轉向參數：第一次設定，還沒實機驗證過，需要調整
-// error = 0 - angle；y = Kp*error（=left_rpm-right_rpm）；左=y/2、右=-y/2
-const float STEER_KP = 0.6f;          // rpm / 度 [Sean 2026-09-21] 0.3已驗證乾淨收斂(run13/14平均7.6s,無overshoot)，加倍測試找overshoot邊界
-const float STEER_WHEEL_MAX = 45.0f;  // 單輪rpm飽和上限，比今天驗證過安全的40rpm高一點
-
 // 💡 里程計核心：記錄車體當前旋轉的總角度 (度數)
 float chassis_angle_deg = 0.0f;
+uint8_t avoiding = 0;          // 避線狀態標誌 (1: 正在避線, 0: 正常)
+uint32_t avoid_start_time = 0; // 避線煞車的起始時間
+uint8_t has_ball = 0;          // 記錄目前畫面上是否有球 (1: 有, 0: 沒有)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,7 +110,6 @@ static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 void Chassis_SpinLeft(float turn_rpm);
 void Chassis_SpinRight(float turn_rpm);
-void Chassis_SteerP(float left_rpm, float right_rpm);
 void Chassis_Forward(float forward_rpm);
 void Chassis_Stop(void);
 void Chassis_TurnPrecise(float target_angle_change, float spin_rpm);
@@ -166,12 +159,12 @@ int main(void)
   // 開啟 USART2 中斷接收，每次只接收 1 個位元組，存入 rx_byte
   HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
   // 1. 設定左輪馬達方向為正轉 (IN1=High, IN2=Low)
-    HAL_GPIO_WritePin(GPIOC, L_IN1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOC, L_IN2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, L_IN1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, L_IN2_Pin, GPIO_PIN_RESET);
 
     // 2. 設定右輪馬達方向為正轉 (IN1=High, IN2=Low)
-    HAL_GPIO_WritePin(GPIOC, R_IN1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOC, R_IN2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, R_IN1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, R_IN2_Pin, GPIO_PIN_RESET);
 
     // 3. 啟動定時器 2 的通道 1 (PA0) 與通道 2 (PA1)
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
@@ -187,8 +180,8 @@ int main(void)
     // 1. 預設底盤馬達方向為正轉 (前進)
     HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_RESET);
 
     // 2. 啟動底盤的 PWM (TIM3 的 Channel 1 與 Channel 2)
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
@@ -218,89 +211,197 @@ int main(void)
 
   /* Infinite loop */
       /* USER CODE BEGIN WHILE */
+    	uint8_t blind_dash_active = 0;
+        uint32_t blind_dash_start_time = 0;
+        uint8_t was_seeing_ball = 0; // 💡 新增：用來記錄上一刻是否還有看到球
+        uint32_t last_seen_time = 0; // 🚀 新增宣告：記錄最後一次看到球的時間
+        float current_avoid_angle = -360.0f;
       while (1)
       {
-    	  // 偵測 Nucleo 板子上的藍色按鈕是否被按下 (防卡球排除機制)
-    	        if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
-    	        {
-    	            // 左輪反轉、右輪反轉 (吐球)
-    	            HAL_GPIO_WritePin(L_IN1_GPIO_Port, L_IN1_Pin, GPIO_PIN_RESET);
-    	            HAL_GPIO_WritePin(L_IN2_GPIO_Port, L_IN2_Pin, GPIO_PIN_SET);
-    	            HAL_GPIO_WritePin(R_IN1_GPIO_Port, R_IN1_Pin, GPIO_PIN_SET);
-    	            HAL_GPIO_WritePin(R_IN2_GPIO_Port, R_IN2_Pin, GPIO_PIN_RESET);
+                // 偵測 Nucleo 板子上的藍色按鈕是否被按下 (防卡球排除機制)
+                if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
+                {
+                    // 左輪反轉、右輪反轉 (吐球)
+                    HAL_GPIO_WritePin(L_IN1_GPIO_Port, L_IN1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(L_IN2_GPIO_Port, L_IN2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(R_IN1_GPIO_Port, R_IN1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(R_IN2_GPIO_Port, R_IN2_Pin, GPIO_PIN_RESET);
 
-    	            HAL_Delay(1000);
+                    HAL_Delay(1000);
 
-    	            // 恢復正轉
-    	            HAL_GPIO_WritePin(L_IN1_GPIO_Port, L_IN1_Pin, GPIO_PIN_SET);
-    	            HAL_GPIO_WritePin(L_IN2_GPIO_Port, L_IN2_Pin, GPIO_PIN_RESET);
-    	            HAL_GPIO_WritePin(R_IN1_GPIO_Port, R_IN1_Pin, GPIO_PIN_RESET);
-    	            HAL_GPIO_WritePin(R_IN2_GPIO_Port, R_IN2_Pin, GPIO_PIN_SET);
+                    // 恢復正轉
+                    HAL_GPIO_WritePin(L_IN1_GPIO_Port, L_IN1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(L_IN2_GPIO_Port, L_IN2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(R_IN1_GPIO_Port, R_IN1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(R_IN2_GPIO_Port, R_IN2_Pin, GPIO_PIN_SET);
 
-    	            HAL_Delay(500);
-    	        }
+                    HAL_Delay(500);
+                }
 
-        /* USER CODE END WHILE */
+                // ==========================================================
+                // 🚀 【計時器安全區】放在 while 迴圈內，1000毫秒一到絕對強制轉彎！
+                // ==========================================================
+                if (blind_dash_active == 1 && (HAL_GetTick() - blind_dash_start_time > 1000))
+                {
+                    blind_dash_active = 0;    // 時間到，解除直行鎖定！
+                }
 
-    	        /* USER CODE BEGIN 3 */
-    	                        if (command_ready == 1)
-    	                        {
-    	                            char tx_msg[128];
-    	                            int tx_len = 0;
+                /* USER CODE END WHILE */
 
-    	                            // ==========================================================
-    	                            // [Sean 2026-09-21] 連續P控制轉向（第一次設定，Kp=1.5，未實機驗證）：
-    	                            //   距離>30cm -> error=0-angle, y=Kp*error, 左=y/2 右=-y/2（各自飽和±45rpm）
-    	                            //   距離<=30cm -> 停止
-    	                            //   每個vision frame都直接設定target_rpm，不清積分（跟舊的離散版本不同）
-    	                            // ==========================================================
-    	                            if (strncmp((char *)rx_buffer, "BALL,", 5) == 0)
-    	                            {
-    	                                if (sscanf((char *)rx_buffer, "BALL,%f,%f", &ball_distance_cm, &ball_angle_deg) == 2)
-    	                                {
-    	                                    tx_len = sprintf(tx_msg, "ACK:BALL,%.1f,%.1f\n", ball_distance_cm, ball_angle_deg);
-    	                                    HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
+                /* USER CODE BEGIN 3 */
+                // ==========================================================
+                // 🚀 第一階段：通訊解析 (只更新變數，不直接操作馬達)
+                // ==========================================================
+                if (command_ready == 1)
+                {
 
-    	                                    if (ball_distance_cm > 30.0f)
-    	                                    {
-    	                                        float error = 0.0f - ball_angle_deg;
-    	                                        float y = STEER_KP * error; // y = left_rpm - right_rpm
+                    // 檢查盲衝是否超時 (1.5秒)
+                    if (blind_dash_active && (HAL_GetTick() - blind_dash_start_time > 1500)) {
+                        blind_dash_active = 0;
+                    }
 
-    	                                        float half_y = y / 2.0f;
-    	                                        if (half_y > STEER_WHEEL_MAX)  half_y = STEER_WHEEL_MAX;
-    	                                        if (half_y < -STEER_WHEEL_MAX) half_y = -STEER_WHEEL_MAX;
+                    // 【解析 COURT 邊界指令】
+                    if (strncmp((char *)rx_buffer, "COURT,", 6) == 0)
+                    {
+                        char court_status[16] = {0};
+                        char court_pos[16] = {0};
+                        char court_color[16] = {0};
 
-    	                                        Chassis_SteerP(-half_y, half_y); // [Sean 2026-09-21] 方向反了，對調左右
-    	                                    }
-    	                                    else
-    	                                    {
-    	                                        Chassis_Stop();
-    	                                    }
-    	                                }
-    	                                else
-    	                                {
-    	                                    HAL_UART_Transmit(&huart2, (uint8_t*)"ERR:SCANF_FAILED\n", 17, 50);
-    	                                }
-    	                            }
-    	                            else if (strncmp((char *)rx_buffer, "NOBALL", 6) == 0 || strncmp((char *)rx_buffer, "BALL_OFF", 8) == 0)
-    	                            {
-    	                                HAL_UART_Transmit(&huart2, (uint8_t*)"ACK:NOBALL\n", 11, 50);
-    	                                Chassis_Stop();
-    	                            }
-    	                            else
-    	                            {
-    	                                tx_len = sprintf(tx_msg, "ERR:UNKNOWN,%s", (char*)rx_buffer);
-    	                                HAL_UART_Transmit(&huart2, (uint8_t*)tx_msg, tx_len, 50);
-    	                            }
+                        if (sscanf((char *)rx_buffer, "COURT,%15[^,],%15[^,],%15s", court_status, court_pos, court_color) == 3)
+                        {
+                            // 若收到 EDGE 且當前未在避線流程中，則強制觸發避線！
+                            if (strcmp(court_status, "EDGE") == 0 && avoiding == 0)
+                            {
+                                avoiding = 1;          // 鎖定狀態：進入避線流程
+                                has_ball = 0;          // 放棄追球
+                                blind_dash_active = 0; // 取消盲衝
+                                Chassis_Stop();        // 立刻煞車
+                                avoid_start_time = HAL_GetTick(); // 記錄開始煞車時間
 
-    	                            // 清空快取
-    	                            memset(rx_buffer, 0, sizeof(rx_buffer));
-    	                            rx_index = 0;
-    	                            command_ready = 0;
-    	                        }
+                                // 🚀 新增邏輯：根據邊界位置決定逃脫方向
+                                // (Chassis_TurnPrecise 規定：正數為左轉，負數為右轉)
+                                if (strcmp(court_pos, "LEFT") == 0) {
+                                    current_avoid_angle = -240.0f; // 邊界在左，向右轉逃脫 (可依需求改為 -90 或 -180)
+                                }
+                                else if (strcmp(court_pos, "RIGHT") == 0) {
+                                    current_avoid_angle = 240.0f;  // 邊界在右，向左轉逃脫 (可依需求改為 90 或 180)
+                                }
+                                else {
+                                    current_avoid_angle = -360.0f; // CENTER 或 UNKNOWN，維持原本設定
+                                }
+                            }
+                        }
+                    }
+                    // 【解析 BALL 指令】
+                    else if (strncmp((char *)rx_buffer, "BALL,", 5) == 0)
+                    {
+                        if (sscanf((char *)rx_buffer, "BALL,%f,%f", &ball_distance_cm, &ball_angle_deg) == 2)
+                        {
+                            has_ball = 1; // 標記為看到球
+                            last_seen_time = HAL_GetTick();
+
+                            // 如果距離小於25cm且未在避線，觸發吃球盲衝
+                            if (avoiding == 0 && ball_distance_cm <= 25.0f && blind_dash_active == 0)
+                            {
+                                blind_dash_active = 1;
+                                blind_dash_start_time = HAL_GetTick();
+                            }
+                        }
+                    }
+                    // 【解析 BALL_OFF / NOBALL 指令】
+                    else if (strncmp((char *)rx_buffer, "BALL_OFF", 8) == 0 || strncmp((char *)rx_buffer, "NOBALL", 6) == 0)
+                    {
+                        has_ball = 0; // 標記為丟失球
+
+                        // 若在極近距離(30cm內)丟失且未在避線，可能是球掉進死角，補發盲衝
+                        if (avoiding == 0 && blind_dash_active == 0 && ball_distance_cm > 0.0f && ball_distance_cm <= 30.0f)
+                        {
+                            blind_dash_active = 1;
+                            blind_dash_start_time = HAL_GetTick();
+                        }
+                    }
+
+                    // 清空快取，準備接收下一筆 Jetson 指令
+                    memset((void*)rx_buffer, 0, sizeof(rx_buffer));
+                    rx_index = 0;
+                    command_ready = 0;
+                }
+
+                // ==========================================================
+                // 🚀 第二階段：運動控制分流 (避線優先 > 追球 > 巡邏)
+                // ==========================================================
+                if (avoiding == 1)
+                {
+                    // --- 避線機動流程 ---
+                    if (HAL_GetTick() - avoid_start_time > 500)
+                    {
+                        // 🚀 改為套用動態決定的角度 current_avoid_angle
+                        Chassis_TurnPrecise(current_avoid_angle, 60.0f);
+                        avoiding = 0;
+                        command_ready = 0;
+                        rx_index = 0;
+                        memset((void*)rx_buffer, 0, sizeof(rx_buffer));
+                        last_seen_time = HAL_GetTick() - 2000;
+                    }
+                }
+                else if (has_ball == 1 || blind_dash_active == 1)
+                {
+                    // --- 原本的 BALL 追球邏輯 ---
+                    if (blind_dash_active)
+                    {
+                        Chassis_Forward(75.0f); // 盲衝直走吃球
+                    }
+                    else if (ball_distance_cm <= 30.0f)
+                    {
+                        Chassis_Forward(75.0f); // 放棄微調，直接衝
+                    }
+                    else
+                    {
+                        // 遠距導航微調 (支援影像延遲點放等待)
+                        static uint32_t step_start_time = 0;
+                        static uint8_t turn_step_state = 0;
+                        float turn_threshold = (ball_distance_cm > 40.0f) ? 6.0f : 4.0f;
+
+                        if (ball_angle_deg > turn_threshold || ball_angle_deg < -turn_threshold)
+                        {
+                            if (turn_step_state == 0) {
+                                turn_step_state = 1;
+                                step_start_time = HAL_GetTick();
+                            }
+
+                            if (turn_step_state == 1) {
+                                float spin_rpm = (ball_angle_deg > 14.0f || ball_angle_deg < -14.0f) ? 55.0f : 40.0f;
+                                if (ball_angle_deg > 0) Chassis_SpinRight(spin_rpm);
+                                else Chassis_SpinLeft(spin_rpm);
+
+                                if (HAL_GetTick() - step_start_time >= 200) {
+                                    turn_step_state = 2;
+                                }
+                            }
+                            else if (turn_step_state == 2) {
+                                Chassis_Stop();
+                                if (HAL_GetTick() - step_start_time >= 1000) {
+                                    turn_step_state = 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            turn_step_state = 0;
+                            Chassis_Forward(75.0f);
+                        }
+                    }
+                }
+                else
+                {
+                    // --- BALL_OFF 巡邏邏輯 ---
+                    Chassis_Forward(80.0f);
+                }
+
+            } // 結束 while(1) 迴圈 (視縮排而定)
     	                            /* USER CODE END 3 */
 }
-}
+
 
 /**
   * @brief System Clock Configuration
@@ -815,17 +916,6 @@ float locked_heading_deg = 0.0f;  // 用來記住起步瞬間的那條直線角�
 
 void Chassis_SpinLeft(float turn_rpm)
 {
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // [Sean 2026-09-20 debug] 確認邏輯有沒有被呼叫
-    chassis_motion_state = 0; // 告訴系統現在不是直走
-    pid_left.target_rpm  =  turn_rpm;
-    pid_right.target_rpm = -turn_rpm;
-    pid_left.integral = 0.0f; // 轉向時順便清空 PID 誤差積分
-    pid_right.integral = 0.0f;
-}
-
-void Chassis_SpinRight(float turn_rpm)
-{
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // [Sean 2026-09-20 debug] 確認邏輯有沒有被呼叫
     chassis_motion_state = 0; // 告訴系統現在不是直走
     pid_left.target_rpm  = -turn_rpm;
     pid_right.target_rpm =  turn_rpm;
@@ -833,14 +923,13 @@ void Chassis_SpinRight(float turn_rpm)
     pid_right.integral = 0.0f;
 }
 
-// [Sean 2026-09-21] 連續P控制專用：只設定目標轉速，不清空積分。
-// 跟Chassis_SpinLeft/SpinRight最大的差異在這裡——舊的離散版本每次呼叫都清積分，
-// 連續控制每個vision frame都會呼叫，若清積分等於積分永遠來不及累積、克服不了靜摩擦力。
-void Chassis_SteerP(float left_rpm, float right_rpm)
+void Chassis_SpinRight(float turn_rpm)
 {
-    chassis_motion_state = 0;
-    pid_left.target_rpm  = left_rpm;
-    pid_right.target_rpm = right_rpm;
+    chassis_motion_state = 0; // 告訴系統現在不是直走
+    pid_left.target_rpm  =  turn_rpm;
+    pid_right.target_rpm = -turn_rpm;
+    pid_left.integral = 0.0f; // 轉向時順便清空 PID 誤差積分
+    pid_right.integral = 0.0f;
 }
 
 void Chassis_Stop(void)
@@ -865,7 +954,6 @@ void Chassis_Forward(float forward_rpm)
     // 剛從靜止轉為直走的第一瞬間
     if (chassis_motion_state == 0)
     {
-        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // [Sean 2026-09-20 debug] 確認Forward邏輯有沒有被呼叫
         pid_left.integral = 0.0f;
         pid_right.integral = 0.0f;
         pid_left.error_last = 0.0f;
@@ -946,7 +1034,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             // 🚀 關鍵防護：如果緩衝區是空的 (rx_index == 0)，嚴格檢查第一個字元！
             // 只允許合法指令的開頭字母 (B=BALL, N=NOBALL, L=LED, P=PING, S=STOP) 進入
             // 這樣能徹底防止收進上一句殘留的半截數字 (如 "35.0,0.0\n")
-        	if (rx_index == 0 && !(rx_byte == 'B' || rx_byte == 'N' || rx_byte == 'L' || rx_byte == 'P' || rx_byte == 'S' || rx_byte == 'C'))
+            if (rx_index == 0 && !(rx_byte == 'B' || rx_byte == 'N' || rx_byte == 'L' || rx_byte == 'P' || rx_byte == 'S' || rx_byte == 'C'))
             {
                 // 如果不是合法指令開頭，直接丟棄，等待下一個字元
                 HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
