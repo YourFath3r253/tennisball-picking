@@ -1,0 +1,45 @@
+[INFO] [1791824276.241023873] [grid_patrol_node]: 格邊長上限 2.63 m (2*0.8*R*sinθ)，網子在 x=0.0，車體離網至少 0.9 m -> 兩個半場各 25 格 (每格 2.22 x 2.20 m)，共 50 格 + 2 個繞網柱過渡點 (y=±7.5)，52 個路徑點
+[INFO] [1791824276.254673695] [grid_patrol_node]: 車體傳送到起點 (-10.900, -4.600, 0°)：True
+[INFO] [1791824276.256064933] [grid_patrol_node]: 這次執行的資料會存到 /home/sean/ros2_ws/experiments/實驗數據/run177
+[INFO] [1791824276.264550061] [grid_patrol_node]: 開始巡邏。
+[INFO] [1791824276.264994937] [grid_patrol_node]: D 同學提案：半場四色邊界，碰到邊界轉 135°，逾時 900s (模擬時間)
+[INFO] [1791824276.265330343] [grid_patrol_node]: 實體車模式：裁判節點 (不控制車子)，逾時 900s，球 10 顆
+[INFO] [1791824328.465826559] [grid_patrol_node]: ball_2 進後車廂！(1/10) t=52.2s 車廂內位置=(-0.05, -0.16, 0.06)
+[INFO] [1791824416.465697473] [grid_patrol_node]: ball_10 進後車廂！(2/10) t=140.2s 車廂內位置=(-0.04, -0.06, 0.06)
+[INFO] [1791824419.965434544] [grid_patrol_node]: ball_5 進後車廂！(3/10) t=143.7s 車廂內位置=(-0.07, -0.20, 0.06)
+[INFO] [1791824431.465672943] [grid_patrol_node]: ball_9 進後車廂！(4/10) t=155.2s 車廂內位置=(-0.32, -0.14, 0.10)
+[INFO] [1791824470.666222500] [grid_patrol_node]: ball_4 進後車廂！(5/10) t=194.4s 車廂內位置=(-0.17, -0.08, 0.07)
+[INFO] [1791824491.165384445] [grid_patrol_node]: ball_6 進後車廂！(6/10) t=214.9s 車廂內位置=(-0.32, -0.13, 0.08)
+[INFO] [1791824570.665537538] [grid_patrol_node]: ball_3 進後車廂！(7/10) t=294.4s 車廂內位置=(-0.32, -0.12, 0.10)
+[INFO] [1791824669.665553605] [grid_patrol_node]: ball_7 進後車廂！(8/10) t=393.4s 車廂內位置=(-0.15, -0.08, 0.10)
+[INFO] [1791824721.365691091] [grid_patrol_node]: ball_1 進後車廂！(9/10) t=445.1s 車廂內位置=(-0.32, -0.14, 0.10)
+[INFO] [1791824764.865468979] [grid_patrol_node]: ball_8 進後車廂！(10/10) t=488.6s 車廂內位置=(-0.28, -0.17, 0.11)
+[INFO] [1791824764.964602255] [grid_patrol_node]: 結束(撿滿)：撿進後車廂 10/10 顆球，走了 0/52 格，耗時 488.7s (模擬時間 488.5s)
+[INFO] [1791824764.965596799] [grid_patrol_node]: 邊界轉向 0 次，撿到 10/10
+[INFO] [1791824764.966706290] [grid_patrol_node]: 稽核 ball_1：車體座標 (-0.25, -0.20, 0.06) -> 在車廂裡
+[INFO] [1791824764.967251759] [grid_patrol_node]: 稽核 ball_2：車體座標 (-0.14, -0.07, 0.06) -> 在車廂裡
+[INFO] [1791824764.967754461] [grid_patrol_node]: 稽核 ball_3：車體座標 (-0.21, -0.06, 0.06) -> 在車廂裡
+[INFO] [1791824764.968160527] [grid_patrol_node]: 稽核 ball_4：車體座標 (-0.18, -0.13, 0.06) -> 在車廂裡
+[INFO] [1791824764.968557858] [grid_patrol_node]: 稽核 ball_5：車體座標 (-0.32, -0.11, 0.06) -> 在車廂裡
+[INFO] [1791824764.969029683] [grid_patrol_node]: 稽核 ball_6：車體座標 (-0.32, -0.19, 0.06) -> 在車廂裡
+[INFO] [1791824764.969436751] [grid_patrol_node]: 稽核 ball_7：車體座標 (-0.27, -0.06, 0.06) -> 在車廂裡
+[INFO] [1791824764.969885615] [grid_patrol_node]: 稽核 ball_8：車體座標 (-0.28, -0.17, 0.11) -> 在車廂裡
+[INFO] [1791824764.970271886] [grid_patrol_node]: 稽核 ball_9：車體座標 (-0.25, -0.13, 0.06) -> 在車廂裡
+[INFO] [1791824764.970721571] [grid_patrol_node]: 稽核 ball_10：車體座標 (-0.18, -0.19, 0.06) -> 在車廂裡
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/real_car_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'real_car_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/real_car_node.py", line 78, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 653, in _wait_for_ready_callbacks
+    wait_set = _rclpy.WaitSet(
+rclpy._rclpy_pybind11.RCLError: failed to initialize wait set: the given context is not valid, either rcl_init() was not called or rcl_shutdown() was called., at ./src/rcl/wait.c:130
+[ros2run]: Process exited with failure 1

@@ -42,6 +42,9 @@ setup(
             'grid_patrol_node = tennis_bot.grid_patrol_node:main',
             'boundary_bounce_node = tennis_bot.boundary_bounce_node:main',
             'motor_driver_node = tennis_bot.motor_driver_node:main',
+            'jetson_d_node = tennis_bot.jetson_d_node:main',
+            'stm32_b_node = tennis_bot.stm32_b_node:main',
+            'real_car_node = tennis_bot.real_car_node:main',
         ],
     },
 )

@@ -48,3 +48,25 @@ def inside_lines(x, y, margin=0.0):
     """(x, y) 是否在四條線圍起來的範圍內 (往外放寬 margin 公尺)。"""
     return (BASELINE_X - margin <= x <= NET_LINE_X + margin
             and -SIDELINE_Y - margin <= y <= SIDELINE_Y + margin)
+
+# ---- 2026-10-12 實體車現況：邊界改成「只有黃色毛線」(D 同學 yellow_runtime，沒有四色) ----
+# 室內網球場 (indoor_court.world，experiments/gen_indoor_court_world.py 產生)：沿半場四邊拉一條黃毛線。
+# 實際怎麼拉還沒確認，先假設在場地線外緣往內 YARN_INSET_M (底線寬 10 cm，離白線內緣還有 10 cm，不壓在白線上，D 的模型是看「線 vs 旁邊地面」的顏色差)。
+# 毛線寬度照實拍 (yellow_sample.jpg 原始畫面)：0.33 m 處 4~14 px 寬，換算地面 6~20 mm (毛線蓬鬆 + 鏡頭模糊)，取中位數 14 mm。
+YARN_INSET_M = 0.20
+YARN_WIDTH_M = 0.014
+YARN_HEIGHT_M = 0.001   # 做成扁條：4 mm 高的方條在 20 cm 高的鏡頭看來大多是側面，側面沒有頂燈照到會變暗 (實拍毛線比地面亮)
+YARN_X0 = BASELINE_X + YARN_INSET_M      # 底線那條
+YARN_X1 = NET_LINE_X                      # 網前那條 (網前 1 m)
+YARN_Y = SIDELINE_Y - YARN_INSET_M        # 兩條邊線 y=±YARN_Y
+YARN_SEGMENTS = {
+    'baseline': ((YARN_X0, -YARN_Y), (YARN_X0, YARN_Y)),
+    'left': ((YARN_X0, YARN_Y), (YARN_X1, YARN_Y)),
+    'right': ((YARN_X0, -YARN_Y), (YARN_X1, -YARN_Y)),
+    'net': ((YARN_X1, -YARN_Y), (YARN_X1, YARN_Y)),
+}
+
+
+def inside_yarn(x, y, margin=0.0):
+    """(x, y) 是否在黃毛線圍起來的範圍內 (往外放寬 margin 公尺)。"""
+    return (YARN_X0 - margin <= x <= YARN_X1 + margin and -YARN_Y - margin <= y <= YARN_Y + margin)

@@ -1,0 +1,14 @@
+{
+  "backup": "/home/hp/models/yellow_backup_20261011_182829",
+  "preserved": [
+    "realtime_camera_trt_distance_uart_court_line.py",
+    "court_line_runtime.py",
+    "color_models_v2.json"
+  ],
+  "files": {
+    "yellow_runtime.py": "a0d214b7cc8b69e185000db3282bd6a811a84ce1dfbef9a2985608ce45cea86b",
+    "geometry_features.py": "3aef1ea31cdba2135673a8cd3158c0e8ba1a695a41fbb080d9238e8c026df094",
+    "yellow_model.json": "37d7aa7c572781e2fadbd30d7b76f15c9a6745805716ec4f86a33fa0c2148d6f",
+    "realtime_camera_trt_distance_uart_court_line.py": "3491fe26d72cb31af447979401da1398aec54cfd3e65cbcb7c51266abe911139"
+  }
+}

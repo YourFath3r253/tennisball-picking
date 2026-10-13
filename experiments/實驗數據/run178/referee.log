@@ -1,0 +1,40 @@
+[INFO] [1791824789.275387014] [grid_patrol_node]: 格邊長上限 2.63 m (2*0.8*R*sinθ)，網子在 x=0.0，車體離網至少 0.9 m -> 兩個半場各 25 格 (每格 2.22 x 2.20 m)，共 50 格 + 2 個繞網柱過渡點 (y=±7.5)，52 個路徑點
+[INFO] [1791824789.289526072] [grid_patrol_node]: 車體傳送到起點 (-10.900, -4.600, 0°)：True
+[INFO] [1791824789.290895427] [grid_patrol_node]: 這次執行的資料會存到 /home/sean/ros2_ws/experiments/實驗數據/run178
+[INFO] [1791824789.297815053] [grid_patrol_node]: 開始巡邏。
+[INFO] [1791824789.298373230] [grid_patrol_node]: D 同學提案：半場四色邊界，碰到邊界轉 135°，逾時 900s (模擬時間)
+[INFO] [1791824789.298730510] [grid_patrol_node]: 實體車模式：裁判節點 (不控制車子)，逾時 900s，球 10 顆
+[INFO] [1791824827.898832278] [grid_patrol_node]: ball_6 進後車廂！(1/10) t=38.6s 車廂內位置=(-0.08, -0.20, 0.06)
+[INFO] [1791824862.998542185] [grid_patrol_node]: ball_7 進後車廂！(2/10) t=73.7s 車廂內位置=(-0.12, -0.14, 0.06)
+[INFO] [1791824908.499040196] [grid_patrol_node]: ball_5 進後車廂！(3/10) t=119.2s 車廂內位置=(-0.07, -0.13, 0.06)
+[INFO] [1791824972.099268845] [grid_patrol_node]: ball_4 進後車廂！(4/10) t=182.8s 車廂內位置=(-0.31, -0.18, 0.07)
+[INFO] [1791825020.598542900] [grid_patrol_node]: ball_3 進後車廂！(5/10) t=231.3s 車廂內位置=(-0.32, -0.19, 0.06)
+[INFO] [1791825040.598547289] [grid_patrol_node]: ball_8 進後車廂！(6/10) t=251.3s 車廂內位置=(-0.31, -0.13, 0.06)
+[INFO] [1791825060.598612521] [grid_patrol_node]: ball_9 進後車廂！(7/10) t=271.3s 車廂內位置=(-0.32, -0.14, 0.06)
+[INFO] [1791825099.099112309] [grid_patrol_node]: ball_1 進後車廂！(8/10) t=309.8s 車廂內位置=(-0.32, -0.15, 0.09)
+[INFO] [1791825193.899077184] [grid_patrol_node]: ball_2 進後車廂！(9/10) t=404.6s 車廂內位置=(-0.32, -0.16, 0.11)
+[INFO] [1791825689.798013327] [grid_patrol_node]: 結束(逾時)：撿進後車廂 9/10 顆球，走了 0/52 格，耗時 900.5s (模擬時間 900.1s)
+[INFO] [1791825689.798637723] [grid_patrol_node]: 邊界轉向 0 次，撿到 9/10
+[INFO] [1791825689.799973285] [grid_patrol_node]: 稽核 ball_1：車體座標 (-0.12, -0.06, 0.06) -> 在車廂裡
+[INFO] [1791825689.800559191] [grid_patrol_node]: 稽核 ball_2：車體座標 (-0.18, -0.19, 0.06) -> 在車廂裡
+[INFO] [1791825689.801005744] [grid_patrol_node]: 稽核 ball_3：車體座標 (-0.25, -0.19, 0.06) -> 在車廂裡
+[INFO] [1791825689.801503259] [grid_patrol_node]: 稽核 ball_4：車體座標 (-0.18, -0.09, 0.06) -> 在車廂裡
+[INFO] [1791825689.801905632] [grid_patrol_node]: 稽核 ball_5：車體座標 (-0.32, -0.17, 0.06) -> 在車廂裡
+[INFO] [1791825689.802381929] [grid_patrol_node]: 稽核 ball_6：車體座標 (-0.12, -0.15, 0.06) -> 在車廂裡
+[INFO] [1791825689.802775996] [grid_patrol_node]: 稽核 ball_7：車體座標 (-0.27, -0.07, 0.06) -> 在車廂裡
+[INFO] [1791825689.803167078] [grid_patrol_node]: 稽核 ball_8：車體座標 (-0.23, -0.13, 0.06) -> 在車廂裡
+[INFO] [1791825689.803622707] [grid_patrol_node]: 稽核 ball_9：車體座標 (-0.32, -0.11, 0.06) -> 在車廂裡
+[INFO] [1791825689.804014450] [grid_patrol_node]: 稽核 ball_10：車體座標 (1.59, -0.38, 0.03) -> 不在車廂
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/real_car_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'real_car_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/real_car_node.py", line 79, in main
+    rclpy.shutdown()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 130, in shutdown
+    _shutdown(context=context)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/utilities.py", line 58, in shutdown
+    return context.shutdown()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/context.py", line 102, in shutdown
+    self.__context.shutdown()
+rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:241
+[ros2run]: Process exited with failure 1

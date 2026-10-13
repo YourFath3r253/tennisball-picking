@@ -1,0 +1,2 @@
+frame,time,conf,cx,cy,box_w,box_h,ball_pixel,z_cm,x_cm,y_cm,dist_cm,bearing_deg,smooth_z_cm,smooth_x_cm,smooth_dist_cm,smooth_bearing_deg,motor_on
+292,23.973,0.8475,243.89,111.11,57.14,40.54,48.13,54.29,-5.44,-11.26,54.56,-5.73,54.29,-5.44,54.56,-5.73,0

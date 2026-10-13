@@ -1,0 +1,26 @@
+{
+  "yellow": {
+    "packet": "COURT,EDGE,RIGHT,YELLOW",
+    "score": 0.9999999892348638
+  },
+  "white": {
+    "packet": "COURT,SAFE,NONE,UNKNOWN",
+    "score": 0.0
+  },
+  "yolo": {
+    "engine_loaded": true,
+    "output_shapes": [
+      [
+        1,
+        5,
+        4032
+      ]
+    ],
+    "detections": 1,
+    "first_inference_ms": 3922.9326248168945
+  },
+  "hardware": {
+    "camera_devices": [],
+    "uart_devices": []
+  }
+}
