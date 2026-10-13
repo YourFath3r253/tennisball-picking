@@ -1,0 +1,47 @@
+[INFO] [1791824793.462224766] [jetson_d_node]: Jetson (D 同學程式 SIL)：jetson_d，COURT_EDGE_Y=0.48，BALL_INFER_PERIOD=0.2s，V4L2 buffers=4
+[INFO] [1791824829.850910417] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.530s，p90 0.695s
+[INFO] [1791824863.565975654] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.485s，p90 0.653s
+[INFO] [1791824900.824974818] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.544s，p90 0.713s
+[INFO] [1791824936.402868013] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.509s，p90 0.685s
+[INFO] [1791824974.500100210] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.555s，p90 0.722s
+[INFO] [1791825006.216383361] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.446s，p90 0.648s
+[INFO] [1791825043.452979122] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.540s，p90 0.675s
+[INFO] [1791825078.539369200] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.504s，p90 0.690s
+[INFO] [1791825111.288413244] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.477s，p90 0.674s
+[INFO] [1791825147.284766533] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.515s，p90 0.690s
+[INFO] [1791825178.466568673] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.435s，p90 0.663s
+[INFO] [1791825208.619357235] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.429s，p90 0.619s
+[INFO] [1791825236.842229001] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.392s，p90 0.584s
+[INFO] [1791825264.805328885] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.371s，p90 0.606s
+[INFO] [1791825297.791780040] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.476s，p90 0.685s
+[INFO] [1791825329.894508066] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.449s，p90 0.659s
+[INFO] [1791825359.937925463] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.399s，p90 0.657s
+[INFO] [1791825385.632569350] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.361s，p90 0.496s
+[INFO] [1791825420.148920550] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.483s，p90 0.675s
+[INFO] [1791825445.978371770] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.344s，p90 0.508s
+[INFO] [1791825473.475877352] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.368s，p90 0.553s
+[INFO] [1791825500.033066043] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.368s，p90 0.529s
+[INFO] [1791825526.390889935] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.360s，p90 0.532s
+[INFO] [1791825551.798045935] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.341s，p90 0.492s
+[INFO] [1791825577.652849188] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.351s，p90 0.510s
+[INFO] [1791825603.129649351] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.342s，p90 0.525s
+[INFO] [1791825630.574777167] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.369s，p90 0.572s
+[INFO] [1791825659.045037935] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.379s，p90 0.602s
+[INFO] [1791825690.387551741] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.440s，p90 0.606s
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/jetson_d_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'jetson_d_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/jetson_d_node.py", line 296, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 681, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException
+[ros2run]: Process exited with failure 1

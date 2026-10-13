@@ -1,0 +1,8 @@
+{
+  "backup": "/home/hp/models/yellow_diagonal_backup_20261011_192444",
+  "files": {
+    "yellow_runtime.py": "ba91e142f64cbd1659d8a9eb2528b8c26811434e2700e48f6d3a28398d9f6d5a",
+    "geometry_features.py": "1804fa56a82dae8c2c9b3135c21ba3a81772cf35347ebce39ff5bfff9a8ff418",
+    "yellow_model.json": "a32d2bea715f16bc9e3522269b98f19280b56f11dd56dccff461714942e00171"
+  }
+}

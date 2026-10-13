@@ -54,6 +54,7 @@ class WheelMotor:
         # 物理狀態
         self.rpm = 0.0          # 輪子真實轉速
         self._count_acc = 0.0   # 編碼器累積的不足 1 count 的部分
+        self.last_counts = 0    # 最近 10 ms 的編碼器 count (STM32 用它積分 chassis_angle_deg)
 
     def stop(self):
         """Chassis_Stop()：目標歸零 + 清積分/微分歷史。"""
@@ -83,6 +84,7 @@ class WheelMotor:
         self._count_acc += self.rpm / 60.0 * ENCODER_RESOLUTION * STM32_DT
         counts = math.trunc(self._count_acc)
         self._count_acc -= counts
+        self.last_counts = counts
         rpm_meas = counts / ENCODER_RESOLUTION * 6000.0
         # 2) 低通濾波 + PID
         self.rpm_filter = 0.8 * self.rpm_filter + 0.2 * rpm_meas

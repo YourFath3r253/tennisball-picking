@@ -1,0 +1,41 @@
+{
+  "yellow_sample": {
+    "packet": "COURT,EDGE,RIGHT,YELLOW",
+    "position": "observed",
+    "line": [
+      474,
+      336,
+      634,
+      336
+    ],
+    "median_processing_ms": 44.64101791381836
+  },
+  "white_sample": {
+    "packet": "COURT,SAFE,NONE,UNKNOWN",
+    "position": "unavailable",
+    "line": null,
+    "median_processing_ms": 68.21203231811523
+  },
+  "diagonal_sample": {
+    "packet": "COURT,EDGE,LEFT,YELLOW",
+    "position": "observed",
+    "line": [
+      0,
+      258,
+      450,
+      99
+    ],
+    "median_processing_ms": 85.36338806152344
+  },
+  "steep_sample": {
+    "packet": "COURT,EDGE,RIGHT,YELLOW",
+    "position": "observed",
+    "line": [
+      366,
+      374,
+      507,
+      147
+    ],
+    "median_processing_ms": 78.03511619567871
+  }
+}

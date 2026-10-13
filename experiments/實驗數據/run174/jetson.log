@@ -1,0 +1,327 @@
+[INFO] [1791822368.933689850] [jetson_d_node]: Jetson (D 同學程式 SIL)：jetson_d，COURT_EDGE_Y=0.48，BALL_INFER_PERIOD=0.2s，V4L2 buffers=4
+[INFO] [1791822368.934337937] [jetson_d_node]: DBG now=8.72 next=None wait=False held=False q=[] img=0 drop=0 it=0
+[INFO] [1791822369.923942223] [jetson_d_node]: DBG now=9.72 next=9.72307086276402 wait=False held=True q=[9.16, 9.3, 9.5] img=30 drop=20 it=7
+[INFO] [1791822370.924783574] [jetson_d_node]: DBG now=10.72 next=10.809282143442198 wait=False held=True q=[9.93, 10.33, 10.6] img=60 drop=46 it=11
+[INFO] [1791822371.924887563] [jetson_d_node]: DBG now=11.72 next=11.882020860114022 wait=False held=True q=[11.23, 11.36, 11.66] img=89 drop=70 it=16
+[INFO] [1791822372.925868384] [jetson_d_node]: DBG now=12.72 next=12.784266033801504 wait=False held=True q=[12.36, 12.6] img=119 drop=95 it=22
+[INFO] [1791822373.926214561] [jetson_d_node]: DBG now=13.72 next=13.804874225941932 wait=False held=True q=[13.43, 13.53, 13.63] img=149 drop=118 it=28
+[INFO] [1791822374.926279651] [jetson_d_node]: DBG now=14.72 next=14.870121031543121 wait=False held=True q=[14.26, 14.46, 14.66] img=179 drop=143 it=33
+[INFO] [1791822375.926874271] [jetson_d_node]: DBG now=15.72 next=15.71714085795859 wait=False held=True q=[15.26, 15.36, 15.6] img=208 drop=167 it=38
+[INFO] [1791822376.929379032] [jetson_d_node]: DBG now=16.72 next=16.80793158177567 wait=False held=True q=[16.16, 16.43, 16.63] img=238 drop=192 it=43
+[INFO] [1791822377.928458303] [jetson_d_node]: DBG now=17.72 next=17.706973569813847 wait=False held=True q=[17.13, 17.26, 17.43] img=268 drop=217 it=48
+[INFO] [1791822378.928798719] [jetson_d_node]: DBG now=18.72 next=18.72182984190698 wait=False held=True q=[18.26, 18.5, 18.66] img=298 drop=241 it=54
+[INFO] [1791822379.929399611] [jetson_d_node]: DBG now=19.72 next=19.98984257798745 wait=False held=True q=[19.36, 19.53, 19.63] img=328 drop=263 it=62
+[INFO] [1791822380.929837463] [jetson_d_node]: DBG now=20.72 next=20.867044491513706 wait=False held=True q=[20.3, 20.46, 20.66] img=358 drop=288 it=67
+[INFO] [1791822381.930057041] [jetson_d_node]: DBG now=21.72 next=21.7204083795678 wait=False held=True q=[21.23, 21.4, 21.43] img=388 drop=313 it=72
+[INFO] [1791822382.930454249] [jetson_d_node]: DBG now=22.72 next=22.801396678734527 wait=False held=True q=[22.2, 22.36, 22.66] img=417 drop=337 it=77
+[INFO] [1791822383.931184782] [jetson_d_node]: DBG now=23.72 next=23.70702211038646 wait=False held=True q=[23.1, 23.33, 23.53] img=446 drop=360 it=83
+[INFO] [1791822384.931840712] [jetson_d_node]: DBG now=24.72 next=24.889092545142248 wait=False held=True q=[24.23, 24.5, 24.7] img=476 drop=383 it=90
+[INFO] [1791822385.932023484] [jetson_d_node]: DBG now=25.72 next=25.76764311211415 wait=False held=True q=[25.56, 25.63, 25.7] img=506 drop=407 it=96
+[INFO] [1791822386.932882779] [jetson_d_node]: DBG now=26.72 next=26.82741384310918 wait=False held=True q=[26.4, 26.56, 26.63] img=536 drop=431 it=102
+[INFO] [1791822387.933408766] [jetson_d_node]: DBG now=27.72 next=27.913276730965993 wait=False held=True q=[27.33, 27.53, 27.7] img=566 drop=456 it=107
+[INFO] [1791822388.934143518] [jetson_d_node]: DBG now=28.72 next=28.902337769530888 wait=False held=True q=[27.93, 28.43, 28.5] img=595 drop=482 it=110
+[INFO] [1791822389.934330129] [jetson_d_node]: DBG now=29.72 next=29.744278526644404 wait=False held=True q=[29.33, 29.4, 29.6] img=625 drop=507 it=115
+[INFO] [1791822390.935319021] [jetson_d_node]: DBG now=30.72 next=30.74441649528176 wait=False held=True q=[30.33, 30.5, 30.56] img=654 drop=531 it=120
+[INFO] [1791822391.935229658] [jetson_d_node]: DBG now=31.72 next=31.781090635088873 wait=False held=True q=[31.43, 31.53, 31.66] img=684 drop=555 it=126
+[INFO] [1791822392.936119386] [jetson_d_node]: DBG now=32.72 next=32.81612446889042 wait=False held=True q=[32.23, 32.36, 32.6] img=714 drop=580 it=131
+[INFO] [1791822393.936510370] [jetson_d_node]: DBG now=33.72 next=33.774631471531215 wait=False held=True q=[33.26, 33.43, 33.63] img=743 drop=604 it=136
+[INFO] [1791822394.936817372] [jetson_d_node]: DBG now=34.72 next=34.763054977140705 wait=False held=True q=[34.36, 34.53, 34.6] img=773 drop=628 it=142
+[INFO] [1791822395.937119948] [jetson_d_node]: DBG now=35.72 next=35.78000405010024 wait=False held=True q=[35.1, 35.3, 35.6] img=803 drop=652 it=148
+[INFO] [1791822396.938168720] [jetson_d_node]: DBG now=36.72 next=36.76296538672447 wait=False held=True q=[36.56, 36.63, 36.7] img=833 drop=674 it=156
+[INFO] [1791822397.938241771] [jetson_d_node]: DBG now=37.72 next=37.70608331737342 wait=False held=True q=[37.03, 37.13, 37.56] img=863 drop=699 it=161
+[INFO] [1791822398.938498647] [jetson_d_node]: DBG now=38.72 next=38.75784797144908 wait=False held=True q=[38.4, 38.6, 38.66] img=892 drop=721 it=168
+[INFO] [1791822399.939276873] [jetson_d_node]: DBG now=39.72 next=39.812496746475304 wait=False held=True q=[39.06, 39.36, 39.6] img=922 drop=746 it=173
+[INFO] [1791822400.939979847] [jetson_d_node]: DBG now=40.72 next=40.86148706544253 wait=False held=True q=[40.36, 40.53, 40.6] img=952 drop=770 it=179
+[INFO] [1791822401.939798997] [jetson_d_node]: DBG now=41.72 next=41.8001218514712 wait=False held=True q=[41.1, 41.36, 41.56] img=982 drop=795 it=184
+[INFO] [1791822402.951767692] [jetson_d_node]: DBG now=42.72 next=42.84717888619725 wait=False held=True q=[42.4, 42.6, 42.7] img=1011 drop=815 it=193
+[INFO] [1791822403.940994021] [jetson_d_node]: DBG now=43.72 next=43.72113679473714 wait=False held=True q=[43.4, 43.53, 43.66] img=1041 drop=839 it=199
+[INFO] [1791822403.976358613] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.500s，p90 0.683s
+[INFO] [1791822404.941765956] [jetson_d_node]: DBG now=44.72 next=44.79438279378225 wait=False held=True q=[44.36, 44.5, 44.66] img=1071 drop=861 it=207
+[INFO] [1791822405.942243316] [jetson_d_node]: DBG now=45.72 next=45.80596769054117 wait=False held=True q=[45.06, 45.23, 45.4] img=1101 drop=885 it=213
+[INFO] [1791822406.947150712] [jetson_d_node]: DBG now=46.72 next=46.80876220043233 wait=False held=True q=[46.36, 46.53] img=1131 drop=907 it=222
+[INFO] [1791822407.943560107] [jetson_d_node]: DBG now=47.72 next=47.75504958006746 wait=False held=True q=[47.23, 47.43, 47.63] img=1161 drop=930 it=228
+[INFO] [1791822408.943573185] [jetson_d_node]: DBG now=48.72 next=48.70732988051243 wait=False held=True q=[48.2, 48.26, 48.46] img=1190 drop=952 it=235
+[INFO] [1791822409.943914208] [jetson_d_node]: DBG now=49.72 next=49.81673639725174 wait=False held=True q=[49.53, 49.63, 49.7] img=1218 drop=973 it=242
+[INFO] [1791822410.944864087] [jetson_d_node]: DBG now=50.72 next=50.750358162707975 wait=False held=True q=[50.26, 50.43, 50.63] img=1247 drop=997 it=247
+[INFO] [1791822411.945258541] [jetson_d_node]: DBG now=51.72 next=51.71189969681423 wait=False held=True q=[51.2, 51.3, 51.36] img=1277 drop=1022 it=252
+[INFO] [1791822412.955127146] [jetson_d_node]: DBG now=52.72 next=52.89265315322812 wait=False held=True q=[52.46, 52.56, 52.7] img=1306 drop=1041 it=262
+[INFO] [1791822413.946231275] [jetson_d_node]: DBG now=53.72 next=53.79511143827294 wait=False held=True q=[53.1, 53.36, 53.53] img=1336 drop=1067 it=266
+[INFO] [1791822414.946656401] [jetson_d_node]: DBG now=54.72 next=54.73402512237138 wait=False held=True q=[54.2, 54.4, 54.56] img=1364 drop=1090 it=271
+[INFO] [1791822415.947143690] [jetson_d_node]: DBG now=55.72 next=55.756743137432935 wait=False held=True q=[55.16, 55.4, 55.63] img=1394 drop=1114 it=277
+[INFO] [1791822416.957027928] [jetson_d_node]: DBG now=56.72 next=56.79334050996078 wait=False held=True q=[56.46, 56.56, 56.7] img=1424 drop=1135 it=286
+[INFO] [1791822417.948225900] [jetson_d_node]: DBG now=57.72 next=57.773031249602 wait=False held=True q=[57.26, 57.46, 57.66] img=1454 drop=1159 it=292
+[INFO] [1791822418.948813645] [jetson_d_node]: DBG now=58.72 next=58.77701208590091 wait=False held=True q=[58.26, 58.43, 58.56] img=1484 drop=1183 it=298
+[INFO] [1791822419.949413046] [jetson_d_node]: DBG now=59.72 next=59.75557343268068 wait=False held=True q=[59.03, 59.33, 59.6] img=1514 drop=1209 it=302
+[INFO] [1791822420.949833339] [jetson_d_node]: DBG now=60.72 next=60.825989732528306 wait=False held=True q=[60.4, 60.56, 60.63] img=1544 drop=1232 it=309
+[INFO] [1791822421.950563296] [jetson_d_node]: DBG now=61.72 next=61.749457167471924 wait=False held=True q=[61.33, 61.53, 61.66] img=1573 drop=1256 it=314
+[INFO] [1791822422.959006700] [jetson_d_node]: DBG now=62.72 next=62.92769204770604 wait=False held=True q=[62.43, 62.5, 62.7] img=1603 drop=1277 it=323
+[INFO] [1791822423.951497338] [jetson_d_node]: DBG now=63.72 next=63.742207077783384 wait=False held=True q=[63.36, 63.43, 63.63] img=1632 drop=1301 it=328
+[INFO] [1791822424.961845518] [jetson_d_node]: DBG now=64.73 next=64.72011325046624 wait=False held=True q=[64.23, 64.46, 64.6] img=1661 drop=1325 it=333
+[INFO] [1791822425.961979817] [jetson_d_node]: DBG now=65.73 next=65.7413912073717 wait=False held=True q=[65.26, 65.53, 65.66] img=1690 drop=1349 it=338
+[INFO] [1791822426.963224989] [jetson_d_node]: DBG now=66.73 next=66.73970635994455 wait=False held=True q=[66.4, 66.56, 66.66] img=1720 drop=1373 it=344
+[INFO] [1791822427.963369273] [jetson_d_node]: DBG now=67.73 next=67.91495471431365 wait=False held=True q=[67.33, 67.46, 67.66] img=1750 drop=1393 it=354
+[INFO] [1791822428.963734400] [jetson_d_node]: DBG now=68.73 next=68.87691374733102 wait=False held=True q=[68.13, 68.36, 68.63] img=1779 drop=1418 it=358
+[INFO] [1791822429.964085680] [jetson_d_node]: DBG now=69.73 next=69.85632752780074 wait=False held=True q=[69.46, 69.53, 69.66] img=1809 drop=1441 it=365
+[INFO] [1791822430.964744799] [jetson_d_node]: DBG now=70.73 next=70.73342397690662 wait=False held=True q=[70.23, 70.4, 70.6] img=1839 drop=1466 it=370
+[INFO] [1791822431.964948232] [jetson_d_node]: DBG now=71.73 next=71.76122330742245 wait=False held=True q=[71.36, 71.63] img=1868 drop=1489 it=377
+[INFO] [1791822432.966637307] [jetson_d_node]: DBG now=72.73 next=72.7403375323567 wait=False held=True q=[72.2, 72.43, 72.6] img=1898 drop=1512 it=383
+[INFO] [1791822433.966667248] [jetson_d_node]: DBG now=73.73 next=73.84439511309472 wait=False held=True q=[73.33, 73.5, 73.6] img=1928 drop=1536 it=389
+[INFO] [1791822434.967285098] [jetson_d_node]: DBG now=74.73 next=74.74606774314296 wait=False held=True q=[74.46, 74.53, 74.7] img=1958 drop=1558 it=397
+[INFO] [1791822435.352999535] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.450s，p90 0.649s
+[INFO] [1791822435.967368354] [jetson_d_node]: DBG now=75.73 next=75.80303535666488 wait=False held=True q=[75.1, 75.33, 75.6] img=1988 drop=1583 it=402
+[INFO] [1791822436.967825430] [jetson_d_node]: DBG now=76.73 next=76.79801201050965 wait=False held=True q=[76.3, 76.53, 76.7] img=2018 drop=1608 it=407
+[INFO] [1791822437.968470277] [jetson_d_node]: DBG now=77.73 next=77.7517770414492 wait=False held=True q=[77.3, 77.5, 77.56] img=2048 drop=1632 it=413
+[INFO] [1791822438.968853379] [jetson_d_node]: DBG now=78.73 next=78.92038378503742 wait=False held=True q=[78.23, 78.46, 78.7] img=2077 drop=1656 it=418
+[INFO] [1791822439.969267947] [jetson_d_node]: DBG now=79.73 next=79.78583095968027 wait=False held=True q=[79.23, 79.43, 79.6] img=2106 drop=1680 it=423
+[INFO] [1791822440.969444207] [jetson_d_node]: DBG now=80.73 next=80.73421185345775 wait=False held=True q=[80.1, 80.3, 80.5] img=2136 drop=1705 it=428
+[INFO] [1791822441.969990806] [jetson_d_node]: DBG now=81.73 next=81.73712664146119 wait=False held=True q=[81.23, 81.43, 81.46] img=2166 drop=1730 it=433
+[INFO] [1791822442.970803525] [jetson_d_node]: DBG now=82.73 next=82.83927898961173 wait=False held=True q=[82.2, 82.43, 82.63] img=2196 drop=1755 it=438
+[INFO] [1791822443.970908719] [jetson_d_node]: DBG now=83.73 next=83.86194681660082 wait=False held=True q=[83.13, 83.26, 83.63] img=2226 drop=1779 it=444
+[INFO] [1791822444.971630385] [jetson_d_node]: DBG now=84.73 next=84.86690198943808 wait=False held=True q=[84.1, 84.26, 84.66] img=2256 drop=1805 it=448
+[INFO] [1791822445.972009922] [jetson_d_node]: DBG now=85.73 next=85.8872869175432 wait=False held=True q=[85.23, 85.43, 85.7] img=2286 drop=1830 it=453
+[INFO] [1791822446.972719703] [jetson_d_node]: DBG now=86.73 next=86.75859663666117 wait=False held=True q=[86.36, 86.53, 86.6] img=2315 drop=1853 it=459
+[INFO] [1791822447.973003437] [jetson_d_node]: DBG now=87.73 next=87.88741519381706 wait=False held=True q=[87.43, 87.6, 87.66] img=2345 drop=1876 it=466
+[INFO] [1791822448.973526475] [jetson_d_node]: DBG now=88.73 next=88.78131510801929 wait=False held=True q=[88.33, 88.4, 88.6] img=2375 drop=1901 it=471
+[INFO] [1791822449.974057827] [jetson_d_node]: DBG now=89.73 next=89.74626724962783 wait=False held=True q=[89.2, 89.33, 89.56] img=2405 drop=1926 it=476
+[INFO] [1791822450.974632433] [jetson_d_node]: DBG now=90.73 next=90.73674561910944 wait=False held=True q=[90.26, 90.5] img=2434 drop=1949 it=483
+[INFO] [1791822451.974873035] [jetson_d_node]: DBG now=91.73 next=91.77754223680283 wait=False held=True q=[90.96, 91.3, 91.5] img=2464 drop=1974 it=487
+[INFO] [1791822452.975621098] [jetson_d_node]: DBG now=92.73 next=92.82753666647653 wait=False held=True q=[92.4, 92.56, 92.63] img=2493 drop=1997 it=493
+[INFO] [1791822453.976645472] [jetson_d_node]: DBG now=93.73 next=93.7755400165138 wait=False held=True q=[93.23, 93.4, 93.66] img=2522 drop=2021 it=498
+[INFO] [1791822454.976755545] [jetson_d_node]: DBG now=94.73 next=94.88723778461846 wait=False held=True q=[94.2, 94.46, 94.7] img=2552 drop=2046 it=503
+[INFO] [1791822455.977353649] [jetson_d_node]: DBG now=95.73 next=95.81857004258195 wait=False held=True q=[95.36, 95.4, 95.63] img=2582 drop=2071 it=508
+[INFO] [1791822456.977607524] [jetson_d_node]: DBG now=96.73 next=96.95187566388759 wait=False held=True q=[96.13, 96.4, 96.53] img=2612 drop=2096 it=513
+[INFO] [1791822457.978005676] [jetson_d_node]: DBG now=97.73 next=97.7614051946524 wait=False held=True q=[97.3, 97.36, 97.56] img=2642 drop=2121 it=518
+[INFO] [1791822458.978430007] [jetson_d_node]: DBG now=98.73 next=98.89477715083945 wait=False held=True q=[98.43, 98.56] img=2672 drop=2144 it=526
+[INFO] [1791822459.978665739] [jetson_d_node]: DBG now=99.73 next=99.79457430237241 wait=False held=True q=[99.4, 99.5, 99.66] img=2702 drop=2167 it=532
+[INFO] [1791822460.979586141] [jetson_d_node]: DBG now=100.73 next=100.73621207553516 wait=False held=True q=[100.23, 100.46, 100.7] img=2732 drop=2192 it=537
+[INFO] [1791822461.980349446] [jetson_d_node]: DBG now=101.73 next=101.74537205255825 wait=False held=True q=[101.4, 101.6, 101.66] img=2762 drop=2215 it=544
+[INFO] [1791822462.981147228] [jetson_d_node]: DBG now=102.73 next=102.92982469695315 wait=False held=True q=[102.2, 102.4, 102.66] img=2791 drop=2236 it=552
+[INFO] [1791822463.981338895] [jetson_d_node]: DBG now=103.73 next=103.76421085191436 wait=False held=True q=[103.2, 103.43, 103.63] img=2821 drop=2262 it=556
+[INFO] [1791822464.981936209] [jetson_d_node]: DBG now=104.73 next=104.79315771765272 wait=False held=True q=[104.23, 104.3, 104.53] img=2851 drop=2286 it=562
+[INFO] [1791822465.982008853] [jetson_d_node]: DBG now=105.73 next=105.73503586075068 wait=False held=True q=[105.23, 105.43, 105.56] img=2881 drop=2311 it=567
+[INFO] [1791822466.982462282] [jetson_d_node]: DBG now=106.73 next=106.78529400369956 wait=False held=True q=[106.43, 106.5, 106.63] img=2911 drop=2336 it=572
+[INFO] [1791822467.983371879] [jetson_d_node]: DBG now=107.73 next=107.77725999272678 wait=False held=True q=[107.26, 107.46, 107.56] img=2941 drop=2360 it=578
+[INFO] [1791822468.983272496] [jetson_d_node]: DBG now=108.73 next=108.93514434214228 wait=False held=True q=[108.06, 108.26, 108.53] img=2970 drop=2384 it=583
+[INFO] [1791822469.983914016] [jetson_d_node]: DBG now=109.73 next=109.8100347002785 wait=False held=True q=[109.33, 109.36, 109.6] img=2999 drop=2406 it=590
+[INFO] [1791822470.992569375] [jetson_d_node]: DBG now=110.73 next=110.79914859268118 wait=False held=True q=[110.26, 110.5, 110.73] img=3030 drop=2431 it=596
+[INFO] [1791822471.375718351] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.508s，p90 0.711s
+[INFO] [1791822471.994900933] [jetson_d_node]: DBG now=111.74 next=111.93057361165089 wait=False held=True q=[111.46, 111.63, 111.7] img=3060 drop=2452 it=605
+[INFO] [1791822472.995690631] [jetson_d_node]: DBG now=112.74 next=112.93430438296896 wait=False held=True q=[112.2, 112.43, 112.66] img=3090 drop=2478 it=609
+[INFO] [1791822473.995877287] [jetson_d_node]: DBG now=113.74 next=113.76530442853101 wait=False held=True q=[113.46, 113.5, 113.7] img=3120 drop=2501 it=616
+[INFO] [1791822474.996153179] [jetson_d_node]: DBG now=114.74 next=114.75684654679522 wait=False held=True q=[114.33, 114.4, 114.6] img=3150 drop=2523 it=624
+[INFO] [1791822475.996759381] [jetson_d_node]: DBG now=115.74 next=115.86177378362663 wait=False held=True q=[115.13, 115.43, 115.63] img=3180 drop=2547 it=630
+[INFO] [1791822476.997404061] [jetson_d_node]: DBG now=116.74 next=116.82482325475911 wait=False held=True q=[116.33, 116.46, 116.66] img=3210 drop=2572 it=635
+[INFO] [1791822477.998210733] [jetson_d_node]: DBG now=117.74 next=117.87118865557245 wait=False held=True q=[117.26, 117.46, 117.7] img=3239 drop=2595 it=641
+[INFO] [1791822478.998742000] [jetson_d_node]: DBG now=118.74 next=118.75865705191272 wait=False held=True q=[118.1, 118.33, 118.63] img=3269 drop=2621 it=645
+[INFO] [1791822479.998692487] [jetson_d_node]: DBG now=119.74 next=119.86093875228913 wait=False held=True q=[119.36, 119.43, 119.6] img=3298 drop=2642 it=653
+[INFO] [1791822481.005408252] [jetson_d_node]: DBG now=120.74 next=120.98024499316337 wait=False held=True q=[120.3, 120.43, 120.73] img=3328 drop=2667 it=658
+[INFO] [1791822482.000201526] [jetson_d_node]: DBG now=121.74 next=121.7404474059021 wait=False held=True q=[121.23, 121.46, 121.63] img=3358 drop=2693 it=662
+[INFO] [1791822483.000971847] [jetson_d_node]: DBG now=122.74 next=122.7531012051803 wait=False held=True q=[122.33, 122.5, 122.56] img=3388 drop=2716 it=669
+[INFO] [1791822484.000750672] [jetson_d_node]: DBG now=123.74 next=123.74612243270506 wait=False held=True q=[123.26, 123.46, 123.63] img=3418 drop=2741 it=674
+[INFO] [1791822485.001383021] [jetson_d_node]: DBG now=124.74 next=124.76476086408171 wait=False held=True q=[124.2, 124.4, 124.7] img=3448 drop=2766 it=679
+[INFO] [1791822486.002075739] [jetson_d_node]: DBG now=125.74 next=126.18467287182972 wait=False held=True q=[125.26, 125.56, 125.73] img=3478 drop=2790 it=685
+[INFO] [1791822487.003142922] [jetson_d_node]: DBG now=126.74 next=126.73900436665785 wait=False held=True q=[125.73, 126.2, 126.5] img=3507 drop=2817 it=687
+[INFO] [1791822488.002845961] [jetson_d_node]: DBG now=127.74 next=127.83907791023336 wait=False held=True q=[127.2, 127.36, 127.63] img=3537 drop=2842 it=692
+[INFO] [1791822489.013432976] [jetson_d_node]: DBG now=128.75 next=128.7806624330197 wait=False held=True q=[128.43, 128.56, 128.66] img=3567 drop=2867 it=697
+[INFO] [1791822490.016563909] [jetson_d_node]: DBG now=129.75 next=129.97331075935537 wait=False held=True q=[129.26, 129.46, 129.73] img=3597 drop=2891 it=703
+[INFO] [1791822491.014429114] [jetson_d_node]: DBG now=130.75 next=130.7784912108363 wait=False held=True q=[130.23, 130.4, 130.6] img=3627 drop=2917 it=707
+[INFO] [1791822492.014755663] [jetson_d_node]: DBG now=131.75 next=131.81417038806288 wait=False held=True q=[131.23, 131.4, 131.66] img=3657 drop=2941 it=713
+[INFO] [1791822493.015661454] [jetson_d_node]: DBG now=132.75 next=132.7962123091954 wait=False held=True q=[132.3, 132.4, 132.6] img=3686 drop=2964 it=719
+[INFO] [1791822494.016032340] [jetson_d_node]: DBG now=133.75 next=133.7831104189007 wait=False held=True q=[133.26, 133.56, 133.73] img=3716 drop=2988 it=725
+[INFO] [1791822495.016519936] [jetson_d_node]: DBG now=134.75 next=134.92238324561959 wait=False held=True q=[134.46, 134.53, 134.73] img=3746 drop=3012 it=731
+[INFO] [1791822496.017037032] [jetson_d_node]: DBG now=135.75 next=135.87330674705424 wait=False held=True q=[135.46, 135.63, 135.7] img=3776 drop=3037 it=736
+[INFO] [1791822497.017756176] [jetson_d_node]: DBG now=136.75 next=136.80705295284744 wait=False held=True q=[136.36, 136.46, 136.66] img=3805 drop=3060 it=742
+[INFO] [1791822498.018090846] [jetson_d_node]: DBG now=137.75 next=137.7918938351664 wait=False held=True q=[137.26, 137.46, 137.7] img=3835 drop=3085 it=747
+[INFO] [1791822499.018637673] [jetson_d_node]: DBG now=138.75 next=138.93244273046312 wait=False held=True q=[138.23, 138.43, 138.66] img=3865 drop=3110 it=752
+[INFO] [1791822500.019590717] [jetson_d_node]: DBG now=139.75 next=139.874358924326 wait=False held=True q=[139.3, 139.4, 139.53] img=3895 drop=3133 it=759
+[INFO] [1791822501.019684696] [jetson_d_node]: DBG now=140.75 next=140.82439033220754 wait=False held=True q=[140.33, 140.53, 140.56] img=3925 drop=3158 it=764
+[INFO] [1791822502.019778621] [jetson_d_node]: DBG now=141.75 next=141.8360943775191 wait=False held=True q=[141.36, 141.53, 141.6] img=3955 drop=3183 it=769
+[INFO] [1791822503.020554142] [jetson_d_node]: DBG now=142.75 next=142.82830516645953 wait=False held=True q=[142.26, 142.5, 142.73] img=3984 drop=3206 it=775
+[INFO] [1791822504.020863818] [jetson_d_node]: DBG now=143.75 next=143.82200384975212 wait=False held=True q=[143.2, 143.4, 143.63] img=4013 drop=3230 it=780
+[INFO] [1791822505.034712217] [jetson_d_node]: DBG now=144.75 next=144.89025461574198 wait=False held=True q=[144.26, 144.53] img=4043 drop=3256 it=785
+[INFO] [1791822506.029951176] [jetson_d_node]: DBG now=145.75 next=145.89699302441386 wait=False held=True q=[145.3, 145.53, 145.73] img=4072 drop=3279 it=790
+[INFO] [1791822507.022748710] [jetson_d_node]: DBG now=146.75 next=146.84685021218752 wait=False held=True q=[146.46, 146.56, 146.7] img=4102 drop=3302 it=797
+[INFO] [1791822507.539374540] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.510s，p90 0.697s
+[INFO] [1791822508.022662868] [jetson_d_node]: DBG now=147.75 next=147.87832225287016 wait=False held=True q=[147.26, 147.5, 147.7] img=4132 drop=3327 it=802
+[INFO] [1791822509.023256039] [jetson_d_node]: DBG now=148.75 next=148.8364736084608 wait=False held=True q=[148.16, 148.4, 148.63] img=4162 drop=3352 it=807
+[INFO] [1791822510.035189227] [jetson_d_node]: DBG now=149.75 next=149.95034232715244 wait=False held=True q=[149.33, 149.5, 149.73] img=4191 drop=3375 it=813
+[INFO] [1791822511.024488221] [jetson_d_node]: DBG now=150.75 next=150.79802483464357 wait=False held=True q=[150.13, 150.3, 150.6] img=4221 drop=3401 it=817
+[INFO] [1791822512.024950041] [jetson_d_node]: DBG now=151.75 next=151.8568650883729 wait=False held=True q=[151.33, 151.53, 151.7] img=4250 drop=3425 it=822
+[INFO] [1791822513.025143688] [jetson_d_node]: DBG now=152.75 next=152.86727097458348 wait=False held=True q=[152.36, 152.43, 152.66] img=4280 drop=3448 it=829
+[INFO] [1791822514.026020770] [jetson_d_node]: DBG now=153.75 next=153.828133515211 wait=False held=True q=[153.13, 153.36, 153.63] img=4310 drop=3474 it=833
+[INFO] [1791822515.026092470] [jetson_d_node]: DBG now=154.75 next=154.92463119506232 wait=False held=True q=[154.26, 154.5, 154.7] img=4340 drop=3499 it=838
+[INFO] [1791822516.026879168] [jetson_d_node]: DBG now=155.75 next=155.80337702792372 wait=False held=True q=[155.23, 155.43, 155.7] img=4370 drop=3525 it=842
+[INFO] [1791822517.027141056] [jetson_d_node]: DBG now=156.75 next=156.89300790950645 wait=False held=True q=[156.0, 156.26, 156.43] img=4399 drop=3550 it=846
+[INFO] [1791822518.027754293] [jetson_d_node]: DBG now=157.75 next=157.85423152245372 wait=False held=True q=[157.3, 157.46, 157.66] img=4429 drop=3574 it=852
+[INFO] [1791822519.028358817] [jetson_d_node]: DBG now=158.75 next=158.86242580378226 wait=False held=True q=[158.33, 158.56, 158.73] img=4459 drop=3599 it=857
+[INFO] [1791822520.028834747] [jetson_d_node]: DBG now=159.75 next=159.758367011766 wait=False held=True q=[159.33, 159.53, 159.6] img=4489 drop=3624 it=862
+[INFO] [1791822521.029129651] [jetson_d_node]: DBG now=160.75 next=160.9318777281617 wait=False held=True q=[160.4, 160.46, 160.7] img=4519 drop=3648 it=868
+[INFO] [1791822522.029814873] [jetson_d_node]: DBG now=161.75 next=161.85160018284398 wait=False held=True q=[161.36, 161.56, 161.73] img=4549 drop=3672 it=874
+[INFO] [1791822523.029975186] [jetson_d_node]: DBG now=162.75 next=163.0163902461529 wait=False held=True q=[162.3, 162.56] img=4579 drop=3698 it=879
+[INFO] [1791822524.030698373] [jetson_d_node]: DBG now=163.75 next=163.8565852437615 wait=False held=True q=[163.43, 163.6, 163.7] img=4609 drop=3722 it=884
+[INFO] [1791822525.030727390] [jetson_d_node]: DBG now=164.75 next=164.75519578740088 wait=False held=True q=[163.86, 164.0, 164.5] img=4639 drop=3749 it=887
+[INFO] [1791822526.031704409] [jetson_d_node]: DBG now=165.75 next=165.83281799914016 wait=False held=True q=[164.93, 165.0, 165.36] img=4669 drop=3775 it=891
+[INFO] [1791822527.032595653] [jetson_d_node]: DBG now=166.75 next=166.84455796587758 wait=False held=True q=[166.5, 166.56, 166.66] img=4699 drop=3799 it=897
+[INFO] [1791822528.032996715] [jetson_d_node]: DBG now=167.75 next=168.0865392239928 wait=False held=True q=[167.53, 167.63, 167.73] img=4729 drop=3822 it=904
+[INFO] [1791822529.033239769] [jetson_d_node]: DBG now=168.75 next=168.87361311990918 wait=False held=True q=[168.5, 168.56, 168.7] img=4759 drop=3847 it=909
+[INFO] [1791822530.033670380] [jetson_d_node]: DBG now=169.75 next=169.8658259818846 wait=False held=True q=[169.36, 169.5, 169.66] img=4788 drop=3871 it=914
+[INFO] [1791822531.034182003] [jetson_d_node]: DBG now=170.75 next=170.82696092801208 wait=False held=True q=[170.26, 170.43, 170.63] img=4817 drop=3895 it=919
+[INFO] [1791822532.034680897] [jetson_d_node]: DBG now=171.75 next=171.7595411146638 wait=False held=True q=[171.3, 171.5, 171.66] img=4844 drop=3916 it=925
+[INFO] [1791822533.035171059] [jetson_d_node]: DBG now=172.75 next=172.74317364988994 wait=False held=True q=[172.53, 172.6, 172.66] img=4874 drop=3936 it=935
+[INFO] [1791822534.035941326] [jetson_d_node]: DBG now=173.75 next=173.80466581542726 wait=False held=True q=[173.33, 173.4, 173.66] img=4904 drop=3960 it=941
+[INFO] [1791822535.036291386] [jetson_d_node]: DBG now=174.75 next=174.89852489232075 wait=False held=True q=[174.4, 174.46, 174.63] img=4934 drop=3982 it=949
+[INFO] [1791822536.036211148] [jetson_d_node]: DBG now=175.75 next=175.86810275149637 wait=False held=True q=[175.46, 175.63, 175.7] img=4964 drop=4005 it=956
+[INFO] [1791822537.037170841] [jetson_d_node]: DBG now=176.75 next=176.8328977543484 wait=False held=True q=[176.36, 176.4, 176.56] img=4994 drop=4028 it=963
+[INFO] [1791822538.037684049] [jetson_d_node]: DBG now=177.75 next=177.76325282380026 wait=False held=True q=[177.3, 177.36, 177.6] img=5024 drop=4052 it=969
+[INFO] [1791822539.038187472] [jetson_d_node]: DBG now=178.75 next=178.7648848840802 wait=False held=True q=[178.43, 178.53, 178.7] img=5054 drop=4076 it=975
+[INFO] [1791822540.053552007] [jetson_d_node]: DBG now=179.75 next=179.96891053538442 wait=False held=True q=[179.5, 179.6] img=5083 drop=4098 it=983
+[INFO] [1791822541.039401612] [jetson_d_node]: DBG now=180.75 next=180.75075705835079 wait=False held=True q=[180.36, 180.43, 180.56] img=5113 drop=4122 it=988
+[INFO] [1791822542.039738748] [jetson_d_node]: DBG now=181.75 next=181.7392423787039 wait=False held=True q=[181.1, 181.37, 181.56] img=5143 drop=4146 it=994
+[INFO] [1791822542.913714302] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.522s，p90 0.697s
+[INFO] [1791822543.040178812] [jetson_d_node]: DBG now=182.75 next=182.96123563567065 wait=False held=True q=[182.5, 182.63, 182.7] img=5172 drop=4168 it=1001
+[INFO] [1791822544.040801218] [jetson_d_node]: DBG now=183.75 next=183.76261667803843 wait=False held=True q=[183.16, 183.3, 183.5] img=5201 drop=4193 it=1005
+[INFO] [1791822545.041325111] [jetson_d_node]: DBG now=184.75 next=184.76038257506767 wait=False held=True q=[184.3, 184.46, 184.56] img=5231 drop=4218 it=1010
+[INFO] [1791822546.041571443] [jetson_d_node]: DBG now=185.75 next=185.87748820103923 wait=False held=True q=[185.23, 185.36, 185.6] img=5261 drop=4243 it=1015
+[INFO] [1791822547.042178754] [jetson_d_node]: DBG now=186.75 next=186.79221286636152 wait=False held=True q=[186.36, 186.43, 186.66] img=5289 drop=4265 it=1021
+[INFO] [1791822548.042515500] [jetson_d_node]: DBG now=187.75 next=187.74233988264743 wait=False held=True q=[187.23, 187.36, 187.53] img=5319 drop=4290 it=1026
+[INFO] [1791822549.052043575] [jetson_d_node]: DBG now=188.75 next=188.88243765331362 wait=False held=True q=[188.43, 188.56, 188.73] img=5349 drop=4313 it=1033
+[INFO] [1791822550.043791489] [jetson_d_node]: DBG now=189.75 next=189.92613063608894 wait=False held=True q=[189.46, 189.56, 189.7] img=5379 drop=4338 it=1038
+[INFO] [1791822551.043652335] [jetson_d_node]: DBG now=190.75 next=190.83028419071954 wait=False held=True q=[190.2, 190.43, 190.66] img=5408 drop=4363 it=1042
+[INFO] [1791822552.044459836] [jetson_d_node]: DBG now=191.75 next=191.88459222882346 wait=False held=True q=[191.13, 191.36, 191.63] img=5438 drop=4389 it=1046
+[INFO] [1791822553.044886537] [jetson_d_node]: DBG now=192.75 next=192.8120846462673 wait=False held=True q=[192.3, 192.46, 192.7] img=5468 drop=4412 it=1053
+[INFO] [1791822554.052252943] [jetson_d_node]: DBG now=193.75 next=193.90325322512592 wait=False held=True q=[193.53, 193.7, 193.73] img=5498 drop=4435 it=1060
+[INFO] [1791822555.045837863] [jetson_d_node]: DBG now=194.75 next=194.84718901407828 wait=False held=True q=[194.36, 194.5, 194.7] img=5528 drop=4457 it=1068
+[INFO] [1791822556.046610198] [jetson_d_node]: DBG now=195.75 next=195.81280535000027 wait=False held=True q=[195.16, 195.4, 195.63] img=5558 drop=4482 it=1073
+[INFO] [1791822557.047409645] [jetson_d_node]: DBG now=196.75 next=196.9233695764898 wait=False held=True q=[196.26, 196.53, 196.73] img=5588 drop=4507 it=1078
+[INFO] [1791822558.047370277] [jetson_d_node]: DBG now=197.75 next=197.74068188004205 wait=False held=True q=[197.16, 197.4, 197.6] img=5617 drop=4531 it=1083
+[INFO] [1791822559.048312028] [jetson_d_node]: DBG now=198.75 next=198.91699854272375 wait=False held=True q=[198.46, 198.53, 198.7] img=5646 drop=4553 it=1090
+[INFO] [1791822560.061328411] [jetson_d_node]: DBG now=199.75 next=199.9269718499078 wait=False held=True q=[199.33, 199.47] img=5676 drop=4579 it=1095
+[INFO] [1791822561.048986084] [jetson_d_node]: DBG now=200.75 next=200.79368357273606 wait=False held=True q=[200.06, 200.3, 200.6] img=5706 drop=4604 it=1099
+[INFO] [1791822562.049579385] [jetson_d_node]: DBG now=201.75 next=201.90797315608592 wait=False held=True q=[201.46, 201.56, 201.63] img=5735 drop=4627 it=1105
+[INFO] [1791822563.050005235] [jetson_d_node]: DBG now=202.75 next=202.95227250938296 wait=False held=True q=[202.46, 202.66, 202.73] img=5764 drop=4651 it=1110
+[INFO] [1791822564.050645097] [jetson_d_node]: DBG now=203.75 next=203.89148479707666 wait=False held=True q=[203.33, 203.46, 203.66] img=5794 drop=4676 it=1115
+[INFO] [1791822565.050897669] [jetson_d_node]: DBG now=204.75 next=204.74148376792922 wait=False held=True q=[204.13, 204.33, 204.53] img=5823 drop=4701 it=1119
+[INFO] [1791822566.051509302] [jetson_d_node]: DBG now=205.75 next=205.8752568714599 wait=False held=True q=[205.26, 205.5, 205.7] img=5853 drop=4725 it=1125
+[INFO] [1791822567.051930188] [jetson_d_node]: DBG now=206.75 next=206.86606398279034 wait=False held=True q=[206.1, 206.26, 206.66] img=5882 drop=4750 it=1129
+[INFO] [1791822568.052546852] [jetson_d_node]: DBG now=207.75 next=207.8606666741176 wait=False held=True q=[207.26, 207.43, 207.6] img=5912 drop=4775 it=1134
+[INFO] [1791822569.053202501] [jetson_d_node]: DBG now=208.75 next=208.77355387967202 wait=False held=True q=[208.16, 208.4, 208.63] img=5942 drop=4801 it=1138
+[INFO] [1791822570.053526096] [jetson_d_node]: DBG now=209.75 next=209.85051097826312 wait=False held=True q=[209.26, 209.33, 209.6] img=5972 drop=4825 it=1144
+[INFO] [1791822571.057113514] [jetson_d_node]: DBG now=210.75 next=210.87924567256613 wait=False held=True q=[210.46, 210.63, 210.73] img=6002 drop=4849 it=1150
+[INFO] [1791822572.054739664] [jetson_d_node]: DBG now=211.75 next=211.85400401484694 wait=False held=True q=[211.4, 211.53, 211.66] img=6032 drop=4872 it=1157
+[INFO] [1791822573.055024069] [jetson_d_node]: DBG now=212.75 next=212.85270025344784 wait=False held=True q=[212.5, 212.56, 212.66] img=6061 drop=4894 it=1164
+[INFO] [1791822574.055632324] [jetson_d_node]: DBG now=213.75 next=213.83511340218368 wait=False held=True q=[213.2, 213.43, 213.66] img=6091 drop=4919 it=1169
+[INFO] [1791822575.055901591] [jetson_d_node]: DBG now=214.75 next=214.73895280443298 wait=False held=True q=[214.23, 214.5, 214.6] img=6121 drop=4943 it=1175
+[INFO] [1791822576.056413903] [jetson_d_node]: DBG now=215.75 next=215.76884056356133 wait=False held=True q=[215.26, 215.46, 215.56] img=6151 drop=4966 it=1182
+[INFO] [1791822577.057199925] [jetson_d_node]: DBG now=216.75 next=216.73865968203722 wait=False held=True q=[216.23, 216.36, 216.56] img=6181 drop=4990 it=1188
+[INFO] [1791822578.057434465] [jetson_d_node]: DBG now=217.75 next=217.803119564401 wait=False held=True q=[217.33, 217.43, 217.66] img=6211 drop=5013 it=1195
+[INFO] [1791822578.854704178] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.509s，p90 0.701s
+[INFO] [1791822579.074202945] [jetson_d_node]: DBG now=218.75 next=218.98006747881215 wait=False held=True q=[218.33, 218.53] img=6241 drop=5038 it=1201
+[INFO] [1791822580.058589001] [jetson_d_node]: DBG now=219.75 next=219.8277426693707 wait=False held=True q=[219.23, 219.43, 219.5] img=6271 drop=5063 it=1205
+[INFO] [1791822581.058927495] [jetson_d_node]: DBG now=220.75 next=220.8755206803034 wait=False held=True q=[220.3, 220.53, 220.73] img=6301 drop=5087 it=1211
+[INFO] [1791822582.059367525] [jetson_d_node]: DBG now=221.75 next=221.8143247735764 wait=False held=True q=[221.3, 221.46, 221.63] img=6331 drop=5112 it=1216
+[INFO] [1791822583.059756209] [jetson_d_node]: DBG now=222.75 next=222.84356218969705 wait=False held=True q=[222.16, 222.36, 222.63] img=6361 drop=5136 it=1222
+[INFO] [1791822584.060252538] [jetson_d_node]: DBG now=223.75 next=223.76064412272788 wait=False held=True q=[223.16, 223.36, 223.56] img=6390 drop=5161 it=1226
+[INFO] [1791822585.060677217] [jetson_d_node]: DBG now=224.75 next=224.82525083532823 wait=False held=True q=[224.43, 224.56, 224.73] img=6419 drop=5184 it=1232
+[INFO] [1791822586.061498185] [jetson_d_node]: DBG now=225.75 next=225.85422302708264 wait=False held=True q=[225.3, 225.5, 225.73] img=6448 drop=5208 it=1237
+[INFO] [1791822587.061658977] [jetson_d_node]: DBG now=226.75 next=226.80659549208107 wait=False held=True q=[226.16, 226.36, 226.56] img=6478 drop=5233 it=1242
+[INFO] [1791822588.062325765] [jetson_d_node]: DBG now=227.75 next=227.80266946769814 wait=False held=True q=[227.33, 227.56, 227.66] img=6508 drop=5257 it=1248
+[INFO] [1791822589.062929085] [jetson_d_node]: DBG now=228.75 next=228.7484070407759 wait=False held=True q=[228.3, 228.46, 228.53] img=6537 drop=5280 it=1254
+[INFO] [1791822590.063383852] [jetson_d_node]: DBG now=229.75 next=229.80035269722435 wait=False held=True q=[229.23, 229.46, 229.66] img=6566 drop=5304 it=1259
+[INFO] [1791822591.063694773] [jetson_d_node]: DBG now=230.75 next=230.91686747360768 wait=False held=True q=[230.36, 230.56, 230.73] img=6596 drop=5328 it=1265
+[INFO] [1791822592.064092945] [jetson_d_node]: DBG now=231.75 next=231.85362148798436 wait=False held=True q=[231.16, 231.4, 231.66] img=6626 drop=5354 it=1269
+[INFO] [1791822593.064653741] [jetson_d_node]: DBG now=232.75 next=232.77889465741345 wait=False held=True q=[232.23, 232.43, 232.63] img=6656 drop=5379 it=1274
+[INFO] [1791822594.065169238] [jetson_d_node]: DBG now=233.75 next=233.79047928147327 wait=False held=True q=[233.46, 233.53, 233.7] img=6686 drop=5402 it=1281
+[INFO] [1791822595.065874395] [jetson_d_node]: DBG now=234.75 next=234.9603375799815 wait=False held=True q=[234.46, 234.63, 234.7] img=6716 drop=5425 it=1288
+[INFO] [1791822596.066526038] [jetson_d_node]: DBG now=235.75 next=235.8754229622828 wait=False held=True q=[235.23, 235.46, 235.7] img=6746 drop=5451 it=1292
+[INFO] [1791822597.066946053] [jetson_d_node]: DBG now=236.75 next=236.78456835592166 wait=False held=True q=[236.1, 236.3, 236.6] img=6776 drop=5477 it=1296
+[INFO] [1791822598.067611547] [jetson_d_node]: DBG now=237.75 next=237.77570100227624 wait=False held=True q=[237.3, 237.5, 237.53] img=6806 drop=5502 it=1301
+[INFO] [1791822599.068162274] [jetson_d_node]: DBG now=238.75 next=238.90765851218978 wait=False held=True q=[238.4, 238.6, 238.73] img=6836 drop=5524 it=1309
+[INFO] [1791822600.068389280] [jetson_d_node]: DBG now=239.75 next=239.74095273580335 wait=False held=True q=[239.4, 239.53, 239.6] img=6866 drop=5547 it=1316
+[INFO] [1791822601.068655157] [jetson_d_node]: DBG now=240.75 next=240.79532779654744 wait=False held=True q=[240.5, 240.56, 240.66] img=6896 drop=5568 it=1325
+[INFO] [1791822602.073448660] [jetson_d_node]: DBG now=241.75 next=241.78197973786985 wait=False held=True q=[241.36, 241.56, 241.73] img=6926 drop=5591 it=1332
+[INFO] [1791822603.069638331] [jetson_d_node]: DBG now=242.75 next=242.8040163904097 wait=False held=True q=[242.43, 242.46, 242.66] img=6956 drop=5613 it=1340
+[INFO] [1791822604.069807000] [jetson_d_node]: DBG now=243.75 next=243.83191392215522 wait=False held=True q=[243.13, 243.26, 243.4] img=6986 drop=5637 it=1346
+[INFO] [1791822605.070649089] [jetson_d_node]: DBG now=244.75 next=244.78042329673102 wait=False held=True q=[244.33, 244.5, 244.63] img=7016 drop=5660 it=1353
+[INFO] [1791822606.070814321] [jetson_d_node]: DBG now=245.75 next=245.93644553421169 wait=False held=True q=[245.43, 245.5, 245.7] img=7045 drop=5683 it=1359
+[INFO] [1791822607.070844003] [jetson_d_node]: DBG now=246.75 next=246.81206128107075 wait=False held=True q=[246.33, 246.56, 246.73] img=7075 drop=5708 it=1364
+[INFO] [1791822608.070926557] [jetson_d_node]: DBG now=247.75 next=247.77339917787506 wait=False held=True q=[247.06, 247.36, 247.6] img=7105 drop=5734 it=1368
+[INFO] [1791822609.073209292] [jetson_d_node]: DBG now=248.75 next=248.88117347211698 wait=False held=True q=[248.53, 248.63, 248.7] img=7135 drop=5756 it=1376
+[INFO] [1791822610.073420329] [jetson_d_node]: DBG now=249.75 next=249.75239296569276 wait=False held=True q=[249.06, 249.16, 249.33] img=7165 drop=5782 it=1380
+[INFO] [1791822611.073907929] [jetson_d_node]: DBG now=250.75 next=250.77546035661433 wait=False held=True q=[250.16, 250.43, 250.63] img=7195 drop=5807 it=1385
+[INFO] [1791822612.074230910] [jetson_d_node]: DBG now=251.75 next=251.73708330920851 wait=False held=True q=[251.36, 251.43, 251.56] img=7224 drop=5830 it=1391
+[INFO] [1791822613.075411751] [jetson_d_node]: DBG now=252.75 next=252.8203753241804 wait=False held=True q=[252.43, 252.56, 252.7] img=7254 drop=5854 it=1397
+[INFO] [1791822613.492058809] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.494s，p90 0.681s
+[INFO] [1791822614.074909080] [jetson_d_node]: DBG now=253.75 next=253.74110518334234 wait=False held=True q=[253.16, 253.3, 253.53] img=7283 drop=5878 it=1402
+[INFO] [1791822615.075779540] [jetson_d_node]: DBG now=254.75 next=254.7616088222313 wait=False held=True q=[254.26, 254.43, 254.53] img=7313 drop=5902 it=1408
+[INFO] [1791822616.076342437] [jetson_d_node]: DBG now=255.75 next=255.96066235806316 wait=False held=True q=[255.26, 255.33, 255.5] img=7343 drop=5926 it=1414
+[INFO] [1791822617.086515582] [jetson_d_node]: DBG now=256.76 next=256.82710381502017 wait=False held=True q=[256.2, 256.43, 256.7] img=7372 drop=5951 it=1418
+[INFO] [1791822618.086942593] [jetson_d_node]: DBG now=257.76 next=257.92847250064534 wait=False held=True q=[257.46, 257.53, 257.63] img=7401 drop=5971 it=1427
+[INFO] [1791822619.087267823] [jetson_d_node]: DBG now=258.76 next=258.8863764327337 wait=False held=True q=[258.6, 258.66] img=7431 drop=5995 it=1434
+[INFO] [1791822620.087849203] [jetson_d_node]: DBG now=259.76 next=259.7573578583419 wait=False held=True q=[258.9, 259.06, 259.33] img=7460 drop=6020 it=1437
+[INFO] [1791822621.093141097] [jetson_d_node]: DBG now=260.76 next=260.94778102910277 wait=False held=True q=[260.33, 260.43, 260.7] img=7490 drop=6043 it=1444
+[INFO] [1791822622.096711974] [jetson_d_node]: DBG now=261.76 next=261.91232382351467 wait=False held=True q=[261.2, 261.5] img=7520 drop=6070 it=1448
+[INFO] [1791822623.089983522] [jetson_d_node]: DBG now=262.76 next=262.8617458900659 wait=False held=True q=[262.3, 262.5, 262.73] img=7550 drop=6093 it=1454
+[INFO] [1791822624.090165478] [jetson_d_node]: DBG now=263.76 next=263.7654344138283 wait=False held=True q=[263.2, 263.36, 263.56] img=7580 drop=6117 it=1460
+[INFO] [1791822625.090828367] [jetson_d_node]: DBG now=264.76 next=264.7887840102329 wait=False held=True q=[264.1, 264.33, 264.53] img=7609 drop=6141 it=1465
+[INFO] [1791822626.090676266] [jetson_d_node]: DBG now=265.76 next=265.75604523823927 wait=False held=True q=[265.06, 265.3, 265.53] img=7639 drop=6167 it=1469
+[INFO] [1791822627.091481165] [jetson_d_node]: DBG now=266.76 next=266.9648861106377 wait=False held=True q=[266.26, 266.46, 266.66] img=7669 drop=6192 it=1474
+[INFO] [1791822628.091598429] [jetson_d_node]: DBG now=267.76 next=267.80380804855025 wait=False held=True q=[267.2, 267.36, 267.56] img=7699 drop=6218 it=1478
+[INFO] [1791822629.092358775] [jetson_d_node]: DBG now=268.76 next=268.74731739819913 wait=False held=True q=[268.46, 268.56, 268.63] img=7729 drop=6240 it=1486
+[INFO] [1791822630.092840606] [jetson_d_node]: DBG now=269.76 next=269.7570950435075 wait=False held=True q=[269.1, 269.33, 269.63] img=7759 drop=6265 it=1491
+[INFO] [1791822631.093493622] [jetson_d_node]: DBG now=270.76 next=270.7623487296075 wait=False held=True q=[270.13, 270.4, 270.63] img=7788 drop=6289 it=1496
+[INFO] [1791822632.093746364] [jetson_d_node]: DBG now=271.76 next=271.7734608468598 wait=False held=True q=[271.3, 271.46, 271.63] img=7818 drop=6313 it=1502
+[INFO] [1791822633.094681125] [jetson_d_node]: DBG now=272.76 next=272.8029895570854 wait=False held=True q=[272.13, 272.36, 272.6] img=7848 drop=6338 it=1507
+[INFO] [1791822634.094883033] [jetson_d_node]: DBG now=273.76 next=273.7798094113031 wait=False held=True q=[273.3, 273.53, 273.66] img=7878 drop=6363 it=1512
+[INFO] [1791822635.094956825] [jetson_d_node]: DBG now=274.76 next=274.764520966962 wait=False held=True q=[274.2, 274.36, 274.56] img=7908 drop=6388 it=1517
+[INFO] [1791822636.110303803] [jetson_d_node]: DBG now=275.76 next=276.0368405441425 wait=False held=True q=[275.4, 275.53, 275.76] img=7939 drop=6413 it=1523
+[INFO] [1791822637.106287604] [jetson_d_node]: DBG now=276.77 next=276.88191418165064 wait=False held=True q=[276.26, 276.5, 276.7] img=7969 drop=6439 it=1527
+[INFO] [1791822638.107465441] [jetson_d_node]: DBG now=277.77 next=277.7668961919135 wait=False held=True q=[277.16, 277.4, 277.63] img=7998 drop=6464 it=1531
+[INFO] [1791822639.107688079] [jetson_d_node]: DBG now=278.77 next=278.8966427712862 wait=False held=True q=[278.26, 278.5, 278.7] img=8028 drop=6488 it=1537
+[INFO] [1791822640.107822268] [jetson_d_node]: DBG now=279.77 next=279.9464948936002 wait=False held=True q=[279.4, 279.56, 279.7] img=8057 drop=6511 it=1543
+[INFO] [1791822641.108482763] [jetson_d_node]: DBG now=280.77 next=280.8458972066496 wait=False held=True q=[280.26, 280.5, 280.66] img=8087 drop=6536 it=1548
+[INFO] [1791822642.108857244] [jetson_d_node]: DBG now=281.77 next=281.8112719916796 wait=False held=True q=[281.3, 281.46, 281.6] img=8117 drop=6560 it=1554
+[INFO] [1791822643.109193228] [jetson_d_node]: DBG now=282.77 next=282.87981143183043 wait=False held=True q=[282.26, 282.43, 282.66] img=8147 drop=6584 it=1560
+[INFO] [1791822644.110140856] [jetson_d_node]: DBG now=283.77 next=283.82236826233583 wait=False held=True q=[283.26, 283.43, 283.63] img=8178 drop=6610 it=1565
+[INFO] [1791822645.110317662] [jetson_d_node]: DBG now=284.77 next=284.9001613766976 wait=False held=True q=[284.26, 284.43, 284.73] img=8207 drop=6634 it=1570
+[INFO] [1791822646.110721208] [jetson_d_node]: DBG now=285.77 next=285.77433814872506 wait=False held=True q=[285.4, 285.56, 285.63] img=8237 drop=6659 it=1575
+[INFO] [1791822647.111541067] [jetson_d_node]: DBG now=286.77 next=286.7739531933965 wait=False held=True q=[286.16, 286.36, 286.6] img=8267 drop=6684 it=1580
+[INFO] [1791822648.120960961] [jetson_d_node]: DBG now=287.77 next=287.8154232027387 wait=False held=True q=[287.53, 287.66, 287.76] img=8295 drop=6703 it=1589
+[INFO] [1791822649.112347312] [jetson_d_node]: DBG now=288.77 next=288.75661686238004 wait=False held=True q=[288.36, 288.4, 288.56] img=8324 drop=6725 it=1596
+[INFO] [1791822649.651831909] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.528s，p90 0.702s
+[INFO] [1791822650.112947252] [jetson_d_node]: DBG now=289.77 next=289.82058793233745 wait=False held=True q=[289.5, 289.6, 289.7] img=8355 drop=6748 it=1604
+[INFO] [1791822651.112689665] [jetson_d_node]: DBG now=290.77 next=290.8972188461375 wait=False held=True q=[290.56, 290.66, 290.73] img=8384 drop=6768 it=1613
+[INFO] [1791822652.113318652] [jetson_d_node]: DBG now=291.77 next=291.88026473085006 wait=False held=True q=[291.46, 291.66, 291.73] img=8413 drop=6790 it=1620
+[INFO] [1791822653.113708950] [jetson_d_node]: DBG now=292.77 next=292.79180484620827 wait=False held=True q=[292.06, 292.36, 292.6] img=8443 drop=6816 it=1624
+[INFO] [1791822654.114286176] [jetson_d_node]: DBG now=293.77 next=293.78493073817066 wait=False held=True q=[293.5, 293.66, 293.73] img=8473 drop=6838 it=1632
+[INFO] [1791822655.114689797] [jetson_d_node]: DBG now=294.77 next=294.9251214295087 wait=False held=True q=[294.5, 294.56, 294.76] img=8504 drop=6859 it=1642
+[INFO] [1791822656.115612353] [jetson_d_node]: DBG now=295.77 next=295.77592023073345 wait=False held=True q=[295.4, 295.56, 295.6] img=8533 drop=6881 it=1649
+[INFO] [1791822657.115799816] [jetson_d_node]: DBG now=296.77 next=296.7695377764089 wait=False held=True q=[296.36, 296.46, 296.66] img=8563 drop=6904 it=1656
+[INFO] [1791822658.116421103] [jetson_d_node]: DBG now=297.77 next=297.87634629367136 wait=False held=True q=[297.1, 297.4, 297.66] img=8593 drop=6929 it=1661
+[INFO] [1791822659.116936593] [jetson_d_node]: DBG now=298.77 next=298.8690073754814 wait=False held=True q=[298.43, 298.6, 298.66] img=8623 drop=6953 it=1667
+[INFO] [1791822660.117141424] [jetson_d_node]: DBG now=299.77 next=299.9128399184091 wait=False held=True q=[299.3, 299.46, 299.66] img=8652 drop=6976 it=1673
+[INFO] [1791822661.118461705] [jetson_d_node]: DBG now=300.77 next=300.8811782029772 wait=False held=True q=[300.2, 300.36, 300.63] img=8682 drop=7002 it=1677
+[INFO] [1791822662.119217600] [jetson_d_node]: DBG now=301.77 next=301.82605381103014 wait=False held=True q=[301.26, 301.4, 301.66] img=8712 drop=7027 it=1682
+[INFO] [1791822663.118959858] [jetson_d_node]: DBG now=302.77 next=302.8912102054974 wait=False held=True q=[302.36, 302.56, 302.66] img=8741 drop=7050 it=1688
+[INFO] [1791822664.118783742] [jetson_d_node]: DBG now=303.77 next=303.88742244209215 wait=False held=True q=[303.33, 303.56] img=8771 drop=7076 it=1693
+[INFO] [1791822665.119987388] [jetson_d_node]: DBG now=304.77 next=304.7825117218562 wait=False held=True q=[304.16, 304.43, 304.63] img=8801 drop=7100 it=1698
+[INFO] [1791822666.120730807] [jetson_d_node]: DBG now=305.77 next=305.7823127046998 wait=False held=True q=[305.4, 305.6, 305.66] img=8831 drop=7124 it=1704
+[INFO] [1791822667.129274558] [jetson_d_node]: DBG now=306.77 next=306.9490385386087 wait=False held=True q=[306.43, 306.63, 306.76] img=8862 drop=7149 it=1710
+[INFO] [1791822668.121384658] [jetson_d_node]: DBG now=307.77 next=307.8058931437772 wait=False held=True q=[307.3, 307.36, 307.6] img=8891 drop=7173 it=1715
+[INFO] [1791822669.121760286] [jetson_d_node]: DBG now=308.77 next=308.78292538000363 wait=False held=True q=[308.1, 308.3, 308.56] img=8921 drop=7199 it=1719
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/jetson_d_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'jetson_d_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/jetson_d_node.py", line 283, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 681, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException
+[ros2run]: Process exited with failure 1

@@ -1,0 +1,3222 @@
+[09/21/2026-20:03:33] [TRT] [W] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.
+Opening UART: /dev/ttyACM0
+UART ready: /dev/ttyACM0 115200
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Loading TensorRT engine...
+Engine: best_fold1_opset9_sim_512x384.engine
+Input: 512 x 384
+Focal length px: 390.0
+Ball diameter cm: 6.7
+Loading court V6 model...
+Court model: /home/hp/models/court_color_model_v6.npz
+Camera width: 640.0
+Camera height: 480.0
+Camera FPS setting: 30.0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+frame 10 | conf 0.86 | Z 71.1 cm | X -7.0 cm | Dist 71.4 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 72.2 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+COURT,EDGE,CENTER,0.59 | raw 0.60 | known 0.60
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 20 | conf 0.87 | Z 70.9 cm | X -7.0 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 72.1 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+COURT,OUT,CENTER,0.61 | raw 0.63 | known 0.60
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+frame 30 | conf 0.86 | Z 71.3 cm | X -7.0 cm | Dist 71.7 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 72.1 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+Detected balls: 1
+Nearest ball: 72.1 cm, angle -5.6 deg
+UART -> BALL,71.9,-5.6
+STM32 -> ACK:BALL,71.9,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 40 | conf 0.86 | Z 71.0 cm | X -6.9 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+frame 50 | conf 0.87 | Z 70.9 cm | X -7.0 cm | Dist 71.2 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+COURT,OUT,CENTER,0.62 | raw 0.60 | known 0.60
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 60 | conf 0.87 | Z 70.9 cm | X -7.0 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+frame 70 | conf 0.87 | Z 71.3 cm | X -7.0 cm | Dist 71.6 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 70.7 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 70.5 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 68.4 cm, angle -5.6 deg
+UART -> BALL,70.1,-5.6
+STM32 -> ACK:BALL,70.1,-5.6
+Detected balls: 1
+Nearest ball: 68.4 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+Detected balls: 1
+Nearest ball: 70.7 cm, angle -5.6 deg
+UART -> BALL,69.9,-5.6
+STM32 -> ACK:BALL,69.9,-5.6
+frame 80 | conf 0.86 | Z 69.6 cm | X -6.8 cm | Dist 69.9 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,70.2,-5.6
+STM32 -> ACK:BALL,70.2,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,70.5,-5.6
+STM32 -> ACK:BALL,70.5,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,70.7,-5.6
+STM32 -> ACK:BALL,70.7,-5.6
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,70.8,-5.6
+STM32 -> ACK:BALL,70.8,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 70.7 cm, angle -5.6 deg
+UART -> BALL,70.9,-5.6
+STM32 -> ACK:BALL,70.9,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+COURT,OUT,CENTER,0.61 | raw 0.61 | known 0.57
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+frame 90 | conf 0.87 | Z 71.1 cm | X -7.0 cm | Dist 71.4 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+frame 100 | conf 0.86 | Z 71.2 cm | X -7.0 cm | Dist 71.5 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 110 | conf 0.87 | Z 71.0 cm | X -7.0 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+COURT,OUT,CENTER,0.62 | raw 0.61 | known 0.60
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 120 | conf 0.87 | Z 70.9 cm | X -7.0 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 130 | conf 0.87 | Z 70.9 cm | X -7.0 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+frame 140 | conf 0.86 | Z 71.0 cm | X -7.0 cm | Dist 71.4 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 72.3 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 70.6 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+COURT,OUT,CENTER,0.63 | raw 0.64 | known 0.61
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+frame 150 | conf 0.87 | Z 70.9 cm | X -6.9 cm | Dist 71.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 70.7 cm, angle -5.6 deg
+UART -> BALL,70.9,-5.6
+STM32 -> ACK:BALL,70.9,-5.6
+Detected balls: 1
+Nearest ball: 70.4 cm, angle -5.6 deg
+UART -> BALL,70.8,-5.6
+STM32 -> ACK:BALL,70.8,-5.6
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,70.8,-5.6
+STM32 -> ACK:BALL,70.8,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,70.9,-5.6
+STM32 -> ACK:BALL,70.9,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+frame 160 | conf 0.86 | Z 70.7 cm | X -6.9 cm | Dist 71.0 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+frame 170 | conf 0.86 | Z 70.9 cm | X -6.9 cm | Dist 71.2 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+COURT,OUT,CENTER,0.62 | raw 0.62 | known 0.59
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+frame 180 | conf 0.86 | Z 71.0 cm | X -7.0 cm | Dist 71.4 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+frame 190 | conf 0.87 | Z 71.2 cm | X -7.0 cm | Dist 71.5 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 70.6 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 72.1 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+frame 200 | conf 0.86 | Z 71.2 cm | X -7.0 cm | Dist 71.5 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 72.3 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 68.1 cm, angle -5.6 deg
+UART -> BALL,70.3,-5.6
+STM32 -> ACK:BALL,70.3,-5.6
+Detected balls: 1
+Nearest ball: 67.4 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 66.2 cm, angle -5.6 deg
+UART -> BALL,68.2,-5.6
+STM32 -> ACK:BALL,68.2,-5.6
+COURT,OUT,CENTER,0.66 | raw 0.74 | known 0.60
+Detected balls: 1
+Nearest ball: 66.2 cm, angle -5.6 deg
+UART -> BALL,67.5,-5.6
+STM32 -> ACK:BALL,67.5,-5.6
+frame 210 | conf 0.86 | Z 67.2 cm | X -6.5 cm | Dist 67.5 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 66.0 cm, angle -5.6 deg
+UART -> BALL,67.0,-5.6
+STM32 -> ACK:BALL,67.0,-5.6
+Detected balls: 1
+Nearest ball: 66.3 cm, angle -5.6 deg
+UART -> BALL,66.7,-5.6
+STM32 -> ACK:BALL,66.7,-5.6
+Detected balls: 1
+Nearest ball: 66.1 cm, angle -5.6 deg
+UART -> BALL,66.5,-5.6
+STM32 -> ACK:BALL,66.5,-5.6
+Detected balls: 1
+Nearest ball: 66.3 cm, angle -5.5 deg
+UART -> BALL,66.4,-5.6
+STM32 -> ACK:BALL,66.4,-5.6
+Detected balls: 1
+Nearest ball: 67.6 cm, angle -5.6 deg
+UART -> BALL,66.8,-5.6
+STM32 -> ACK:BALL,66.8,-5.6
+Detected balls: 1
+Nearest ball: 69.5 cm, angle -5.6 deg
+UART -> BALL,67.8,-5.6
+STM32 -> ACK:BALL,67.8,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,69.1,-5.6
+STM32 -> ACK:BALL,69.1,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,69.9,-5.6
+STM32 -> ACK:BALL,69.9,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,70.4,-5.6
+STM32 -> ACK:BALL,70.4,-5.6
+Detected balls: 1
+Nearest ball: 72.1 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+frame 220 | conf 0.87 | Z 70.6 cm | X -6.9 cm | Dist 71.0 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+frame 230 | conf 0.87 | Z 71.0 cm | X -7.0 cm | Dist 71.4 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.0 cm, angle -5.6 deg
+UART -> BALL,71.2,-5.6
+STM32 -> ACK:BALL,71.2,-5.6
+Detected balls: 1
+Nearest ball: 72.1 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.3 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.4,-5.6
+STM32 -> ACK:BALL,71.4,-5.6
+Detected balls: 1
+Nearest ball: 72.2 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.2 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+COURT,OUT,CENTER,0.65 | raw 0.63 | known 0.64
+Detected balls: 1
+Nearest ball: 71.9 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+frame 240 | conf 0.86 | Z 71.3 cm | X -7.0 cm | Dist 71.6 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 72.2 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 72.8 cm, angle -5.6 deg
+UART -> BALL,72.1,-5.6
+STM32 -> ACK:BALL,72.1,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,72.0,-5.6
+STM32 -> ACK:BALL,72.0,-5.6
+frame 250 | conf 0.87 | Z 71.6 cm | X -7.0 cm | Dist 72.0 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.7 cm, angle -5.6 deg
+UART -> BALL,71.7,-5.6
+STM32 -> ACK:BALL,71.7,-5.6
+Detected balls: 1
+Nearest ball: 71.4 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 71.8 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,71.8,-5.6
+STM32 -> ACK:BALL,71.8,-5.6
+Detected balls: 1
+Nearest ball: 71.1 cm, angle -5.6 deg
+UART -> BALL,71.5,-5.6
+STM32 -> ACK:BALL,71.5,-5.6
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.3,-5.6
+STM32 -> ACK:BALL,71.3,-5.6
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,70.8,-5.6
+STM32 -> ACK:BALL,70.8,-5.6
+Detected balls: 1
+Nearest ball: 66.5 cm, angle -5.5 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+frame 260 | conf 0.89 | Z 68.9 cm | X -6.7 cm | Dist 69.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 66.4 cm, angle -5.6 deg
+UART -> BALL,68.3,-5.6
+STM32 -> ACK:BALL,68.3,-5.6
+Detected balls: 1
+Nearest ball: 67.5 cm, angle -5.6 deg
+UART -> BALL,68.0,-5.6
+STM32 -> ACK:BALL,68.0,-5.6
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 83.9 cm, angle -5.3 deg
+COURT,OUT,CENTER,0.68 | raw 0.71 | known 0.59
+Detected balls: 1
+Nearest ball: 79.2 cm, angle -5.3 deg
+UART -> BALL,75.5,-5.4
+STM32 -> ACK:BALL,75.5,-5.4
+frame 270 | conf 0.83 | Z 75.2 cm | X -7.1 cm | Dist 75.5 cm | Angle -5.4 deg | Motor ON
+Detected balls: 1
+Nearest ball: 75.2 cm, angle -5.5 deg
+UART -> BALL,75.4,-5.5
+STM32 -> ACK:BALL,75.4,-5.5
+Detected balls: 1
+Nearest ball: 73.0 cm, angle -5.6 deg
+UART -> BALL,74.6,-5.5
+STM32 -> ACK:BALL,74.6,-5.5
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.6 deg
+UART -> BALL,73.2,-5.5
+STM32 -> ACK:BALL,73.2,-5.5
+Detected balls: 1
+Nearest ball: 70.2 cm, angle -5.6 deg
+UART -> BALL,72.2,-5.6
+STM32 -> ACK:BALL,72.2,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,71.1,-5.6
+STM32 -> ACK:BALL,71.1,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,70.6,-5.6
+STM32 -> ACK:BALL,70.6,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,70.2,-5.6
+STM32 -> ACK:BALL,70.2,-5.6
+Detected balls: 1
+Nearest ball: 69.4 cm, angle -5.6 deg
+UART -> BALL,69.9,-5.6
+STM32 -> ACK:BALL,69.9,-5.6
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.7,-5.6
+STM32 -> ACK:BALL,69.7,-5.6
+frame 280 | conf 0.88 | Z 69.3 cm | X -6.8 cm | Dist 69.7 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.4,-5.6
+STM32 -> ACK:BALL,69.4,-5.6
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 68.9 cm, angle -5.6 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,69.4,-5.6
+STM32 -> ACK:BALL,69.4,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+frame 290 | conf 0.87 | Z 69.1 cm | X -6.8 cm | Dist 69.5 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+Detected balls: 1
+Nearest ball: 67.6 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,69.1,-5.6
+STM32 -> ACK:BALL,69.1,-5.6
+Detected balls: 1
+Nearest ball: 68.5 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 70.5 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,70.2,-5.6
+STM32 -> ACK:BALL,70.2,-5.6
+Detected balls: 1
+Nearest ball: 71.6 cm, angle -5.6 deg
+UART -> BALL,70.7,-5.6
+STM32 -> ACK:BALL,70.7,-5.6
+Detected balls: 1
+Nearest ball: 71.5 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+COURT,OUT,CENTER,0.73 | raw 0.72 | known 0.60
+Detected balls: 1
+Nearest ball: 70.6 cm, angle -5.6 deg
+UART -> BALL,70.8,-5.6
+STM32 -> ACK:BALL,70.8,-5.6
+frame 300 | conf 0.88 | Z 70.5 cm | X -6.9 cm | Dist 70.8 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 70.4 cm, angle -5.6 deg
+UART -> BALL,70.7,-5.6
+STM32 -> ACK:BALL,70.7,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,70.2,-5.6
+STM32 -> ACK:BALL,70.2,-5.6
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.7 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.7 deg
+UART -> BALL,69.6,-5.6
+STM32 -> ACK:BALL,69.6,-5.6
+Detected balls: 1
+Nearest ball: 67.8 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 67.1 cm, angle -5.6 deg
+UART -> BALL,68.3,-5.6
+STM32 -> ACK:BALL,68.3,-5.6
+Detected balls: 1
+Nearest ball: 67.3 cm, angle -5.6 deg
+UART -> BALL,68.0,-5.6
+STM32 -> ACK:BALL,68.0,-5.6
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 97.4 cm, angle -5.4 deg
+Detected balls: 1
+Nearest ball: 86.6 cm, angle -5.3 deg
+UART -> BALL,81.2,-5.4
+STM32 -> ACK:BALL,81.2,-5.4
+Detected balls: 1
+Nearest ball: 75.3 cm, angle -5.5 deg
+UART -> BALL,79.1,-5.5
+STM32 -> ACK:BALL,79.1,-5.5
+Detected balls: 1
+Nearest ball: 73.9 cm, angle -5.6 deg
+UART -> BALL,77.3,-5.5
+STM32 -> ACK:BALL,77.3,-5.5
+Detected balls: 1
+Nearest ball: 72.0 cm, angle -5.6 deg
+UART -> BALL,75.4,-5.5
+STM32 -> ACK:BALL,75.4,-5.5
+Detected balls: 1
+Nearest ball: 69.0 cm, angle -5.6 deg
+UART -> BALL,73.2,-5.6
+STM32 -> ACK:BALL,73.2,-5.6
+frame 320 | conf 0.87 | Z 72.8 cm | X -7.1 cm | Dist 73.2 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 68.7 cm, angle -5.6 deg
+UART -> BALL,71.6,-5.6
+STM32 -> ACK:BALL,71.6,-5.6
+Detected balls: 1
+Nearest ball: 69.9 cm, angle -5.6 deg
+UART -> BALL,71.0,-5.6
+STM32 -> ACK:BALL,71.0,-5.6
+Detected balls: 1
+Nearest ball: 70.1 cm, angle -5.6 deg
+UART -> BALL,70.7,-5.6
+STM32 -> ACK:BALL,70.7,-5.6
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,70.4,-5.6
+STM32 -> ACK:BALL,70.4,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,70.1,-5.6
+STM32 -> ACK:BALL,70.1,-5.6
+Detected balls: 1
+Nearest ball: 69.9 cm, angle -5.6 deg
+UART -> BALL,70.0,-5.6
+STM32 -> ACK:BALL,70.0,-5.6
+Detected balls: 1
+Nearest ball: 69.9 cm, angle -5.6 deg
+UART -> BALL,70.0,-5.6
+STM32 -> ACK:BALL,70.0,-5.6
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -5.6 deg
+UART -> BALL,69.9,-5.6
+STM32 -> ACK:BALL,69.9,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+COURT,OUT,CENTER,0.70 | raw 0.72 | known 0.61
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+frame 330 | conf 0.87 | Z 69.5 cm | X -6.8 cm | Dist 69.8 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+Detected balls: 1
+Nearest ball: 70.0 cm, angle -5.6 deg
+UART -> BALL,69.9,-5.6
+STM32 -> ACK:BALL,69.9,-5.6
+Detected balls: 1
+Nearest ball: 68.5 cm, angle -5.6 deg
+UART -> BALL,69.4,-5.6
+STM32 -> ACK:BALL,69.4,-5.6
+Detected balls: 1
+Nearest ball: 67.7 cm, angle -5.6 deg
+UART -> BALL,68.8,-5.6
+STM32 -> ACK:BALL,68.8,-5.6
+Detected balls: 1
+Nearest ball: 66.5 cm, angle -5.5 deg
+UART -> BALL,68.0,-5.6
+STM32 -> ACK:BALL,68.0,-5.6
+Detected balls: 1
+Nearest ball: 66.9 cm, angle -5.6 deg
+UART -> BALL,67.6,-5.6
+STM32 -> ACK:BALL,67.6,-5.6
+Detected balls: 1
+Nearest ball: 67.3 cm, angle -5.6 deg
+UART -> BALL,67.5,-5.6
+STM32 -> ACK:BALL,67.5,-5.6
+Detected balls: 1
+Nearest ball: 67.1 cm, angle -5.6 deg
+UART -> BALL,67.4,-5.6
+STM32 -> ACK:BALL,67.4,-5.6
+frame 340 | conf 0.89 | Z 67.0 cm | X -6.6 cm | Dist 67.4 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 66.3 cm, angle -5.5 deg
+UART -> BALL,67.0,-5.6
+STM32 -> ACK:BALL,67.0,-5.6
+Detected balls: 1
+Nearest ball: 66.6 cm, angle -5.5 deg
+UART -> BALL,66.9,-5.6
+STM32 -> ACK:BALL,66.9,-5.6
+Detected balls: 1
+Nearest ball: 67.0 cm, angle -5.5 deg
+UART -> BALL,66.9,-5.5
+STM32 -> ACK:BALL,66.9,-5.5
+Detected balls: 1
+Nearest ball: 66.5 cm, angle -5.6 deg
+UART -> BALL,66.8,-5.6
+STM32 -> ACK:BALL,66.8,-5.6
+Detected balls: 1
+Nearest ball: 66.9 cm, angle -5.5 deg
+UART -> BALL,66.8,-5.6
+STM32 -> ACK:BALL,66.8,-5.6
+Detected balls: 1
+Nearest ball: 67.2 cm, angle -5.5 deg
+UART -> BALL,67.0,-5.5
+STM32 -> ACK:BALL,67.0,-5.5
+Detected balls: 1
+Nearest ball: 66.9 cm, angle -5.6 deg
+UART -> BALL,67.0,-5.5
+STM32 -> ACK:BALL,67.0,-5.5
+Detected balls: 1
+Nearest ball: 67.9 cm, angle -5.6 deg
+UART -> BALL,67.3,-5.6
+STM32 -> ACK:BALL,67.3,-5.6
+Detected balls: 1
+Nearest ball: 68.0 cm, angle -5.6 deg
+UART -> BALL,67.5,-5.6
+STM32 -> ACK:BALL,67.5,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.5 deg
+UART -> BALL,68.2,-5.6
+STM32 -> ACK:BALL,68.2,-5.6
+frame 350 | conf 0.90 | Z 67.9 cm | X -6.6 cm | Dist 68.2 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.4 cm, angle -5.5 deg
+UART -> BALL,68.7,-5.5
+STM32 -> ACK:BALL,68.7,-5.5
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+Detected balls: 1
+Nearest ball: 69.5 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+Detected balls: 1
+Nearest ball: 70.1 cm, angle -5.5 deg
+UART -> BALL,69.7,-5.6
+STM32 -> ACK:BALL,69.7,-5.6
+Detected balls: 1
+Nearest ball: 70.2 cm, angle -5.5 deg
+UART -> BALL,69.9,-5.6
+STM32 -> ACK:BALL,69.9,-5.6
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.6 deg
+UART -> BALL,69.8,-5.6
+STM32 -> ACK:BALL,69.8,-5.6
+Detected balls: 1
+Nearest ball: 70.3 cm, angle -5.6 deg
+UART -> BALL,70.0,-5.6
+STM32 -> ACK:BALL,70.0,-5.6
+Detected balls: 1
+Nearest ball: 70.4 cm, angle -5.6 deg
+UART -> BALL,70.1,-5.6
+STM32 -> ACK:BALL,70.1,-5.6
+Detected balls: 1
+Nearest ball: 68.8 cm, angle -5.6 deg
+UART -> BALL,69.7,-5.6
+STM32 -> ACK:BALL,69.7,-5.6
+COURT,OUT,CENTER,0.72 | raw 0.73 | known 0.61
+Detected balls: 1
+Nearest ball: 68.6 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+frame 360 | conf 0.89 | Z 69.0 cm | X -6.8 cm | Dist 69.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.0 cm, angle -5.6 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+Detected balls: 1
+Nearest ball: 68.4 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 69.0 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 68.7 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 68.9 cm, angle -5.6 deg
+UART -> BALL,68.9,-5.6
+STM32 -> ACK:BALL,68.9,-5.6
+Detected balls: 1
+Nearest ball: 68.7 cm, angle -5.6 deg
+UART -> BALL,68.8,-5.6
+STM32 -> ACK:BALL,68.8,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.0,-5.6
+STM32 -> ACK:BALL,69.0,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.6 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+frame 370 | conf 0.86 | Z 68.9 cm | X -6.7 cm | Dist 69.2 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.5 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.3 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.5 cm, angle -5.6 deg
+UART -> BALL,69.4,-5.6
+STM32 -> ACK:BALL,69.4,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.4 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.6 deg
+UART -> BALL,69.2,-5.6
+STM32 -> ACK:BALL,69.2,-5.6
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -5.6 deg
+UART -> BALL,69.4,-5.6
+STM32 -> ACK:BALL,69.4,-5.6
+Detected balls: 1
+Nearest ball: 69.6 cm, angle -5.5 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+frame 380 | conf 0.86 | Z 69.1 cm | X -6.7 cm | Dist 69.5 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.5 deg
+UART -> BALL,69.6,-5.6
+STM32 -> ACK:BALL,69.6,-5.6
+Detected balls: 1
+Nearest ball: 69.4 cm, angle -5.5 deg
+UART -> BALL,69.5,-5.5
+STM32 -> ACK:BALL,69.5,-5.5
+Detected balls: 1
+Nearest ball: 69.5 cm, angle -5.5 deg
+UART -> BALL,69.5,-5.5
+STM32 -> ACK:BALL,69.5,-5.5
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.5 deg
+UART -> BALL,69.6,-5.5
+STM32 -> ACK:BALL,69.6,-5.5
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.5 deg
+UART -> BALL,69.5,-5.5
+STM32 -> ACK:BALL,69.5,-5.5
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -5.6 deg
+UART -> BALL,69.5,-5.5
+STM32 -> ACK:BALL,69.5,-5.5
+Detected balls: 1
+Nearest ball: 68.9 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,69.3,-5.6
+STM32 -> ACK:BALL,69.3,-5.6
+Detected balls: 1
+Nearest ball: 70.0 cm, angle -5.5 deg
+UART -> BALL,69.5,-5.6
+STM32 -> ACK:BALL,69.5,-5.6
+COURT,OUT,CENTER,0.69 | raw 0.68 | known 0.57
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.5 deg
+UART -> BALL,69.6,-5.5
+STM32 -> ACK:BALL,69.6,-5.5
+frame 390 | conf 0.89 | Z 69.3 cm | X -6.7 cm | Dist 69.6 cm | Angle -5.5 deg | Motor ON
+Detected balls: 1
+Nearest ball: 68.5 cm, angle -5.5 deg
+UART -> BALL,69.2,-5.5
+STM32 -> ACK:BALL,69.2,-5.5
+Detected balls: 1
+Nearest ball: 68.3 cm, angle -5.5 deg
+UART -> BALL,68.9,-5.5
+STM32 -> ACK:BALL,68.9,-5.5
+Detected balls: 1
+Nearest ball: 68.5 cm, angle -5.5 deg
+UART -> BALL,68.8,-5.5
+STM32 -> ACK:BALL,68.8,-5.5
+Detected balls: 1
+Nearest ball: 68.4 cm, angle -5.5 deg
+UART -> BALL,68.6,-5.5
+STM32 -> ACK:BALL,68.6,-5.5
+Detected balls: 1
+Nearest ball: 68.1 cm, angle -5.5 deg
+UART -> BALL,68.4,-5.5
+STM32 -> ACK:BALL,68.4,-5.5
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.6 deg
+UART -> BALL,68.7,-5.5
+STM32 -> ACK:BALL,68.7,-5.5
+Detected balls: 1
+Nearest ball: 68.6 cm, angle -5.6 deg
+UART -> BALL,68.6,-5.5
+STM32 -> ACK:BALL,68.6,-5.5
+Detected balls: 1
+Nearest ball: 68.6 cm, angle -5.6 deg
+UART -> BALL,68.6,-5.6
+STM32 -> ACK:BALL,68.6,-5.6
+Detected balls: 1
+Nearest ball: 68.3 cm, angle -5.6 deg
+UART -> BALL,68.5,-5.6
+STM32 -> ACK:BALL,68.5,-5.6
+Detected balls: 1
+Nearest ball: 68.0 cm, angle -5.6 deg
+UART -> BALL,68.3,-5.6
+STM32 -> ACK:BALL,68.3,-5.6
+frame 400 | conf 0.87 | Z 68.0 cm | X -6.6 cm | Dist 68.3 cm | Angle -5.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 68.8 cm, angle -5.6 deg
+UART -> BALL,68.5,-5.6
+STM32 -> ACK:BALL,68.5,-5.6
+Detected balls: 1
+Nearest ball: 68.3 cm, angle -5.5 deg
+UART -> BALL,68.4,-5.6
+STM32 -> ACK:BALL,68.4,-5.6
+Detected balls: 1
+Nearest ball: 67.9 cm, angle -5.6 deg
+UART -> BALL,68.2,-5.6
+STM32 -> ACK:BALL,68.2,-5.6
+Detected balls: 1
+Nearest ball: 68.1 cm, angle -5.6 deg
+UART -> BALL,68.2,-5.6
+STM32 -> ACK:BALL,68.2,-5.6
+Detected balls: 1
+Nearest ball: 68.4 cm, angle -5.6 deg
+UART -> BALL,68.3,-5.6
+STM32 -> ACK:BALL,68.3,-5.6
+Detected balls: 1
+Nearest ball: 68.0 cm, angle -5.5 deg
+UART -> BALL,68.2,-5.5
+STM32 -> ACK:BALL,68.2,-5.5
+Detected balls: 1
+Nearest ball: 68.0 cm, angle -5.4 deg
+UART -> BALL,68.1,-5.5
+STM32 -> ACK:BALL,68.1,-5.5
+Detected balls: 1
+Nearest ball: 67.8 cm, angle -5.4 deg
+UART -> BALL,68.0,-5.5
+STM32 -> ACK:BALL,68.0,-5.5
+Detected balls: 1
+Nearest ball: 68.4 cm, angle -5.5 deg
+UART -> BALL,68.2,-5.5
+STM32 -> ACK:BALL,68.2,-5.5
+Detected balls: 1
+Nearest ball: 68.3 cm, angle -5.5 deg
+UART -> BALL,68.2,-5.5
+STM32 -> ACK:BALL,68.2,-5.5
+frame 410 | conf 0.90 | Z 67.9 cm | X -6.5 cm | Dist 68.2 cm | Angle -5.5 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.0 cm, angle -5.5 deg
+UART -> BALL,68.5,-5.5
+STM32 -> ACK:BALL,68.5,-5.5
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -5.6 deg
+UART -> BALL,68.7,-5.5
+STM32 -> ACK:BALL,68.7,-5.5
+Detected balls: 1
+Nearest ball: 67.5 cm, angle -5.4 deg
+UART -> BALL,68.3,-5.5
+STM32 -> ACK:BALL,68.3,-5.5
+Detected balls: 1
+Nearest ball: 67.2 cm, angle -5.2 deg
+UART -> BALL,67.9,-5.4
+STM32 -> ACK:BALL,67.9,-5.4
+Detected balls: 1
+Nearest ball: 67.8 cm, angle -5.3 deg
+UART -> BALL,67.9,-5.3
+STM32 -> ACK:BALL,67.9,-5.3
+Detected balls: 1
+Nearest ball: 68.0 cm, angle -5.4 deg
+UART -> BALL,67.9,-5.4
+STM32 -> ACK:BALL,67.9,-5.4
+Detected balls: 1
+Nearest ball: 68.9 cm, angle -5.5 deg
+UART -> BALL,68.3,-5.4
+STM32 -> ACK:BALL,68.3,-5.4
+Detected balls: 1
+Nearest ball: 67.7 cm, angle -5.4 deg
+UART -> BALL,68.0,-5.4
+STM32 -> ACK:BALL,68.0,-5.4
+Detected balls: 1
+Nearest ball: 68.6 cm, angle -5.5 deg
+UART -> BALL,68.2,-5.4
+STM32 -> ACK:BALL,68.2,-5.4
+COURT,OUT,CENTER,0.70 | raw 0.71 | known 0.59
+Detected balls: 1
+Nearest ball: 67.6 cm, angle -5.6 deg
+UART -> BALL,68.0,-5.5
+STM32 -> ACK:BALL,68.0,-5.5
+frame 420 | conf 0.86 | Z 67.7 cm | X -6.5 cm | Dist 68.0 cm | Angle -5.5 deg | Motor ON
+Detected balls: 1
+Nearest ball: 67.9 cm, angle -5.5 deg
+UART -> BALL,68.0,-5.5
+STM32 -> ACK:BALL,68.0,-5.5
+Detected balls: 1
+Nearest ball: 67.8 cm, angle -5.5 deg
+UART -> BALL,67.9,-5.5
+STM32 -> ACK:BALL,67.9,-5.5
+Detected balls: 1
+Nearest ball: 67.9 cm, angle -5.5 deg
+UART -> BALL,67.9,-5.5
+STM32 -> ACK:BALL,67.9,-5.5
+Detected balls: 1
+Nearest ball: 67.5 cm, angle -5.5 deg
+UART -> BALL,67.7,-5.5
+STM32 -> ACK:BALL,67.7,-5.5
+Detected balls: 1
+Nearest ball: 67.3 cm, angle -5.5 deg
+UART -> BALL,67.6,-5.5
+STM32 -> ACK:BALL,67.6,-5.5
+Detected balls: 1
+Nearest ball: 67.7 cm, angle -5.5 deg
+UART -> BALL,67.6,-5.5
+STM32 -> ACK:BALL,67.6,-5.5
+Detected balls: 1
+Nearest ball: 68.2 cm, angle -5.5 deg
+UART -> BALL,67.8,-5.5
+STM32 -> ACK:BALL,67.8,-5.5
+Detected balls: 1
+Nearest ball: 67.8 cm, angle -5.5 deg
+UART -> BALL,67.8,-5.5
+STM32 -> ACK:BALL,67.8,-5.5
+Detected balls: 1
+Nearest ball: 67.5 cm, angle -5.5 deg
+UART -> BALL,67.7,-5.5
+STM32 -> ACK:BALL,67.7,-5.5
+Detected balls: 1
+Nearest ball: 67.6 cm, angle -5.5 deg
+UART -> BALL,67.7,-5.5
+STM32 -> ACK:BALL,67.7,-5.5
+frame 430 | conf 0.89 | Z 67.4 cm | X -6.5 cm | Dist 67.7 cm | Angle -5.5 deg | Motor ON
+Detected balls: 1
+Nearest ball: 67.5 cm, angle -5.5 deg
+UART -> BALL,67.6,-5.5
+STM32 -> ACK:BALL,67.6,-5.5
+Detected balls: 1
+Nearest ball: 67.2 cm, angle -5.5 deg
+UART -> BALL,67.5,-5.5
+STM32 -> ACK:BALL,67.5,-5.5
+Detected balls: 1
+Nearest ball: 67.9 cm, angle -5.5 deg
+UART -> BALL,67.6,-5.5
+STM32 -> ACK:BALL,67.6,-5.5
+Detected balls: 1
+Nearest ball: 68.0 cm, angle -5.5 deg
+UART -> BALL,67.8,-5.5
+STM32 -> ACK:BALL,67.8,-5.5
+Detected balls: 1
+Nearest ball: 67.3 cm, angle -5.5 deg
+UART -> BALL,67.6,-5.5
+STM32 -> ACK:BALL,67.6,-5.5
+Detected balls: 1
+Nearest ball: 67.9 cm, angle -5.5 deg
+UART -> BALL,67.7,-5.5
+STM32 -> ACK:BALL,67.7,-5.5
+Detected balls: 1
+Nearest ball: 68.8 cm, angle -5.5 deg
+UART -> BALL,68.1,-5.5
+STM32 -> ACK:BALL,68.1,-5.5
+Detected balls: 1
+Nearest ball: 69.5 cm, angle -5.5 deg
+UART -> BALL,68.6,-5.5
+STM32 -> ACK:BALL,68.6,-5.5
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.5 deg
+UART -> BALL,68.8,-5.5
+STM32 -> ACK:BALL,68.8,-5.5
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.5 deg
+UART -> BALL,68.9,-5.5
+STM32 -> ACK:BALL,68.9,-5.5
+frame 440 | conf 0.86 | Z 68.6 cm | X -6.6 cm | Dist 68.9 cm | Angle -5.5 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.5 deg
+UART -> BALL,69.0,-5.5
+STM32 -> ACK:BALL,69.0,-5.5
+Detected balls: 1
+Nearest ball: 68.8 cm, angle -5.5 deg
+UART -> BALL,68.9,-5.5
+STM32 -> ACK:BALL,68.9,-5.5
+Detected balls: 1
+Nearest ball: 70.8 cm, angle -5.8 deg
+UART -> BALL,69.6,-5.6
+STM32 -> ACK:BALL,69.6,-5.6
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+COURT,OUT,CENTER,0.72 | raw 0.82 | known 0.68
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 82.6 cm, angle -5.2 deg
+Detected balls: 1
+Nearest ball: 80.6 cm, angle -5.1 deg
+UART -> BALL,76.4,-5.3
+STM32 -> ACK:BALL,76.4,-5.3
+Detected balls: 1
+Nearest ball: 76.8 cm, angle -5.3 deg
+UART -> BALL,76.5,-5.3
+STM32 -> ACK:BALL,76.5,-5.3
+Detected balls: 1
+Nearest ball: 70.5 cm, angle -5.5 deg
+UART -> BALL,74.4,-5.4
+STM32 -> ACK:BALL,74.4,-5.4
+COURT,OUT,CENTER,0.63 | raw 0.79 | known 0.56
+Detected balls: 1
+Nearest ball: 69.5 cm, angle -5.5 deg
+UART -> BALL,72.7,-5.4
+STM32 -> ACK:BALL,72.7,-5.4
+frame 480 | conf 0.85 | Z 72.4 cm | X -6.8 cm | Dist 72.7 cm | Angle -5.4 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.1 cm, angle -5.4 deg
+UART -> BALL,71.4,-5.4
+STM32 -> ACK:BALL,71.4,-5.4
+Detected balls: 1
+Nearest ball: 66.5 cm, angle -5.5 deg
+UART -> BALL,69.7,-5.4
+STM32 -> ACK:BALL,69.7,-5.4
+Detected balls: 1
+Nearest ball: 67.1 cm, angle -5.5 deg
+UART -> BALL,68.8,-5.5
+STM32 -> ACK:BALL,68.8,-5.5
+Detected balls: 1
+Nearest ball: 73.0 cm, angle -5.9 deg
+UART -> BALL,70.3,-5.6
+STM32 -> ACK:BALL,70.3,-5.6
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 94.4 cm, angle -5.7 deg
+Detected balls: 1
+Nearest ball: 90.8 cm, angle -5.5 deg
+UART -> BALL,83.0,-5.6
+STM32 -> ACK:BALL,83.0,-5.6
+Detected balls: 1
+Nearest ball: 92.1 cm, angle -5.5 deg
+UART -> BALL,86.2,-5.6
+STM32 -> ACK:BALL,86.2,-5.6
+Detected balls: 1
+Nearest ball: 93.1 cm, angle -5.5 deg
+UART -> BALL,88.6,-5.5
+STM32 -> ACK:BALL,88.6,-5.5
+Detected balls: 1
+Nearest ball: 91.6 cm, angle -5.5 deg
+UART -> BALL,89.7,-5.5
+STM32 -> ACK:BALL,89.7,-5.5
+Detected balls: 1
+Nearest ball: 92.8 cm, angle -5.6 deg
+UART -> BALL,90.8,-5.5
+STM32 -> ACK:BALL,90.8,-5.5
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.68 | raw 0.70 | known 0.79
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.59 | raw 0.58 | known 0.71
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 101.6 cm, angle -5.2 deg
+frame 550 | conf 0.57 | Z 94.1 cm | X -8.9 cm | Dist 94.6 cm | Angle -5.4 deg | Motor OFF
+Detected balls: 1
+Nearest ball: 80.9 cm, angle -5.1 deg
+UART -> BALL,89.8,-5.3
+STM32 -> ACK:BALL,89.8,-5.3
+Detected balls: 1
+Nearest ball: 80.6 cm, angle -5.1 deg
+UART -> BALL,86.6,-5.2
+STM32 -> ACK:BALL,86.6,-5.2
+Detected balls: 1
+Nearest ball: 78.4 cm, angle -5.2 deg
+UART -> BALL,83.7,-5.2
+STM32 -> ACK:BALL,83.7,-5.2
+Detected balls: 1
+Nearest ball: 74.4 cm, angle -5.4 deg
+UART -> BALL,80.4,-5.3
+STM32 -> ACK:BALL,80.4,-5.3
+Detected balls: 1
+Nearest ball: 74.2 cm, angle -5.4 deg
+UART -> BALL,78.3,-5.3
+STM32 -> ACK:BALL,78.3,-5.3
+Detected balls: 1
+Nearest ball: 74.9 cm, angle -5.4 deg
+UART -> BALL,77.1,-5.3
+STM32 -> ACK:BALL,77.1,-5.3
+Detected balls: 1
+Nearest ball: 75.2 cm, angle -5.3 deg
+UART -> BALL,76.4,-5.3
+STM32 -> ACK:BALL,76.4,-5.3
+Detected balls: 1
+Nearest ball: 75.4 cm, angle -5.3 deg
+UART -> BALL,76.1,-5.3
+STM32 -> ACK:BALL,76.1,-5.3
+Detected balls: 1
+Nearest ball: 73.9 cm, angle -5.4 deg
+UART -> BALL,75.3,-5.4
+STM32 -> ACK:BALL,75.3,-5.4
+Detected balls: 1
+Nearest ball: 74.2 cm, angle -5.4 deg
+UART -> BALL,74.9,-5.4
+STM32 -> ACK:BALL,74.9,-5.4
+frame 560 | conf 0.85 | Z 74.6 cm | X -7.0 cm | Dist 74.9 cm | Angle -5.4 deg | Motor ON
+Detected balls: 1
+Nearest ball: 73.9 cm, angle -5.4 deg
+UART -> BALL,74.6,-5.4
+STM32 -> ACK:BALL,74.6,-5.4
+Detected balls: 1
+Nearest ball: 74.7 cm, angle -5.3 deg
+UART -> BALL,74.6,-5.4
+STM32 -> ACK:BALL,74.6,-5.4
+Detected balls: 1
+Nearest ball: 73.9 cm, angle -5.4 deg
+UART -> BALL,74.4,-5.4
+STM32 -> ACK:BALL,74.4,-5.4
+Detected balls: 1
+Nearest ball: 74.5 cm, angle -5.4 deg
+UART -> BALL,74.4,-5.4
+STM32 -> ACK:BALL,74.4,-5.4
+Detected balls: 1
+Nearest ball: 74.0 cm, angle -5.4 deg
+UART -> BALL,74.3,-5.4
+STM32 -> ACK:BALL,74.3,-5.4
+Detected balls: 1
+Nearest ball: 73.8 cm, angle -5.4 deg
+UART -> BALL,74.1,-5.4
+STM32 -> ACK:BALL,74.1,-5.4
+Detected balls: 1
+Nearest ball: 73.6 cm, angle -5.4 deg
+UART -> BALL,73.9,-5.4
+STM32 -> ACK:BALL,73.9,-5.4
+Detected balls: 1
+Nearest ball: 72.8 cm, angle -5.4 deg
+UART -> BALL,73.5,-5.4
+STM32 -> ACK:BALL,73.5,-5.4
+Detected balls: 1
+Nearest ball: 69.8 cm, angle -5.4 deg
+UART -> BALL,72.2,-5.4
+STM32 -> ACK:BALL,72.2,-5.4
+COURT,OUT,CENTER,0.70 | raw 0.86 | known 0.55
+Detected balls: 1
+Nearest ball: 67.7 cm, angle -5.5 deg
+UART -> BALL,70.7,-5.4
+STM32 -> ACK:BALL,70.7,-5.4
+frame 570 | conf 0.83 | Z 70.3 cm | X -6.7 cm | Dist 70.7 cm | Angle -5.4 deg | Motor ON
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 84.5 cm, angle -5.7 deg
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 85.1 cm, angle -5.7 deg
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.59 | raw 0.56 | known 0.75
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 83.8 cm, angle -6.3 deg
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,LEFT,0.59 | raw 0.48 | known 0.74
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 31.9 cm, angle -24.4 deg
+Detected balls: 1
+Nearest ball: 31.9 cm, angle -25.5 deg
+UART -> BALL,52.5,-17.0
+STM32 -> ACK:BALL,52.5,-17.0
+Detected balls: 1
+Nearest ball: 33.4 cm, angle -29.2 deg
+UART -> BALL,45.8,-21.2
+STM32 -> ACK:BALL,45.8,-21.2
+Detected balls: 1
+Nearest ball: 40.1 cm, angle -31.4 deg
+UART -> BALL,43.8,-24.8
+STM32 -> ACK:BALL,43.8,-24.8
+Detected balls: 1
+Nearest ball: 39.9 cm, angle -31.7 deg
+UART -> BALL,42.4,-27.2
+STM32 -> ACK:BALL,42.4,-27.2
+Detected balls: 1
+Nearest ball: 43.2 cm, angle -31.8 deg
+UART -> BALL,42.7,-28.8
+STM32 -> ACK:BALL,42.7,-28.8
+Detected balls: 1
+Nearest ball: 42.2 cm, angle -28.8 deg
+UART -> BALL,42.5,-28.8
+STM32 -> ACK:BALL,42.5,-28.8
+COURT,OUT,LEFT,0.43 | raw 0.40 | known 0.59
+Detected balls: 1
+Nearest ball: 40.8 cm, angle -28.0 deg
+UART -> BALL,41.9,-28.5
+STM32 -> ACK:BALL,41.9,-28.5
+frame 660 | conf 0.90 | Z 36.9 cm | X -19.5 cm | Dist 41.9 cm | Angle -28.5 deg | Motor ON
+Detected balls: 1
+Nearest ball: 40.9 cm, angle -26.8 deg
+UART -> BALL,41.6,-27.9
+STM32 -> ACK:BALL,41.6,-27.9
+Detected balls: 1
+Nearest ball: 46.4 cm, angle -18.4 deg
+UART -> BALL,43.3,-24.6
+STM32 -> ACK:BALL,43.3,-24.6
+Detected balls: 1
+Nearest ball: 47.0 cm, angle -16.5 deg
+UART -> BALL,44.6,-21.7
+STM32 -> ACK:BALL,44.6,-21.7
+Detected balls: 1
+Nearest ball: 46.7 cm, angle -15.5 deg
+UART -> BALL,45.3,-19.6
+STM32 -> ACK:BALL,45.3,-19.6
+Detected balls: 1
+Nearest ball: 51.4 cm, angle -14.8 deg
+UART -> BALL,47.4,-17.9
+STM32 -> ACK:BALL,47.4,-17.9
+Detected balls: 1
+Nearest ball: 49.8 cm, angle -16.1 deg
+UART -> BALL,48.3,-17.2
+STM32 -> ACK:BALL,48.3,-17.2
+Detected balls: 1
+Nearest ball: 50.1 cm, angle -17.2 deg
+UART -> BALL,48.9,-17.2
+STM32 -> ACK:BALL,48.9,-17.2
+Detected balls: 1
+Nearest ball: 49.6 cm, angle -13.9 deg
+UART -> BALL,49.2,-16.0
+STM32 -> ACK:BALL,49.2,-16.0
+Detected balls: 1
+Nearest ball: 49.1 cm, angle -11.7 deg
+UART -> BALL,49.2,-14.5
+STM32 -> ACK:BALL,49.2,-14.5
+Detected balls: 1
+Nearest ball: 49.6 cm, angle -8.5 deg
+UART -> BALL,49.3,-12.4
+STM32 -> ACK:BALL,49.3,-12.4
+frame 670 | conf 0.92 | Z 48.1 cm | X -10.5 cm | Dist 49.3 cm | Angle -12.4 deg | Motor ON
+Detected balls: 1
+Nearest ball: 44.8 cm, angle 10.5 deg
+UART -> BALL,47.7,-4.4
+STM32 -> ACK:BALL,47.7,-4.4
+Detected balls: 1
+Nearest ball: 44.9 cm, angle 13.7 deg
+UART -> BALL,46.7,1.9
+STM32 -> ACK:BALL,46.7,1.9
+Detected balls: 1
+Nearest ball: 45.7 cm, angle 17.6 deg
+UART -> BALL,46.4,7.4
+STM32 -> ACK:BALL,46.4,7.4
+Detected balls: 1
+Nearest ball: 47.2 cm, angle 17.4 deg
+UART -> BALL,46.7,10.9
+STM32 -> ACK:BALL,46.7,10.9
+Detected balls: 1
+Nearest ball: 49.0 cm, angle 13.2 deg
+UART -> BALL,47.5,11.7
+STM32 -> ACK:BALL,47.5,11.7
+Detected balls: 1
+Nearest ball: 50.0 cm, angle 8.8 deg
+UART -> BALL,48.3,10.7
+STM32 -> ACK:BALL,48.3,10.7
+Detected balls: 1
+Nearest ball: 51.8 cm, angle 1.1 deg
+UART -> BALL,49.6,7.3
+STM32 -> ACK:BALL,49.6,7.3
+Detected balls: 1
+Nearest ball: 51.8 cm, angle 1.0 deg
+UART -> BALL,50.3,5.1
+STM32 -> ACK:BALL,50.3,5.1
+Detected balls: 1
+Nearest ball: 51.8 cm, angle 1.1 deg
+UART -> BALL,50.8,3.7
+STM32 -> ACK:BALL,50.8,3.7
+Detected balls: 1
+Nearest ball: 49.3 cm, angle 3.7 deg
+UART -> BALL,50.3,3.7
+STM32 -> ACK:BALL,50.3,3.7
+frame 680 | conf 0.96 | Z 50.1 cm | X 3.1 cm | Dist 50.3 cm | Angle 3.7 deg | Motor ON
+Detected balls: 1
+Nearest ball: 48.7 cm, angle 4.0 deg
+UART -> BALL,49.8,3.8
+STM32 -> ACK:BALL,49.8,3.8
+Detected balls: 1
+Nearest ball: 49.5 cm, angle 4.1 deg
+UART -> BALL,49.7,3.9
+STM32 -> ACK:BALL,49.7,3.9
+Detected balls: 1
+Nearest ball: 49.2 cm, angle 2.2 deg
+UART -> BALL,49.5,3.3
+STM32 -> ACK:BALL,49.5,3.3
+Detected balls: 1
+Nearest ball: 48.4 cm, angle 1.5 deg
+UART -> BALL,49.1,2.7
+STM32 -> ACK:BALL,49.1,2.7
+Detected balls: 1
+Nearest ball: 48.9 cm, angle 0.5 deg
+UART -> BALL,49.0,1.9
+STM32 -> ACK:BALL,49.0,1.9
+Detected balls: 1
+Nearest ball: 50.1 cm, angle -5.0 deg
+UART -> BALL,49.4,-0.5
+STM32 -> ACK:BALL,49.4,-0.5
+Detected balls: 1
+Nearest ball: 49.6 cm, angle -6.1 deg
+UART -> BALL,49.5,-2.5
+STM32 -> ACK:BALL,49.5,-2.5
+Detected balls: 1
+Nearest ball: 48.1 cm, angle -6.7 deg
+UART -> BALL,49.0,-3.9
+STM32 -> ACK:BALL,49.0,-3.9
+Detected balls: 1
+Nearest ball: 45.1 cm, angle -15.1 deg
+UART -> BALL,47.6,-7.8
+STM32 -> ACK:BALL,47.6,-7.8
+COURT,OUT,CENTER,0.64 | raw 0.63 | known 0.65
+Detected balls: 1
+Nearest ball: 43.6 cm, angle -18.6 deg
+UART -> BALL,46.2,-11.6
+STM32 -> ACK:BALL,46.2,-11.6
+frame 690 | conf 0.92 | Z 45.0 cm | X -9.0 cm | Dist 46.2 cm | Angle -11.6 deg | Motor ON
+Detected balls: 1
+Nearest ball: 43.3 cm, angle -24.8 deg
+UART -> BALL,45.2,-16.2
+STM32 -> ACK:BALL,45.2,-16.2
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 63.0 cm, angle -34.2 deg
+Detected balls: 1
+Nearest ball: 38.3 cm, angle -27.8 deg
+UART -> BALL,46.8,-24.4
+STM32 -> ACK:BALL,46.8,-24.4
+frame 700 | conf 0.87 | Z 41.9 cm | X -19.5 cm | Dist 46.8 cm | Angle -24.4 deg | Motor ON
+Detected balls: 1
+Nearest ball: 39.7 cm, angle -18.2 deg
+UART -> BALL,44.3,-22.2
+STM32 -> ACK:BALL,44.3,-22.2
+Detected balls: 1
+Nearest ball: 40.8 cm, angle -18.7 deg
+UART -> BALL,43.1,-21.0
+STM32 -> ACK:BALL,43.1,-21.0
+Detected balls: 1
+Nearest ball: 41.2 cm, angle -17.6 deg
+UART -> BALL,42.4,-19.8
+STM32 -> ACK:BALL,42.4,-19.8
+Detected balls: 1
+Nearest ball: 40.1 cm, angle -12.4 deg
+UART -> BALL,41.6,-17.2
+STM32 -> ACK:BALL,41.6,-17.2
+Detected balls: 1
+Nearest ball: 39.6 cm, angle -14.2 deg
+UART -> BALL,40.9,-16.1
+STM32 -> ACK:BALL,40.9,-16.1
+Detected balls: 1
+Nearest ball: 39.0 cm, angle -17.8 deg
+UART -> BALL,40.2,-16.7
+STM32 -> ACK:BALL,40.2,-16.7
+Detected balls: 1
+Nearest ball: 40.6 cm, angle -22.2 deg
+UART -> BALL,40.4,-18.7
+STM32 -> ACK:BALL,40.4,-18.7
+Detected balls: 1
+Nearest ball: 37.2 cm, angle -20.1 deg
+UART -> BALL,39.2,-19.2
+STM32 -> ACK:BALL,39.2,-19.2
+Detected balls: 1
+Nearest ball: 36.3 cm, angle -18.5 deg
+UART -> BALL,38.2,-18.9
+STM32 -> ACK:BALL,38.2,-18.9
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 69.2 cm, angle -35.0 deg
+Detected balls: 1
+Nearest ball: 46.7 cm, angle -26.3 deg
+UART -> BALL,48.2,-25.1
+STM32 -> ACK:BALL,48.2,-25.1
+COURT,OUT,CENTER,0.68 | raw 0.69 | known 0.64
+Detected balls: 1
+Nearest ball: 48.3 cm, angle -18.4 deg
+UART -> BALL,48.3,-22.8
+STM32 -> ACK:BALL,48.3,-22.8
+frame 720 | conf 0.97 | Z 43.9 cm | X -19.3 cm | Dist 48.3 cm | Angle -22.8 deg | Motor ON
+Detected balls: 1
+Nearest ball: 49.1 cm, angle -16.4 deg
+UART -> BALL,48.5,-20.6
+STM32 -> ACK:BALL,48.5,-20.6
+Detected balls: 1
+Nearest ball: 49.0 cm, angle -20.0 deg
+UART -> BALL,48.7,-20.4
+STM32 -> ACK:BALL,48.7,-20.4
+Detected balls: 1
+Nearest ball: 49.3 cm, angle -19.2 deg
+UART -> BALL,48.9,-20.0
+STM32 -> ACK:BALL,48.9,-20.0
+Detected balls: 1
+Nearest ball: 48.9 cm, angle -18.4 deg
+UART -> BALL,48.9,-19.4
+STM32 -> ACK:BALL,48.9,-19.4
+Detected balls: 1
+Nearest ball: 48.8 cm, angle -20.2 deg
+UART -> BALL,48.9,-19.7
+STM32 -> ACK:BALL,48.9,-19.7
+Detected balls: 1
+Nearest ball: 49.3 cm, angle -20.3 deg
+UART -> BALL,49.0,-19.9
+STM32 -> ACK:BALL,49.0,-19.9
+Detected balls: 1
+Nearest ball: 48.8 cm, angle -20.5 deg
+UART -> BALL,48.9,-20.1
+STM32 -> ACK:BALL,48.9,-20.1
+Detected balls: 1
+Nearest ball: 49.5 cm, angle -22.4 deg
+UART -> BALL,49.1,-20.9
+STM32 -> ACK:BALL,49.1,-20.9
+Detected balls: 1
+Nearest ball: 50.0 cm, angle -22.7 deg
+UART -> BALL,49.4,-21.5
+STM32 -> ACK:BALL,49.4,-21.5
+Detected balls: 1
+Nearest ball: 49.7 cm, angle -23.0 deg
+UART -> BALL,49.5,-22.1
+STM32 -> ACK:BALL,49.5,-22.1
+frame 730 | conf 0.94 | Z 45.9 cm | X -18.6 cm | Dist 49.5 cm | Angle -22.1 deg | Motor ON
+Detected balls: 1
+Nearest ball: 48.9 cm, angle -23.1 deg
+UART -> BALL,49.3,-22.4
+STM32 -> ACK:BALL,49.3,-22.4
+Detected balls: 1
+Nearest ball: 48.6 cm, angle -23.2 deg
+UART -> BALL,49.1,-22.7
+STM32 -> ACK:BALL,49.1,-22.7
+Detected balls: 1
+Nearest ball: 49.0 cm, angle -23.4 deg
+UART -> BALL,49.1,-22.9
+STM32 -> ACK:BALL,49.1,-22.9
+Detected balls: 1
+Nearest ball: 49.7 cm, angle -23.4 deg
+UART -> BALL,49.3,-23.1
+STM32 -> ACK:BALL,49.3,-23.1
+Detected balls: 1
+Nearest ball: 49.9 cm, angle -23.0 deg
+UART -> BALL,49.5,-23.1
+STM32 -> ACK:BALL,49.5,-23.1
+Detected balls: 1
+Nearest ball: 49.2 cm, angle -21.9 deg
+UART -> BALL,49.4,-22.7
+STM32 -> ACK:BALL,49.4,-22.7
+Detected balls: 1
+Nearest ball: 49.2 cm, angle -13.5 deg
+UART -> BALL,49.3,-19.5
+STM32 -> ACK:BALL,49.3,-19.5
+Detected balls: 1
+Nearest ball: 48.4 cm, angle -11.4 deg
+UART -> BALL,49.0,-16.6
+STM32 -> ACK:BALL,49.0,-16.6
+Detected balls: 1
+Nearest ball: 48.3 cm, angle -9.5 deg
+UART -> BALL,48.8,-14.1
+STM32 -> ACK:BALL,48.8,-14.1
+Detected balls: 1
+Nearest ball: 46.8 cm, angle -5.3 deg
+UART -> BALL,48.1,-11.0
+STM32 -> ACK:BALL,48.1,-11.0
+frame 740 | conf 0.93 | Z 46.9 cm | X -9.2 cm | Dist 48.1 cm | Angle -11.0 deg | Motor ON
+Detected balls: 1
+Nearest ball: 47.0 cm, angle -3.4 deg
+UART -> BALL,47.7,-8.4
+STM32 -> ACK:BALL,47.7,-8.4
+Detected balls: 1
+Nearest ball: 47.5 cm, angle -1.6 deg
+UART -> BALL,47.6,-6.0
+STM32 -> ACK:BALL,47.6,-6.0
+Detected balls: 1
+Nearest ball: 49.7 cm, angle 14.5 deg
+UART -> BALL,48.3,1.2
+STM32 -> ACK:BALL,48.3,1.2
+Detected balls: 1
+Nearest ball: 49.7 cm, angle 16.4 deg
+UART -> BALL,48.8,6.5
+STM32 -> ACK:BALL,48.8,6.5
+Detected balls: 1
+Nearest ball: 50.3 cm, angle 18.5 deg
+UART -> BALL,49.3,10.7
+STM32 -> ACK:BALL,49.3,10.7
+Detected balls: 1
+Nearest ball: 51.1 cm, angle 23.3 deg
+UART -> BALL,49.9,15.1
+STM32 -> ACK:BALL,49.9,15.1
+Detected balls: 1
+Nearest ball: 52.5 cm, angle 23.7 deg
+UART -> BALL,50.8,18.1
+STM32 -> ACK:BALL,50.8,18.1
+Detected balls: 1
+Nearest ball: 53.3 cm, angle 24.5 deg
+UART -> BALL,51.7,20.3
+STM32 -> ACK:BALL,51.7,20.3
+Detected balls: 1
+Nearest ball: 73.5 cm, angle 28.4 deg
+UART -> BALL,59.3,23.2
+STM32 -> ACK:BALL,59.3,23.2
+COURT,OUT,CENTER,0.71 | raw 0.76 | known 0.73
+Detected balls: 1
+Nearest ball: 70.8 cm, angle 28.3 deg
+UART -> BALL,63.3,25.0
+STM32 -> ACK:BALL,63.3,25.0
+frame 750 | conf 0.94 | Z 56.8 cm | X 27.3 cm | Dist 63.3 cm | Angle 25.0 deg | Motor ON
+Detected balls: 1
+Nearest ball: 70.1 cm, angle 28.2 deg
+UART -> BALL,65.7,26.1
+STM32 -> ACK:BALL,65.7,26.1
+Detected balls: 1
+Nearest ball: 64.3 cm, angle 27.8 deg
+UART -> BALL,65.2,26.7
+STM32 -> ACK:BALL,65.2,26.7
+Detected balls: 1
+Nearest ball: 60.6 cm, angle 27.3 deg
+UART -> BALL,63.6,26.9
+STM32 -> ACK:BALL,63.6,26.9
+Detected balls: 1
+Nearest ball: 59.3 cm, angle 26.5 deg
+UART -> BALL,62.1,26.8
+STM32 -> ACK:BALL,62.1,26.8
+Detected balls: 1
+Nearest ball: 59.8 cm, angle 24.8 deg
+UART -> BALL,61.3,26.1
+STM32 -> ACK:BALL,61.3,26.1
+Detected balls: 1
+Nearest ball: 60.3 cm, angle 24.9 deg
+UART -> BALL,60.9,25.7
+STM32 -> ACK:BALL,60.9,25.7
+Detected balls: 1
+Nearest ball: 60.2 cm, angle 25.0 deg
+UART -> BALL,60.7,25.5
+STM32 -> ACK:BALL,60.7,25.5
+Detected balls: 1
+Nearest ball: 60.5 cm, angle 25.1 deg
+UART -> BALL,60.6,25.3
+STM32 -> ACK:BALL,60.6,25.3
+Detected balls: 1
+Nearest ball: 60.7 cm, angle 25.2 deg
+UART -> BALL,60.6,25.3
+STM32 -> ACK:BALL,60.6,25.3
+Detected balls: 1
+Nearest ball: 60.3 cm, angle 25.2 deg
+UART -> BALL,60.5,25.3
+STM32 -> ACK:BALL,60.5,25.3
+frame 760 | conf 0.93 | Z 54.7 cm | X 25.8 cm | Dist 60.5 cm | Angle 25.3 deg | Motor ON
+Detected balls: 1
+Nearest ball: 60.0 cm, angle 25.1 deg
+UART -> BALL,60.3,25.2
+STM32 -> ACK:BALL,60.3,25.2
+Detected balls: 1
+Nearest ball: 60.2 cm, angle 25.2 deg
+UART -> BALL,60.3,25.2
+STM32 -> ACK:BALL,60.3,25.2
+Detected balls: 1
+Nearest ball: 60.6 cm, angle 25.2 deg
+UART -> BALL,60.4,25.2
+STM32 -> ACK:BALL,60.4,25.2
+Detected balls: 1
+Nearest ball: 60.0 cm, angle 25.4 deg
+UART -> BALL,60.2,25.3
+STM32 -> ACK:BALL,60.2,25.3
+Detected balls: 1
+Nearest ball: 60.4 cm, angle 25.6 deg
+UART -> BALL,60.3,25.4
+STM32 -> ACK:BALL,60.3,25.4
+Detected balls: 1
+Nearest ball: 60.6 cm, angle 25.8 deg
+UART -> BALL,60.4,25.5
+STM32 -> ACK:BALL,60.4,25.5
+Detected balls: 1
+Nearest ball: 62.0 cm, angle 25.8 deg
+UART -> BALL,60.9,25.6
+STM32 -> ACK:BALL,60.9,25.6
+Detected balls: 1
+Nearest ball: 61.7 cm, angle 25.9 deg
+UART -> BALL,61.2,25.7
+STM32 -> ACK:BALL,61.2,25.7
+Detected balls: 1
+Nearest ball: 61.7 cm, angle 26.0 deg
+UART -> BALL,61.4,25.8
+STM32 -> ACK:BALL,61.4,25.8
+Detected balls: 1
+Nearest ball: 61.9 cm, angle 25.8 deg
+UART -> BALL,61.5,25.8
+STM32 -> ACK:BALL,61.5,25.8
+frame 770 | conf 0.87 | Z 55.4 cm | X 26.8 cm | Dist 61.5 cm | Angle 25.8 deg | Motor ON
+Detected balls: 1
+Nearest ball: 60.7 cm, angle 25.8 deg
+UART -> BALL,61.3,25.8
+STM32 -> ACK:BALL,61.3,25.8
+Detected balls: 1
+Nearest ball: 60.8 cm, angle 25.8 deg
+UART -> BALL,61.1,25.8
+STM32 -> ACK:BALL,61.1,25.8
+Detected balls: 1
+Nearest ball: 62.4 cm, angle 26.0 deg
+UART -> BALL,61.6,25.9
+STM32 -> ACK:BALL,61.6,25.9
+Detected balls: 1
+Nearest ball: 62.3 cm, angle 26.0 deg
+UART -> BALL,61.8,25.9
+STM32 -> ACK:BALL,61.8,25.9
+Detected balls: 1
+Nearest ball: 62.6 cm, angle 25.8 deg
+UART -> BALL,62.1,25.9
+STM32 -> ACK:BALL,62.1,25.9
+Detected balls: 1
+Nearest ball: 61.7 cm, angle 25.9 deg
+UART -> BALL,61.9,25.9
+STM32 -> ACK:BALL,61.9,25.9
+Detected balls: 1
+Nearest ball: 63.1 cm, angle 26.0 deg
+UART -> BALL,62.4,25.9
+STM32 -> ACK:BALL,62.4,25.9
+Detected balls: 1
+Nearest ball: 63.4 cm, angle 26.1 deg
+UART -> BALL,62.7,26.0
+STM32 -> ACK:BALL,62.7,26.0
+Detected balls: 1
+Nearest ball: 59.3 cm, angle 26.5 deg
+UART -> BALL,61.5,26.2
+STM32 -> ACK:BALL,61.5,26.2
+COURT,OUT,CENTER,0.72 | raw 0.70 | known 0.70
+Detected balls: 1
+Nearest ball: 59.2 cm, angle 26.5 deg
+UART -> BALL,60.7,26.3
+STM32 -> ACK:BALL,60.7,26.3
+frame 780 | conf 0.88 | Z 54.4 cm | X 26.9 cm | Dist 60.7 cm | Angle 26.3 deg | Motor ON
+Detected balls: 1
+Nearest ball: 61.2 cm, angle 26.1 deg
+UART -> BALL,60.9,26.2
+STM32 -> ACK:BALL,60.9,26.2
+Detected balls: 1
+Nearest ball: 62.7 cm, angle 25.6 deg
+UART -> BALL,61.5,26.0
+STM32 -> ACK:BALL,61.5,26.0
+Detected balls: 1
+Nearest ball: 62.4 cm, angle 25.7 deg
+UART -> BALL,61.8,25.9
+STM32 -> ACK:BALL,61.8,25.9
+Detected balls: 1
+Nearest ball: 62.5 cm, angle 25.9 deg
+UART -> BALL,62.1,25.9
+STM32 -> ACK:BALL,62.1,25.9
+Detected balls: 1
+Nearest ball: 63.1 cm, angle 25.6 deg
+UART -> BALL,62.4,25.8
+STM32 -> ACK:BALL,62.4,25.8
+Detected balls: 1
+Nearest ball: 62.5 cm, angle 25.5 deg
+UART -> BALL,62.4,25.7
+STM32 -> ACK:BALL,62.4,25.7
+Detected balls: 1
+Nearest ball: 62.2 cm, angle 25.4 deg
+UART -> BALL,62.4,25.6
+STM32 -> ACK:BALL,62.4,25.6
+Detected balls: 1
+Nearest ball: 64.5 cm, angle 25.3 deg
+UART -> BALL,63.1,25.5
+STM32 -> ACK:BALL,63.1,25.5
+Detected balls: 1
+Nearest ball: 63.5 cm, angle 25.3 deg
+UART -> BALL,63.2,25.4
+STM32 -> ACK:BALL,63.2,25.4
+Detected balls: 1
+Nearest ball: 61.6 cm, angle 25.4 deg
+UART -> BALL,62.7,25.4
+STM32 -> ACK:BALL,62.7,25.4
+frame 790 | conf 0.90 | Z 56.6 cm | X 26.9 cm | Dist 62.7 cm | Angle 25.4 deg | Motor ON
+Detected balls: 1
+Nearest ball: 61.7 cm, angle 26.0 deg
+UART -> BALL,62.3,25.6
+STM32 -> ACK:BALL,62.3,25.6
+Detected balls: 1
+Nearest ball: 61.8 cm, angle 25.8 deg
+UART -> BALL,62.1,25.7
+STM32 -> ACK:BALL,62.1,25.7
+Detected balls: 1
+Nearest ball: 60.9 cm, angle 25.7 deg
+UART -> BALL,61.7,25.7
+STM32 -> ACK:BALL,61.7,25.7
+Detected balls: 1
+Nearest ball: 64.2 cm, angle 25.6 deg
+UART -> BALL,62.6,25.7
+STM32 -> ACK:BALL,62.6,25.7
+Detected balls: 1
+Nearest ball: 64.2 cm, angle 25.6 deg
+UART -> BALL,63.2,25.7
+STM32 -> ACK:BALL,63.2,25.7
+Detected balls: 1
+Nearest ball: 63.7 cm, angle 25.7 deg
+UART -> BALL,63.3,25.7
+STM32 -> ACK:BALL,63.3,25.7
+Detected balls: 1
+Nearest ball: 56.9 cm, angle 22.0 deg
+UART -> BALL,61.1,24.4
+STM32 -> ACK:BALL,61.1,24.4
+Detected balls: 1
+Nearest ball: 63.6 cm, angle 19.6 deg
+UART -> BALL,62.0,22.7
+STM32 -> ACK:BALL,62.0,22.7
+Detected balls: 1
+Nearest ball: 61.9 cm, angle 17.1 deg
+UART -> BALL,61.9,20.7
+STM32 -> ACK:BALL,61.9,20.7
+Detected balls: 1
+Nearest ball: 62.3 cm, angle -7.3 deg
+UART -> BALL,62.1,10.9
+STM32 -> ACK:BALL,62.1,10.9
+frame 800 | conf 0.91 | Z 59.2 cm | X 11.5 cm | Dist 62.1 cm | Angle 10.9 deg | Motor ON
+Detected balls: 1
+Nearest ball: 64.3 cm, angle -10.8 deg
+UART -> BALL,62.9,3.3
+STM32 -> ACK:BALL,62.9,3.3
+Detected balls: 1
+Nearest ball: 65.1 cm, angle -13.0 deg
+UART -> BALL,63.7,-2.4
+STM32 -> ACK:BALL,63.7,-2.4
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -16.8 deg
+UART -> BALL,66.2,-7.4
+STM32 -> ACK:BALL,66.2,-7.4
+Detected balls: 1
+Nearest ball: 72.9 cm, angle -17.5 deg
+UART -> BALL,68.6,-10.9
+STM32 -> ACK:BALL,68.6,-10.9
+Detected balls: 1
+Nearest ball: 70.9 cm, angle -18.1 deg
+UART -> BALL,69.4,-13.4
+STM32 -> ACK:BALL,69.4,-13.4
+Detected balls: 1
+Nearest ball: 70.3 cm, angle -19.2 deg
+UART -> BALL,69.7,-15.5
+STM32 -> ACK:BALL,69.7,-15.5
+Detected balls: 1
+Nearest ball: 70.0 cm, angle -19.5 deg
+UART -> BALL,69.8,-16.9
+STM32 -> ACK:BALL,69.8,-16.9
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -19.5 deg
+UART -> BALL,69.8,-17.8
+STM32 -> ACK:BALL,69.8,-17.8
+Detected balls: 1
+Nearest ball: 74.6 cm, angle -19.5 deg
+UART -> BALL,71.5,-18.4
+STM32 -> ACK:BALL,71.5,-18.4
+COURT,OUT,CENTER,0.70 | raw 0.69 | known 0.64
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -19.4 deg
+UART -> BALL,70.8,-18.7
+STM32 -> ACK:BALL,70.8,-18.7
+frame 810 | conf 0.97 | Z 66.9 cm | X -22.8 cm | Dist 70.8 cm | Angle -18.7 deg | Motor ON
+Detected balls: 1
+Nearest ball: 69.7 cm, angle -19.2 deg
+UART -> BALL,70.4,-18.9
+STM32 -> ACK:BALL,70.4,-18.9
+Detected balls: 1
+Nearest ball: 70.3 cm, angle -17.5 deg
+UART -> BALL,70.4,-18.4
+STM32 -> ACK:BALL,70.4,-18.4
+Detected balls: 1
+Nearest ball: 70.5 cm, angle -17.1 deg
+UART -> BALL,70.4,-18.0
+STM32 -> ACK:BALL,70.4,-18.0
+Detected balls: 1
+Nearest ball: 75.3 cm, angle -16.9 deg
+UART -> BALL,72.1,-17.6
+STM32 -> ACK:BALL,72.1,-17.6
+Detected balls: 1
+Nearest ball: 73.1 cm, angle -16.1 deg
+UART -> BALL,72.5,-17.1
+STM32 -> ACK:BALL,72.5,-17.1
+Detected balls: 1
+Nearest ball: 69.4 cm, angle -16.3 deg
+UART -> BALL,71.4,-16.8
+STM32 -> ACK:BALL,71.4,-16.8
+Detected balls: 1
+Nearest ball: 67.2 cm, angle -16.8 deg
+UART -> BALL,69.9,-16.8
+STM32 -> ACK:BALL,69.9,-16.8
+Detected balls: 1
+Nearest ball: 52.5 cm, angle -32.7 deg
+UART -> BALL,63.8,-22.4
+STM32 -> ACK:BALL,63.8,-22.4
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.61 | raw 0.59 | known 0.65
+Detected balls: 1
+Nearest ball: 78.0 cm, angle 14.1 deg
+frame 840 | conf 0.69 | Z 64.8 cm | X -8.4 cm | Dist 68.8 cm | Angle -9.6 deg | Motor OFF
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 36.0 cm, angle -1.5 deg
+COURT,OUT,CENTER,0.53 | raw 0.55 | known 0.84
+Detected balls: 1
+Nearest ball: 25.2 cm, angle 3.2 deg
+UART -> BALL,46.1,-3.3
+STM32 -> ACK:BALL,46.1,-3.3
+frame 870 | conf 0.95 | Z 44.4 cm | X -3.3 cm | Dist 46.1 cm | Angle -3.3 deg | Motor ON
+Detected balls: 1
+Nearest ball: 28.8 cm, angle 5.3 deg
+UART -> BALL,40.0,-0.3
+STM32 -> ACK:BALL,40.0,-0.3
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 52.3 cm, angle 14.2 deg
+Detected balls: 1
+Nearest ball: 55.7 cm, angle 15.1 deg
+UART -> BALL,48.3,8.4
+STM32 -> ACK:BALL,48.3,8.4
+Detected balls: 1
+Nearest ball: 63.2 cm, angle 18.5 deg
+UART -> BALL,53.5,11.9
+STM32 -> ACK:BALL,53.5,11.9
+Detected balls: 1
+Nearest ball: 63.1 cm, angle 19.0 deg
+UART -> BALL,56.9,14.4
+STM32 -> ACK:BALL,56.9,14.4
+Detected balls: 1
+Nearest ball: 63.9 cm, angle 19.3 deg
+UART -> BALL,59.3,16.1
+STM32 -> ACK:BALL,59.3,16.1
+Detected balls: 1
+Nearest ball: 68.8 cm, angle 19.1 deg
+UART -> BALL,62.7,17.1
+STM32 -> ACK:BALL,62.7,17.1
+Detected balls: 1
+Nearest ball: 68.7 cm, angle 19.1 deg
+UART -> BALL,64.8,17.8
+STM32 -> ACK:BALL,64.8,17.8
+Detected balls: 1
+Nearest ball: 68.5 cm, angle 19.0 deg
+UART -> BALL,66.1,18.2
+STM32 -> ACK:BALL,66.1,18.2
+frame 880 | conf 0.96 | Z 62.5 cm | X 20.9 cm | Dist 66.1 cm | Angle 18.2 deg | Motor ON
+Detected balls: 1
+Nearest ball: 67.0 cm, angle 18.9 deg
+UART -> BALL,66.4,18.5
+STM32 -> ACK:BALL,66.4,18.5
+Detected balls: 1
+Nearest ball: 65.8 cm, angle 18.9 deg
+UART -> BALL,66.2,18.6
+STM32 -> ACK:BALL,66.2,18.6
+Detected balls: 1
+Nearest ball: 66.2 cm, angle 18.9 deg
+UART -> BALL,66.2,18.7
+STM32 -> ACK:BALL,66.2,18.7
+Detected balls: 1
+Nearest ball: 65.7 cm, angle 18.9 deg
+UART -> BALL,66.0,18.8
+STM32 -> ACK:BALL,66.0,18.8
+Detected balls: 1
+Nearest ball: 66.0 cm, angle 18.9 deg
+UART -> BALL,66.0,18.8
+STM32 -> ACK:BALL,66.0,18.8
+Detected balls: 1
+Nearest ball: 66.0 cm, angle 18.9 deg
+UART -> BALL,66.0,18.9
+STM32 -> ACK:BALL,66.0,18.9
+Detected balls: 1
+Nearest ball: 67.0 cm, angle 26.5 deg
+UART -> BALL,66.4,21.5
+STM32 -> ACK:BALL,66.4,21.5
+Detected balls: 1
+Nearest ball: 121.0 cm, angle 29.5 deg
+UART -> BALL,85.5,24.3
+STM32 -> ACK:BALL,85.5,24.3
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.59 | raw 0.57 | known 0.62
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.53 | raw 0.71 | known 0.84
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 98.3 cm, angle 29.4 deg
+Detected balls: 1
+Nearest ball: 74.1 cm, angle 28.7 deg
+UART -> BALL,84.4,27.0
+STM32 -> ACK:BALL,84.4,27.0
+Detected balls: 1
+Nearest ball: 94.0 cm, angle 29.2 deg
+UART -> BALL,87.8,27.8
+STM32 -> ACK:BALL,87.8,27.8
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 63.7 cm, angle -24.8 deg
+Detected balls: 1
+Nearest ball: 70.1 cm, angle -27.2 deg
+UART -> BALL,76.1,-3.4
+STM32 -> ACK:BALL,76.1,-3.4
+Detected balls: 1
+Nearest ball: 63.1 cm, angle -26.2 deg
+UART -> BALL,71.6,-11.4
+STM32 -> ACK:BALL,71.6,-11.4
+Detected balls: 1
+Nearest ball: 65.4 cm, angle -26.6 deg
+UART -> BALL,69.4,-16.7
+STM32 -> ACK:BALL,69.4,-16.7
+Detected balls: 1
+Nearest ball: 64.9 cm, angle -26.8 deg
+UART -> BALL,67.8,-20.2
+STM32 -> ACK:BALL,67.8,-20.2
+Detected balls: 1
+Nearest ball: 63.8 cm, angle -26.7 deg
+UART -> BALL,66.4,-22.5
+STM32 -> ACK:BALL,66.4,-22.5
+Detected balls: 1
+Nearest ball: 67.7 cm, angle -26.0 deg
+UART -> BALL,66.9,-23.7
+STM32 -> ACK:BALL,66.9,-23.7
+frame 950 | conf 0.91 | Z 59.9 cm | X -25.8 cm | Dist 66.9 cm | Angle -23.7 deg | Motor ON
+Detected balls: 1
+Nearest ball: 67.2 cm, angle -26.0 deg
+UART -> BALL,67.0,-24.5
+STM32 -> ACK:BALL,67.0,-24.5
+Detected balls: 1
+Nearest ball: 66.6 cm, angle -26.6 deg
+UART -> BALL,66.8,-25.3
+STM32 -> ACK:BALL,66.8,-25.3
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 63.1 cm, angle -12.0 deg
+Detected balls: 1
+Nearest ball: 63.5 cm, angle -11.6 deg
+UART -> BALL,64.8,-17.5
+STM32 -> ACK:BALL,64.8,-17.5
+Detected balls: 1
+Nearest ball: 63.3 cm, angle -14.1 deg
+UART -> BALL,64.3,-16.3
+STM32 -> ACK:BALL,64.3,-16.3
+Detected balls: 0
+COURT,OUT,CENTER,0.55 | raw 0.63 | known 0.80
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 38.7 cm, angle 16.0 deg
+Detected balls: 1
+Nearest ball: 37.4 cm, angle 11.6 deg
+UART -> BALL,49.1,0.8
+STM32 -> ACK:BALL,49.1,0.8
+Detected balls: 1
+Nearest ball: 37.5 cm, angle 14.3 deg
+UART -> BALL,45.0,5.5
+STM32 -> ACK:BALL,45.0,5.5
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 66.6 cm, angle 11.6 deg
+Detected balls: 1
+Nearest ball: 59.9 cm, angle 10.8 deg
+UART -> BALL,55.1,8.8
+STM32 -> ACK:BALL,55.1,8.8
+Detected balls: 1
+Nearest ball: 56.6 cm, angle 8.1 deg
+UART -> BALL,55.7,8.5
+STM32 -> ACK:BALL,55.7,8.5
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,RIGHT,0.62 | raw 0.41 | known 0.56
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 2
+Nearest ball: 58.0 cm, angle -33.3 deg
+Detected balls: 1
+Nearest ball: 57.4 cm, angle -33.2 deg
+UART -> BALL,56.8,-15.6
+STM32 -> ACK:BALL,56.8,-15.6
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 90.6 cm, angle -32.0 deg
+Detected balls: 0
+Detected balls: 0
+Detected balls: 1
+Nearest ball: 55.4 cm, angle -33.0 deg
+Detected balls: 1
+Nearest ball: 50.7 cm, angle -32.9 deg
+UART -> BALL,59.3,-28.0
+STM32 -> ACK:BALL,59.3,-28.0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.62 | raw 0.53 | known 0.63
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,LEFT,0.52 | raw 0.35 | known 0.47
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.53 | raw 0.43 | known 0.73
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+COURT,OUT,CENTER,0.55 | raw 0.64 | known 0.73
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Detected balls: 0
+Stopped by user
+UART -> BALL_OFF
+STM32 -> ACK:NOBALL
+Saved last image: run9.jpg
+
+Total frames: 1127
+Detection count: 661 / 1127
+Detection rate: 58.65%
+End-to-end FPS: 4.45
+CSV saved: run9.csv
+RPM CSV saved: run9_rpm.csv
+Video saved: run9.mp4
