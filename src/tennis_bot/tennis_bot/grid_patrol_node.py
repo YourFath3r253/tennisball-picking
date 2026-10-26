@@ -40,6 +40,7 @@ from sensor_msgs.msg import JointState, Imu
 from std_msgs.msg import Empty, Float32MultiArray, String
 from gazebo_msgs.srv import GetEntityState, SetEntityState
 
+from tennis_bot.robot_profile import P as _ROBOT  # 車體幾何 (v1/v2)
 from tennis_bot.motor_model import TargetRamp, body_to_wheel_rpm
 from tennis_bot.grid_waypoints import (
     court_path_with_net, COURT_X_RANGE, COURT_Y_RANGE, CELL_MAX_M,
@@ -76,7 +77,7 @@ WHEEL_SEPARATION_M = 0.29
 # base_link 原點，兩者在車體座標差 (+0.080, -0.135) m (實測 left/right_drive_wheel
 # 與 base_link 的世界座標算出來的)。原地轉的時候軸心不動、base_link 卻繞 0.157m
 # 半徑畫圓，不換算的話會憑空多出最多 0.31m 的「誤差」。
-AXLE_MID_IN_BASE = (0.080, -0.135)
+AXLE_MID_IN_BASE = _ROBOT['axle_in_base']
 LEFT_WHEEL_JOINT = 'left_wheel_joint'
 RIGHT_WHEEL_JOINT = 'right_wheel_joint'
 
@@ -142,15 +143,15 @@ BLIND_DASH_DURATION_SEC = 2.0
 # 輪距 0.14 / 半徑 0.045)。experiments/roller_pickup 實測 (滾輪在 x=0.2, z=0.03，
 # 見 URDF 註解)：W=40~45 在盲衝速度 0.2~0.4 全部進車廂；W=35 邊緣；W>=50 拋過頭飛出
 # 車尾；W>=58 球卡住時滾輪關節會物理爆掉。取中間值 42.5 (約 66 rad/s)。
-ROLLER_CMD_W = 42.5
+ROLLER_CMD_W = float(os.environ.get('ROLLER_W', '42.5'))  # 新車體撿球道驗證時會掃這個 (實際滾輪轉速看撿球馬達型號)
 # 「進後車廂」判定用 Gazebo 真實座標 (模擬才有的優勢)：球在 base_link 座標系
 # x 在車廂範圍 [-0.36, 0]、y 在車廂寬度內 (中心 -0.135 ± 0.11)、z 高於地面
 # (車廂地板 0.03 + 球半徑 0.033 = 0.063；地上的球 z=0.033)。
-BASKET_X_RANGE = (-0.36, 0.0)
-BASKET_Y_CENTER = -0.135
-BASKET_Y_HALF_WIDTH = 0.11
-BASKET_MIN_Z = 0.05
-BASKET_REST_MAX_Z = 0.15  # 球躺在車廂地板上 (z≈0.065)；飛過車廂上方時 z≈0.2 不算
+BASKET_X_RANGE = _ROBOT['basket_x']
+BASKET_Y_CENTER = _ROBOT['basket_y_center']
+BASKET_Y_HALF_WIDTH = _ROBOT['basket_y_half']
+BASKET_MIN_Z = _ROBOT['basket_min_z']
+BASKET_REST_MAX_Z = _ROBOT['basket_rest_max_z']  # 球躺在車廂地板上 (z≈0.065)；飛過車廂上方時 z≈0.2 不算
 BASKET_CONFIRM_POLLS = 3  # 連續幾次查詢都在車廂裡才算撿到，避免彈出去的球被誤計
 
 # run8 只測滾輪判定、run9 才加上原路倒車，兩個改動分開測試看各自的效果

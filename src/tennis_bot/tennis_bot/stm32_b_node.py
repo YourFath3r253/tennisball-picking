@@ -35,7 +35,7 @@ from std_msgs.msg import Float32MultiArray, String
 from tennis_bot.motor_model import ChassisMotorModel, ENCODER_RESOLUTION, STM32_DT
 
 WHEEL_RADIUS = 0.052          # main.c
-WHEEL_TRACK = 0.243           # main.c
+WHEEL_TRACK = float(os.environ.get('TENNISBOT_FW_TRACK', '0.243'))   # main.c 寫死的輪距 (新車體沒改的話還是 0.243)
 MAIN_PASSES = 12              # 每 10 ms 主迴圈跑幾圈 (>= 10 才能讓 Forward 斜坡一次爬完，跟實體車一樣)
 CHASE_MODE = os.environ.get('TENNISBOT_STM32_CHASE', 'b')
 STEER_KP = float(os.environ.get('TENNISBOT_STEER_KP', '0.6'))

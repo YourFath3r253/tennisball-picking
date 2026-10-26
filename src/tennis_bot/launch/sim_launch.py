@@ -11,7 +11,9 @@ def _launch_setup(context):
 
     # 1. 指定你的 URDF 與 World 檔案路徑
     # world 參數：預設是全場+網子的 tennis_court.world，其他場地 (例如半場邊界線) 用 world:=檔名 切換
-    urdf_file = os.path.join(pkg_share, 'urdf', 'simple_bot.urdf')
+    # robot 參數：v1 = 舊車體 (simple_bot.urdf，預設)、v2 = A 同學 2026-10-25 新車體 (tennis_bot_v2.urdf)
+    robot = LaunchConfiguration('robot').perform(context)
+    urdf_file = os.path.join(pkg_share, 'urdf', 'tennis_bot_v2.urdf' if robot == 'v2' else 'simple_bot.urdf')
     world_file = os.path.join(pkg_share, 'worlds', LaunchConfiguration('world').perform(context))
     # gui:=false 只開 gzserver (不開畫面)，批次實驗用，相機感測器照樣會算圖
     gui = LaunchConfiguration('gui').perform(context).lower() in ('1', 'true', 'yes')
@@ -68,5 +70,6 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('world', default_value='tennis_court.world'),
         DeclareLaunchArgument('gui', default_value='true'),
+        DeclareLaunchArgument('robot', default_value=os.environ.get('TENNISBOT_ROBOT', 'v1')),
         OpaqueFunction(function=_launch_setup),
     ])

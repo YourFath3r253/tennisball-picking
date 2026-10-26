@@ -1,0 +1,11 @@
+start_epoch=1792999761.0488107
+steer_kp=0.6
+delay_comp=off
+delay_comp_sec=0.8
+mode=boundary_bounce
+bounce_angle_deg=135.0
+timeout_sec=900.0
+mode=real_car (jetson_d_node + stm32_b_node)
+world=pickup_test.world
+chase=b
+layout=experiments/實驗數據/layouts/realcar_seed502.json

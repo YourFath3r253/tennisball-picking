@@ -21,6 +21,8 @@ setup(
         (os.path.join('share', package_name, 'urdf'), glob('urdf/*.sdf')),
         # 告訴編譯器把 meshes 裡面的 .stl 檔全部包進去
         (os.path.join('share', package_name, 'urdf', 'meshes'), glob('urdf/meshes/*.stl')),
+        # 新車體 v2 (A 同學 CAD，experiments/cad_v2_to_urdf.py 產生)
+        (os.path.join('share', package_name, 'urdf', 'meshes', 'v2'), glob('urdf/meshes/v2/*.stl')),
         # ↓↓↓ 請加入這一行，讓系統編譯時搬運 world 檔案 ↓↓↓
         (os.path.join('share', package_name, 'worlds'), glob('worlds/*.world')),
     ],

@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<!-- 新車體 v2 (A 同學 2026-10-25 CAD)。這個檔案由 experiments/cad_v2_to_urdf.py 從
+     experiments/tennis_bot_v2_template.urdf 產生，不要直接改 tennis_bot_v2.urdf。
+     base_link = 兩驅動輪軸中點正下方的地面，x 前 / y 左 / z 上。 -->
+<robot name="tennis_bot">
+
+  <link name="base_link"/>
+
+  <joint name="base_to_chassis" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 車體：CAD 每個零件一個網格 (公尺、base_link 座標)。碰撞只給球可能碰到的零件；質量性質是全部零件合計 -->
+  <link name="chassis">
+    <visual name="trunk_v2_01">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_01.stl"/></geometry>
+      <material name="m_trunk_v2_01"><color rgba="0.55 0.75 0.95 1"/></material>
+    </visual>
+    <visual name="trunk_v2_02">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_02.stl"/></geometry>
+      <material name="m_trunk_v2_02"><color rgba="0.55 0.75 0.95 1"/></material>
+    </visual>
+    <visual name="trunk_v2_03">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_03.stl"/></geometry>
+      <material name="m_trunk_v2_03"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_05">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_05.stl"/></geometry>
+      <material name="m_trunk_v2_05"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part6">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part6.stl"/></geometry>
+      <material name="m_trunk_v2_part6"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part7">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part7.stl"/></geometry>
+      <material name="m_trunk_v2_part7"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part8">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part8.stl"/></geometry>
+      <material name="m_trunk_v2_part8"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part9">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part9.stl"/></geometry>
+      <material name="m_trunk_v2_part9"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_battery">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_battery.stl"/></geometry>
+      <material name="m_trunk_v2_battery"><color rgba="0.2 0.6 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_camera">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_camera.stl"/></geometry>
+      <material name="m_trunk_v2_camera"><color rgba="0.5 0.2 0.6 1"/></material>
+    </visual>
+    <visual name="trunk_v2_motor1">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_motor1.stl"/></geometry>
+      <material name="m_trunk_v2_motor1"><color rgba="0.8 0.2 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_motor2">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_motor2.stl"/></geometry>
+      <material name="m_trunk_v2_motor2"><color rgba="0.8 0.2 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_jetsonnano">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_jetsonnano.stl"/></geometry>
+      <material name="m_trunk_v2_jetsonnano"><color rgba="0.2 0.6 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_STM32">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_STM32.stl"/></geometry>
+      <material name="m_trunk_v2_STM32"><color rgba="0.2 0.6 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_motor3">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_motor3.stl"/></geometry>
+      <material name="m_trunk_v2_motor3"><color rgba="0.8 0.2 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_motor4">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_motor4.stl"/></geometry>
+      <material name="m_trunk_v2_motor4"><color rgba="0.8 0.2 0.2 1"/></material>
+    </visual>
+    <visual name="trunk_v2_camerastand">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_camerastand.stl"/></geometry>
+      <material name="m_trunk_v2_camerastand"><color rgba="0.5 0.2 0.6 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part10">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part10.stl"/></geometry>
+      <material name="m_trunk_v2_part10"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part11">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part11.stl"/></geometry>
+      <material name="m_trunk_v2_part11"><color rgba="0.75 0.75 0.75 1"/></material>
+    </visual>
+    <visual name="trunk_v2_sheetmetal">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_sheetmetal.stl"/></geometry>
+      <material name="m_trunk_v2_sheetmetal"><color rgba="0.45 0.5 0.55 1"/></material>
+    </visual>
+    <visual name="trunk_v2_part12">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part12.stl"/></geometry>
+      <material name="m_trunk_v2_part12"><color rgba="0.95 0.55 0.1 1"/></material>
+    </visual>
+    <collision name="trunk_v2_01_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_01.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_02_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_02.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_03_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_03.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_05_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_05.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part6_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part6.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part7_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part7.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part8_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part8.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part9_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part9.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_camera_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_camera.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_motor3_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_motor3.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_motor4_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_motor4.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_camerastand_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_camerastand.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part10_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part10.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part11_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part11.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_sheetmetal_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_sheetmetal.stl"/></geometry>
+    </collision>
+    <collision name="trunk_v2_part12_c">
+      <geometry><mesh filename="package://tennis_bot/urdf/meshes/v2/trunk_v2_part12.stl"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="-0.16125 -0.00182 0.07177" rpy="0 0 0"/>
+      <mass value="7.5045"/>
+      <inertia ixx="0.109317" ixy="-0.000638" ixz="-0.021419" iyy="0.294207" iyz="0.000217" izz="0.367185"/>
+    </inertial>
+  </link>
+
+  <link name="left_drive_wheel">
+    <visual><geometry><cylinder radius="0.052" length="0.026"/></geometry>
+      <material name="tyre"><color rgba="0.1 0.1 0.1 1"/></material></visual>
+    <collision><geometry><cylinder radius="0.052" length="0.026"/></geometry></collision>
+    <inertial>
+      <origin xyz="0.00000 0.00000 0.00000" rpy="0 0 0"/>
+      <mass value="0.2000"/>
+      <inertia ixx="0.000146" ixy="0.000000" ixz="0.000000" iyy="0.000146" iyz="0.000000" izz="0.000270"/>
+    </inertial>
+  </link>
+  <joint name="left_wheel_joint" type="continuous">
+    <parent link="chassis"/><child link="left_drive_wheel"/>
+    <origin xyz="0 0.1700 0.052" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <gazebo reference="left_drive_wheel"><mu1>200.0</mu1><mu2>200.0</mu2><material>Gazebo/Black</material></gazebo>
+
+  <link name="right_drive_wheel">
+    <visual><geometry><cylinder radius="0.052" length="0.026"/></geometry>
+      <material name="tyre"><color rgba="0.1 0.1 0.1 1"/></material></visual>
+    <collision><geometry><cylinder radius="0.052" length="0.026"/></geometry></collision>
+    <inertial>
+      <origin xyz="0.00000 0.00000 0.00000" rpy="0 0 0"/>
+      <mass value="0.2000"/>
+      <inertia ixx="0.000146" ixy="0.000000" ixz="0.000000" iyy="0.000146" iyz="0.000000" izz="0.000270"/>
+    </inertial>
+  </link>
+  <joint name="right_wheel_joint" type="continuous">
+    <parent link="chassis"/><child link="right_drive_wheel"/>
+    <origin xyz="0 -0.1700 0.052" rpy="-1.5708 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <gazebo reference="right_drive_wheel"><mu1>200.0</mu1><mu2>200.0</mu2><material>Gazebo/Black</material></gazebo>
+
+  <link name="caster_0">
+    <visual><geometry><sphere radius="0.0166"/></geometry><material name="caster"><color rgba="0.1 0.1 0.1 1"/></material></visual>
+    <collision><geometry><sphere radius="0.0166"/></geometry>
+      <surface><friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction></surface></collision>
+    <inertial>
+      <origin xyz="0.00000 0.00000 0.00000" rpy="0 0 0"/>
+      <mass value="0.0300"/>
+      <inertia ixx="0.000002" ixy="0.000000" ixz="0.000000" iyy="0.000002" iyz="0.000000" izz="0.000002"/>
+    </inertial>
+  </link>
+  <joint name="caster_0_joint" type="fixed">
+    <parent link="chassis"/><child link="caster_0"/>
+    <origin xyz="-0.47 0.15 0.0166" rpy="0 0 0"/>
+  </joint>
+  <!-- 萬向輪 = 無摩擦球 (會自己轉向的輪子阻力很小)。摩擦要寫在 gazebo reference：URDF <collision> 裡的
+       <surface> Gazebo 不會讀 (舊車 simple_bot.urdf 也是這樣寫，實際摩擦是預設值)。新車重心在輪軸後 16 cm，
+       萬向輪撐 ~1/3 重量，有摩擦的話原地轉不動 (2026-10-26 實測：指令 86° 只轉 0°)。 -->
+  <gazebo reference="caster_0"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+
+  <link name="caster_1">
+    <visual><geometry><sphere radius="0.0166"/></geometry><material name="caster"><color rgba="0.1 0.1 0.1 1"/></material></visual>
+    <collision><geometry><sphere radius="0.0166"/></geometry>
+      <surface><friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction></surface></collision>
+    <inertial>
+      <origin xyz="0.00000 0.00000 0.00000" rpy="0 0 0"/>
+      <mass value="0.0300"/>
+      <inertia ixx="0.000002" ixy="0.000000" ixz="0.000000" iyy="0.000002" iyz="0.000000" izz="0.000002"/>
+    </inertial>
+  </link>
+  <joint name="caster_1_joint" type="fixed">
+    <parent link="chassis"/><child link="caster_1"/>
+    <origin xyz="-0.47 -0.15 0.0166" rpy="0 0 0"/>
+  </joint>
+  <!-- 萬向輪 = 無摩擦球 (會自己轉向的輪子阻力很小)。摩擦要寫在 gazebo reference：URDF <collision> 裡的
+       <surface> Gazebo 不會讀 (舊車 simple_bot.urdf 也是這樣寫，實際摩擦是預設值)。新車重心在輪軸後 16 cm，
+       萬向輪撐 ~1/3 重量，有摩擦的話原地轉不動 (2026-10-26 實測：指令 86° 只轉 0°)。 -->
+  <gazebo reference="caster_1"><mu1>0.0</mu1><mu2>0.0</mu2></gazebo>
+
+  <!-- left 滾輪：CAD motor4 出軸，軸往前上 48°；直徑/寬度/海綿同舊車 -->
+  <link name="left_roller">
+    <visual><geometry><cylinder radius="0.05" length="0.04"/></geometry>
+      <material name="roller_y"><color rgba="0.8 0.8 0 1"/></material></visual>
+    <visual><origin xyz="0.045 0 0" rpy="0 0 0"/><geometry><box size="0.01 0.01 0.01"/></geometry>
+      <material name="roller_mark"><color rgba="1 0 0 1"/></material></visual>
+    <collision><geometry><cylinder radius="0.05" length="0.04"/></geometry></collision>
+    <inertial>
+      <origin xyz="0.00000 0.00000 0.00000" rpy="0 0 0"/>
+      <mass value="0.1000"/>
+      <inertia ixx="0.000076" ixy="0.000000" ixz="0.000000" iyy="0.000076" iyz="0.000000" izz="0.000125"/>
+    </inertial>
+  </link>
+  <joint name="left_roller_joint" type="continuous">
+    <parent link="chassis"/><child link="left_roller"/>
+    <origin xyz="0.1027 0.0725 0.0710" rpy="0 0.7302 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <gazebo reference="left_roller">
+    <mu1>1.5</mu1><mu2>1.5</mu2><kp>150.0</kp><kd>4.2</kd><min_depth>0.001</min_depth><max_vel>10</max_vel>
+  </gazebo>
+
+  <!-- right 滾輪：CAD motor3 出軸，軸往前上 48°；直徑/寬度/海綿同舊車 -->
+  <link name="right_roller">
+    <visual><geometry><cylinder radius="0.05" length="0.04"/></geometry>
+      <material name="roller_y"><color rgba="0.8 0.8 0 1"/></material></visual>
+    <visual><origin xyz="0.045 0 0" rpy="0 0 0"/><geometry><box size="0.01 0.01 0.01"/></geometry>
+      <material name="roller_mark"><color rgba="1 0 0 1"/></material></visual>
+    <collision><geometry><cylinder radius="0.05" length="0.04"/></geometry></collision>
+    <inertial>
+      <origin xyz="0.00000 0.00000 0.00000" rpy="0 0 0"/>
+      <mass value="0.1000"/>
+      <inertia ixx="0.000076" ixy="0.000000" ixz="0.000000" iyy="0.000076" iyz="0.000000" izz="0.000125"/>
+    </inertial>
+  </link>
+  <joint name="right_roller_joint" type="continuous">
+    <parent link="chassis"/><child link="right_roller"/>
+    <origin xyz="0.1027 -0.0726 0.0710" rpy="0 0.7302 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+  <gazebo reference="right_roller">
+    <mu1>1.5</mu1><mu2>1.5</mu2><kp>150.0</kp><kd>4.2</kd><min_depth>0.001</min_depth><max_vel>10</max_vel>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="roller_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=roller_cmd</remapping>
+        <remapping>odom:=roller_odom_dump</remapping>
+      </ros>
+      <left_joint>left_roller_joint</left_joint>
+      <right_joint>right_roller_joint</right_joint>
+      <!-- 跟舊車同一組換算 (roller_cmd angular.z = W -> 每顆滾輪 W*0.07/0.045 rad/s) -->
+      <wheel_separation>0.14</wheel_separation>
+      <wheel_diameter>0.09</wheel_diameter>
+      <max_wheel_torque>50.0</max_wheel_torque>
+      <max_wheel_acceleration>10.0</max_wheel_acceleration>
+      <publish_odom>false</publish_odom>
+      <publish_odom_tf>false</publish_odom_tf>
+      <publish_wheel_tf>false</publish_wheel_tf>
+    </plugin>
+  </gazebo>
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+      <update_rate>100</update_rate>
+      <joint_name>left_wheel_joint</joint_name>
+      <joint_name>right_wheel_joint</joint_name>
+      <joint_name>left_roller_joint</joint_name>
+      <joint_name>right_roller_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=cmd_vel</remapping>
+        <remapping>odom:=odom</remapping>
+      </ros>
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <!-- 新車輪距 (CAD 輪子缺口估計，待量)；底盤加減速由 STM32 PID + 馬達模型決定 -->
+      <wheel_separation>0.3400</wheel_separation>
+      <wheel_diameter>0.1040</wheel_diameter>
+      <max_wheel_torque>20.0</max_wheel_torque>
+      <max_wheel_acceleration>0.0</max_wheel_acceleration>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo>
+
+  <link name="camera_link">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <!-- 相機：CAD 相機方塊前面中心；俯角 21.3° 照實測擬合 (CAD 沒畫角度)、左偏 3.96° 同舊車 (D 程式 image_cx=283) -->
+  <joint name="camera_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="camera_link"/>
+    <origin xyz="0.1030 0.0000 0.2222" rpy="0 0.3718 0.0691"/>
+  </joint>
+
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="tennis_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.1626</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/image_raw:=tennis_camera/image_raw</remapping>
+        </ros>
+        <camera_name>tennis_camera</camera_name>
+        <frame_name>camera_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 陀螺儀：同舊車 (BNO08X 等級的雜訊與零偏)，裝在輪軸中點 (實際位置待定) -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
+    </inertial>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>1000</update_rate>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></z>
+        </angular_velocity>
+      </imu>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/out:=imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

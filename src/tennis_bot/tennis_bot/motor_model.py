@@ -20,8 +20,13 @@ import math
 
 ENCODER_RESOLUTION = 11.0 * 18.8 * 4.0   # main.c ENCODER_RESOLUTION
 STM32_DT = 0.01                          # TIM6 10 ms
-WHEEL_RADIUS_REAL = 0.052                # main.c WHEEL_RADIUS
-WHEEL_TRACK_REAL = 0.243                 # main.c WHEEL_TRACK
+try:
+    from tennis_bot.robot_profile import P as _ROBOT
+except ImportError:            # 離線工具直接 import 這個檔案時 (experiments/*.py)
+    from robot_profile import P as _ROBOT
+# 車子實際的輪半徑/輪距 (v1 = 實體車 main.c 的值；v2 新車體見 robot_profile)
+WHEEL_RADIUS_REAL = _ROBOT['radius_phys']
+WHEEL_TRACK_REAL = _ROBOT['track_phys']
 
 # 擬合結果 (experiments/fit_motor_model.py，2026-10-05)：用 Kp=0.3/0.6/1.5 三組實體車原地轉向數據一起擬合，
 # 詳細見 experiments/實驗數據/motor_model_fit.md。

@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!-- 新車體 v2 (A 同學 2026-10-25 CAD)。這個檔案由 experiments/cad_v2_to_urdf.py 從
+     experiments/tennis_bot_v2_template.urdf 產生，不要直接改 tennis_bot_v2.urdf。
+     base_link = 兩驅動輪軸中點正下方的地面，x 前 / y 左 / z 上。 -->
+<robot name="tennis_bot">
+
+  <link name="base_link"/>
+
+  <joint name="base_to_chassis" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 車體：CAD 每個零件一個網格 (公尺、base_link 座標)。碰撞只給球可能碰到的零件；質量性質是全部零件合計 -->
+  <link name="chassis">
+@CHASSIS_VISUALS@@CHASSIS_COLLISIONS@@CHASSIS_INERTIAL@  </link>
+@WHEELS@@CASTERS@@ROLLERS@
+  <gazebo>
+    <plugin name="roller_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=roller_cmd</remapping>
+        <remapping>odom:=roller_odom_dump</remapping>
+      </ros>
+      <left_joint>left_roller_joint</left_joint>
+      <right_joint>right_roller_joint</right_joint>
+      <!-- 跟舊車同一組換算 (roller_cmd angular.z = W -> 每顆滾輪 W*0.07/0.045 rad/s) -->
+      <wheel_separation>0.14</wheel_separation>
+      <wheel_diameter>0.09</wheel_diameter>
+      <max_wheel_torque>50.0</max_wheel_torque>
+      <max_wheel_acceleration>10.0</max_wheel_acceleration>
+      <publish_odom>false</publish_odom>
+      <publish_odom_tf>false</publish_odom_tf>
+      <publish_wheel_tf>false</publish_wheel_tf>
+    </plugin>
+  </gazebo>
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+      <update_rate>100</update_rate>
+      <joint_name>left_wheel_joint</joint_name>
+      <joint_name>right_wheel_joint</joint_name>
+      <joint_name>left_roller_joint</joint_name>
+      <joint_name>right_roller_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=cmd_vel</remapping>
+        <remapping>odom:=odom</remapping>
+      </ros>
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <!-- 新車輪距 (CAD 輪子缺口估計，待量)；底盤加減速由 STM32 PID + 馬達模型決定 -->
+      <wheel_separation>@TRACK@</wheel_separation>
+      <wheel_diameter>@WHEEL_DIAM@</wheel_diameter>
+      <max_wheel_torque>20.0</max_wheel_torque>
+      <max_wheel_acceleration>0.0</max_wheel_acceleration>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo>
+
+  <link name="camera_link">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+    </inertial>
+  </link>
+  <!-- 相機：CAD 相機方塊前面中心；俯角 21.3° 照實測擬合 (CAD 沒畫角度)、左偏 3.96° 同舊車 (D 程式 image_cx=283) -->
+  <joint name="camera_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="camera_link"/>
+    <origin xyz="@CAM_XYZ@" rpy="@CAM_RPY@"/>
+  </joint>
+
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="tennis_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.1626</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/image_raw:=tennis_camera/image_raw</remapping>
+        </ros>
+        <camera_name>tennis_camera</camera_name>
+        <frame_name>camera_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 陀螺儀：同舊車 (BNO08X 等級的雜訊與零偏)，裝在輪軸中點 (實際位置待定) -->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
+    </inertial>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>1000</update_rate>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>0.0077</stddev><bias_mean>0.000145</bias_mean><bias_stddev>0.00005</bias_stddev></noise></z>
+        </angular_velocity>
+      </imu>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+          <namespace>/</namespace>
+          <remapping>~/out:=imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>

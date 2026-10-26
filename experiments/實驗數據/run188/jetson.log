@@ -1,0 +1,36 @@
+[INFO] [1793001622.342640761] [jetson_d_node]: Jetson (D 同學程式 SIL)：jetson_d，COURT_EDGE_Y=0.48，BALL_INFER_PERIOD=0.2s，V4L2 buffers=4
+[INFO] [1793001659.802367105] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.547s，p90 0.703s
+[INFO] [1793001692.323433965] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.461s，p90 0.656s
+[INFO] [1793001725.442270986] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.467s，p90 0.705s
+[INFO] [1793001757.707806816] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.447s，p90 0.673s
+[INFO] [1793001792.642360199] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.495s，p90 0.686s
+[INFO] [1793001821.834010755] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.388s，p90 0.643s
+[INFO] [1793001851.385961180] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.390s，p90 0.659s
+[INFO] [1793001884.275681355] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.466s，p90 0.678s
+[INFO] [1793001911.168435905] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.369s，p90 0.548s
+[INFO] [1793001939.345855282] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.389s，p90 0.565s
+[INFO] [1793001966.079796715] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.369s，p90 0.561s
+[INFO] [1793001991.266452726] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.344s，p90 0.533s
+[INFO] [1793002019.575099530] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.394s，p90 0.590s
+[INFO] [1793002046.668121029] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.365s，p90 0.545s
+[INFO] [1793002072.931822469] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.356s，p90 0.523s
+[INFO] [1793002098.386955650] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.348s，p90 0.490s
+[INFO] [1793002127.532071996] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.388s，p90 0.614s
+[INFO] [1793002153.276301496] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.359s，p90 0.489s
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/jetson_d_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'jetson_d_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/jetson_d_node.py", line 299, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 681, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException
+[ros2run]: Process exited with failure 1
