@@ -57,9 +57,10 @@ ROLLER_SHIFT = float(os.environ.get('V2_ROLLER_SHIFT', '5.0'))
 # 海綿軟接觸 (舊車調給 27 g 球的值 kp 150 N/m, kd 4.2；實際海綿剛性沒量)
 ROLLER_KP = float(os.environ.get('V2_ROLLER_KP', '150'))
 ROLLER_KD = float(os.environ.get('V2_ROLLER_KD', '4.2'))   # 滾輪中心在出軸尖端往下 (沿軸) 幾 mm (CAD 沒畫滾輪，假設)
-# 相機：CAD 相機方塊前面中心；俯角照實測擬合 21.3° (CAD 沒畫角度)，左偏 3.96° 同舊車 (D 程式 image_cx=283)
+# 相機：CAD 相機方塊前面中心；俯角照實測擬合 21.3° (CAD 沒畫角度，新車可調：V2_CAM_PITCH_DEG)，左偏 3.96° 同舊車 (D 程式 image_cx=283)
 CAM_STEP = np.array([-200.0, 187.0, 161.0])
-CAM_PITCH, CAM_YAW = 0.3718, 0.0691
+CAM_PITCH = math.radians(float(os.environ.get('V2_CAM_PITCH_DEG', '21.3')))
+CAM_YAW = 0.0691
 
 # ---- 質量 (kg)。None = 3D 列印件，用體積算 ----
 PLA = 1.24e-3            # g/mm^3 -> kg 用 /1000

@@ -19,6 +19,7 @@
 環境變數：
   TENNISBOT_STM32_CHASE=b (預設，B 同學現行點放等待) | p (Sean 的 P 轉向：y=Kp*(0-角度)，每筆 BALL 更新)
   TENNISBOT_STEER_KP (p 模式用，預設 0.6)
+  TENNISBOT_PATROL_RPM：巡邏 Chassis_Forward 轉速 (預設 80 = 10/12 版；B 新車版 120)
   TENNISBOT_STM32_LOG_DIR：寫 stm32.csv (每 50 ms 一筆，同實體車 RPM telemetry 的週期) + stm32_events.csv
 """
 import csv
@@ -36,6 +37,7 @@ from tennis_bot.motor_model import ChassisMotorModel, ENCODER_RESOLUTION, STM32_
 
 WHEEL_RADIUS = 0.052          # main.c
 WHEEL_TRACK = float(os.environ.get('TENNISBOT_FW_TRACK', '0.243'))   # main.c 寫死的輪距 (新車體沒改的話還是 0.243)
+PATROL_RPM = float(os.environ.get('TENNISBOT_PATROL_RPM', '80'))   # 10/12 版 80；B 新車版 (10/26) 120
 MAIN_PASSES = 12              # 每 10 ms 主迴圈跑幾圈 (>= 10 才能讓 Forward 斜坡一次爬完，跟實體車一樣)
 CHASE_MODE = os.environ.get('TENNISBOT_STM32_CHASE', 'b')
 STEER_KP = float(os.environ.get('TENNISBOT_STEER_KP', '0.6'))
@@ -287,7 +289,7 @@ class Stm32BNode(Node):
                     self.Chassis_Forward(75.0)
         else:
             self.state_name = 'PATROL'
-            self.Chassis_Forward(80.0)
+            self.Chassis_Forward(PATROL_RPM)
         return True
 
     # ---------------- TIM6 10 ms 中斷 ----------------

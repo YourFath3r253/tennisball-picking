@@ -1,0 +1,6 @@
+sim_t,event,detail,chassis_angle_deg
+59.272,EDGE,LEFT -> -240,0.00
+59.782,TURN_START,-240,0.00
+63.432,TURN_DONE,-238.5deg 3.65s,-238.51
+66.092,EDGE,LEFT -> -240,-239.25
+66.602,TURN_START,-240,-239.34

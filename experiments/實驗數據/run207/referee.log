@@ -1,0 +1,24 @@
+[INFO] [1793021809.602269321] [grid_patrol_node]: 格邊長上限 2.63 m (2*0.8*R*sinθ)，網子在 x=0.0，車體離網至少 0.9 m -> 兩個半場各 25 格 (每格 2.22 x 2.20 m)，共 50 格 + 2 個繞網柱過渡點 (y=±7.5)，52 個路徑點
+[INFO] [1793021809.615929601] [grid_patrol_node]: 車體傳送到起點 (-10.900, -4.600, 0°)：True
+[INFO] [1793021809.617326322] [grid_patrol_node]: 這次執行的資料會存到 /home/sean/ros2_ws/experiments/實驗數據/run207
+[INFO] [1793021809.622206839] [grid_patrol_node]: 開始巡邏。
+[INFO] [1793021809.622638279] [grid_patrol_node]: D 同學提案：半場四色邊界，碰到邊界轉 135°，逾時 300s (模擬時間)
+[INFO] [1793021809.623226703] [grid_patrol_node]: 實體車模式：裁判節點 (不控制車子)，逾時 300s，球 10 顆
+[INFO] [1793021828.224197329] [grid_patrol_node]: ball_6 進後車廂！(1/10) t=18.6s 車廂內位置=(-0.47, 0.03, 0.07)
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/real_car_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'real_car_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/real_car_node.py", line 124, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 681, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException
+[ros2run]: Process exited with failure 1

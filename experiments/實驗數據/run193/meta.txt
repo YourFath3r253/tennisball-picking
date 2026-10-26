@@ -1,0 +1,13 @@
+start_epoch=1793011031.3250577
+steer_kp=0.6
+delay_comp=off
+delay_comp_sec=0.8
+mode=boundary_bounce
+bounce_angle_deg=135.0
+timeout_sec=900.0
+mode=real_car (jetson_d_node + stm32_b_node)
+pick_at_mouth=1 (球進撿球口就算撿到並移走)
+world=indoor_court.world
+chase=b
+layout=experiments/實驗數據/layouts/realcar_seed502.json
+cam_pitch_deg=12

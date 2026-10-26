@@ -1,0 +1,28 @@
+[INFO] [1793011035.477055699] [jetson_d_node]: Jetson (D 同學程式 SIL)：jetson_d，COURT_EDGE_Y=0.48，BALL_INFER_PERIOD=0.2s，V4L2 buffers=4
+[INFO] [1793011073.745020089] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.553s，p90 0.709s
+[INFO] [1793011106.108862949] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.469s，p90 0.633s
+[INFO] [1793011134.235626291] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.388s，p90 0.621s
+[INFO] [1793011164.342829643] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.404s，p90 0.636s
+[INFO] [1793011193.315315532] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.386s，p90 0.597s
+[INFO] [1793011227.618461165] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.490s，p90 0.669s
+[INFO] [1793011257.796797300] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.397s，p90 0.671s
+[INFO] [1793011284.985752491] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.369s，p90 0.548s
+[INFO] [1793011312.035192971] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.370s，p90 0.549s
+[INFO] [1793011345.411160006] [jetson_d_node]: 畫面年齡 (最近 200 輪) 中位數 0.465s，p90 0.687s
+Traceback (most recent call last):
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/tennis_bot/jetson_d_node", line 33, in <module>
+    sys.exit(load_entry_point('tennis-bot==0.0.0', 'console_scripts', 'jetson_d_node')())
+  File "/home/sean/ros2_ws/install/tennis_bot/lib/python3.10/site-packages/tennis_bot/jetson_d_node.py", line 299, in main
+    rclpy.spin(node)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 229, in spin
+    executor.spin_once()
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 808, in spin_once
+    self._spin_once_impl(timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 797, in _spin_once_impl
+    handler, entity, node = self.wait_for_ready_callbacks(timeout_sec=timeout_sec)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 780, in wait_for_ready_callbacks
+    return next(self._cb_iter)
+  File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/executors.py", line 681, in _wait_for_ready_callbacks
+    raise ExternalShutdownException()
+rclpy.executors.ExternalShutdownException
+[ros2run]: Process exited with failure 1

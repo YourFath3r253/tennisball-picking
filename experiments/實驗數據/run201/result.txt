@@ -1,0 +1,7 @@
+reason=出界
+touched=3
+num_balls=10
+wall_sec=294.4
+sim_sec=291.8
+bounce_count=0
+bounce_angle_deg=135.0

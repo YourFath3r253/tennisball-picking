@@ -333,7 +333,7 @@
   <joint name="camera_joint" type="fixed">
     <parent link="chassis"/>
     <child link="camera_link"/>
-    <origin xyz="0.1030 0.0000 0.2222" rpy="0 0.3718 0.0691"/>
+    <origin xyz="0.1030 0.0000 0.2222" rpy="0 0.3717551306747922 0.0691"/>
   </joint>
 
   <gazebo reference="camera_link">
