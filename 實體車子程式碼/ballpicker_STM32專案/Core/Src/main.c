@@ -96,14 +96,14 @@ float chassis_angle_deg = 0.0f;
 uint8_t avoiding = 0;          // 避線狀態標誌 (1: 正在避線, 0: 正常)
 uint32_t avoid_start_time = 0; // 避線煞車的起始時間
 uint8_t has_ball = 0;          // 記錄目前畫面上是否有球 (1: 有, 0: 沒有)
-// [Sean 2026-10-12] GY-BNO08X 陀螺儀：UART-RVC 模式，USART1 只收 (PA10)，115200，每秒 100 筆
-UART_HandleTypeDef huart1;
-uint8_t gyro_rx_byte;
-volatile float gyro_yaw_raw_deg = 0.0f;   // 感測器原始 yaw，範圍 ±180
-volatile float gyro_angle_deg = 0.0f;     // 展開後的連續角度，轉超過 180 度不會跳號
-volatile uint32_t gyro_last_tick = 0;
-volatile uint32_t gyro_packet_count = 0;
-volatile uint32_t gyro_checksum_errors = 0;
+// [Sean 2026-10-30] 連續 P 轉向參數 (9/21 舊車實測：Kp=0.3 平均 7.6 s 無 overshoot，Kp=0.6 約 3.5 s)
+const float STEER_KP = 0.4f;          // rpm / 度 [Sean 2026-11] 0.6 在新車修正過頭、overshoot 後馬達反轉反而變慢，降為 0.4
+const float STEER_WHEEL_MAX = 45.0f;  // 單輪 rpm 上限
+// [Sean 2026-10-30] 速度集中在這裡調。修好加減速後輪子真的會跑到目標，B 原本的 120/125 太快；
+// 改回修正前實測真正跑到的速度 (直走 40~58、原地轉約 35 rpm)
+const float SPEED_FORWARD = 50.0f;   // 直走 / 巡邏 / 盲衝 (原 120)
+const float SPEED_DASH    = 55.0f;   // 30cm 內直衝 (原 125)
+const float SPEED_TURN    = 40.0f;   // 避線原地轉 TurnPrecise (原 120)
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,8 +121,7 @@ void Chassis_SpinRight(float turn_rpm);
 void Chassis_Forward(float forward_rpm);
 void Chassis_Stop(void);
 void Chassis_TurnPrecise(float target_angle_change, float spin_rpm);
-void Gyro_Init(void);
-void Gyro_ParseByte(uint8_t b);
+void Chassis_SteerP(float left_rpm, float right_rpm);
 void Telemetry_Poll(void);
 /* USER CODE END PFP */
 
@@ -206,8 +205,8 @@ int main(void)
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL); // 左輪
     HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL); // 右輪
     // 初始化左輪 PID 參數
-      pid_left.Kp = 5.0f;       // P參數 (稍後需實機微調)
-      pid_left.Ki = 1.0f;      // I參數
+      pid_left.Kp = 2.0f;       // P參數 (稍後需實機微調)
+      pid_left.Ki = 0.4f;      // I參數
       pid_left.Kd = 0.01f;      // D參數
       pid_left.out_max = 1000.0f; // 你的 TIM3 ARR 最大值應該是 1000
       pid_left.integral = 0.0f;
@@ -218,7 +217,6 @@ int main(void)
 
     // 5. 啟動 TIM6 的 10ms 硬體中斷
     HAL_TIM_Base_Start_IT(&htim6);
-    Gyro_Init(); // [Sean 2026-10-12]
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -230,7 +228,7 @@ int main(void)
         float current_avoid_angle = -360.0f;
       while (1)
       {
-                Telemetry_Poll(); // [Sean 2026-10-12] 每 100ms 回傳陀螺儀/編碼器/輪速
+                Telemetry_Poll(); // [Sean] 每 50ms 回傳左右輪目標/實際轉速
                 // 偵測 Nucleo 板子上的藍色按鈕是否被按下 (防卡球排除機制)
                 if (HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET)
                 {
@@ -349,7 +347,7 @@ int main(void)
                     if (HAL_GetTick() - avoid_start_time > 500)
                     {
                         // 🚀 改為套用動態決定的角度 current_avoid_angle
-                        Chassis_TurnPrecise(current_avoid_angle, 60.0f);
+                        Chassis_TurnPrecise(current_avoid_angle, SPEED_TURN);
                         avoiding = 0;
                         command_ready = 0;
                         rx_index = 0;
@@ -362,53 +360,38 @@ int main(void)
                     // --- 原本的 BALL 追球邏輯 ---
                     if (blind_dash_active)
                     {
-                        Chassis_Forward(75.0f); // 盲衝直走吃球
+                        Chassis_Forward(SPEED_FORWARD); // 盲衝直走吃球
                     }
                     else if (ball_distance_cm <= 30.0f)
                     {
-                        Chassis_Forward(75.0f); // 放棄微調，直接衝
+                        Chassis_Forward(SPEED_DASH); // 放棄微調，直接衝
                     }
                     else
                     {
-                        // 遠距導航微調 (支援影像延遲點放等待)
-                        static uint32_t step_start_time = 0;
-                        static uint8_t turn_step_state = 0;
-                        float turn_threshold = (ball_distance_cm > 40.0f) ? 6.0f : 4.0f;
+                        // [Sean 2026-10-30] 連續 P 轉向，取代 B 的點放 (轉 200ms、停到 1s)。9/21 舊車實測 Kp=0.6 驗證過。
+                        // error = 0 - 角度；y = STEER_KP*error；兩輪各 ±y/2 (單輪上限 STEER_WHEEL_MAX)；只改目標轉速、不清積分
+                        float turn_threshold = (ball_distance_cm > 40.0f) ? 6.0f : 4.0f; // 沿用 B 的門檻
 
                         if (ball_angle_deg > turn_threshold || ball_angle_deg < -turn_threshold)
                         {
-                            if (turn_step_state == 0) {
-                                turn_step_state = 1;
-                                step_start_time = HAL_GetTick();
-                            }
-
-                            if (turn_step_state == 1) {
-                                float spin_rpm = (ball_angle_deg > 14.0f || ball_angle_deg < -14.0f) ? 55.0f : 40.0f;
-                                if (ball_angle_deg > 0) Chassis_SpinRight(spin_rpm);
-                                else Chassis_SpinLeft(spin_rpm);
-
-                                if (HAL_GetTick() - step_start_time >= 200) {
-                                    turn_step_state = 2;
-                                }
-                            }
-                            else if (turn_step_state == 2) {
-                                Chassis_Stop();
-                                if (HAL_GetTick() - step_start_time >= 1000) {
-                                    turn_step_state = 0;
-                                }
-                            }
+                            float error = 0.0f - ball_angle_deg;
+                            float half_y = STEER_KP * error / 2.0f;
+                            if (half_y > STEER_WHEEL_MAX)  half_y = STEER_WHEEL_MAX;
+                            if (half_y < -STEER_WHEEL_MAX) half_y = -STEER_WHEEL_MAX;
+                            // 方向照 B 最新版：球在右 (角度>0) 時 SpinRight = 左輪負、右輪正，這裡給同樣正負號
+                            // (9/21 舊車接線是 SteerP(-half_y, half_y)，B 改了接線所以相反；燒錄後要實車確認)
+                            Chassis_SteerP(half_y, -half_y);
                         }
                         else
                         {
-                            turn_step_state = 0;
-                            Chassis_Forward(75.0f);
+                            Chassis_Forward(SPEED_FORWARD);
                         }
                     }
                 }
                 else
                 {
                     // --- BALL_OFF 巡邏邏輯 ---
-                    Chassis_Forward(80.0f);
+                    Chassis_Forward(SPEED_FORWARD);
                 }
 
             } // 結束 while(1) 迴圈 (視縮排而定)
@@ -808,33 +791,26 @@ float PID_Calc(PID_Controller *pid, float current_rpm) {
     pid->actual_rpm = current_rpm;
     pid->error = pid->target_rpm - pid->actual_rpm;
 
-    // ==========================================
-    // 2. 🚀 升級：按目標轉速比例的「動態積分分離」 🚀
-    // ==========================================
-    // 計算當前目標轉速的 20% 作為動態門檻 (加上絕對值處理，確保反轉也可用)
+    // [Sean 2026-10-30] 修改 B 的「動態積分分離」：門檻內 (誤差 < 目標×50%，最少 30) 照 B 原樣全速累積；
+    // 門檻外原本會清積分，實測 (yellow_v21_20261030_183626_rpm.csv) 目標 120 時兩輪卡在 40~58 rpm、積分從未啟動。
+    // 改成門檻外只累積 15% (不清掉)，讓卡住的輪子積分慢慢長大推過門檻；
+    // 另外輸出飽和且誤差還往同方向推時暫停累積 (anti-windup)，積分項最多貢獻 out_max。
+    float derivative = pid->error - pid->error_last;
     float dynamic_limit = pid->target_rpm * 0.50f;
     if (dynamic_limit < 0) dynamic_limit = -dynamic_limit;
-
-    // 如果低速目標算出來的門檻太小（例如目標設 10 RPM 時門檻變 2），設定一個最低保障門檻 10.0f
     if (dynamic_limit < 30.0f) dynamic_limit = 30.0f;
-
-    // 只有當誤差進入目標轉速的動態範圍內，才允許累積積分
-    if (pid->error < dynamic_limit && pid->error > -dynamic_limit)
+    // 衝過頭 (誤差跟積分反號) 時全速消化積分：v22 實測馬達斷電/卡住時積分累積，上電後衝到 226 rpm
+    int in_band = (pid->error < dynamic_limit && pid->error > -dynamic_limit);
+    int unwinding = (pid->error * pid->integral < 0.0f);
+    float i_inc = (in_band || unwinding) ? pid->error : pid->error * 0.15f;
+    float i_limit = (pid->Ki > 0.0f) ? (pid->out_max / pid->Ki) : 0.0f;
+    float out_try = (pid->Kp * pid->error) + (pid->Ki * (pid->integral + i_inc)) + (pid->Kd * derivative);
+    if (!((out_try > pid->out_max && pid->error > 0.0f) || (out_try < -pid->out_max && pid->error < 0.0f)))
     {
-        pid->integral += pid->error;
-
-        // 積分防暴衝限幅限制
-        if (pid->integral > 8000.0f)  pid->integral = 8000.0f;
-        if (pid->integral < -8000.0f) pid->integral = -8000.0f;
+        pid->integral += i_inc;
+        if (pid->integral >  i_limit) pid->integral =  i_limit;
+        if (pid->integral < -i_limit) pid->integral = -i_limit;
     }
-    else
-    {
-        // 誤差還很大時，果斷清空歷史包袱，防止原地的積分飽和
-        pid->integral = 0.0f;
-    }
-
-    // 3. 計算微分項 (D)
-    float derivative = pid->error - pid->error_last;
 
     // 4. 計算總輸出
     float output = (pid->Kp * pid->error) + (pid->Ki * pid->integral) + (pid->Kd * derivative);
@@ -854,8 +830,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM6)
     {
         // 1. 讀取這 10ms 內累積的脈衝數 (底盤左右輪)
-        chassis_enc_left = -((int16_t)__HAL_TIM_GET_COUNTER(&htim4));
-        chassis_enc_right = (int16_t)__HAL_TIM_GET_COUNTER(&htim1);
+        chassis_enc_left = (int16_t)__HAL_TIM_GET_COUNTER(&htim4);
+        chassis_enc_right = -((int16_t)__HAL_TIM_GET_COUNTER(&htim1));
 
         // 2. 讀完立刻歸零！(這是 M 法測速的核心，你原本漏掉這步)
         __HAL_TIM_SET_COUNTER(&htim4, 0);
@@ -878,7 +854,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
                         float dist_r = ((float)chassis_enc_right / ENCODER_RESOLUTION) * (2.0f * 3.1415926f * WHEEL_RADIUS);
 
                         // (b) 根據差速公式：角度變化量(弧度) = (右輪距離 - 左輪距離) / 輪距
-                        float delta_theta_rad = (dist_r - dist_l) / WHEEL_TRACK;
+                        float delta_theta_rad = (dist_l - dist_r) / WHEEL_TRACK;
 
                         // (c) 轉換成度數並累加到全域角度變數中
                         chassis_angle_deg += (delta_theta_rad * 180.0f / 3.1415926f);
@@ -892,13 +868,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
                 if (pwm_cmd_left >= 0) {
                     // 正轉：IN1 高, IN2 低
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_RESET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_RESET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, (uint32_t)pwm_cmd_left);
                 } else {
                     // 反轉：IN1 低, IN2 高 (PWM 值必須轉回正數)
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_SET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_L_IN2_Pin, GPIO_PIN_SET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, (uint32_t)(-pwm_cmd_left));
                 }
 
@@ -907,13 +883,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
                 if (pwm_cmd_right >= 0) {
                     // 正轉
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_SET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_SET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, (uint32_t)pwm_cmd_right);
                 } else {
                     // 反轉
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_RESET);
-                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN1_Pin, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(GPIOC, CHASSIS_R_IN2_Pin, GPIO_PIN_RESET);
                     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, (uint32_t)(-pwm_cmd_right));
                 }
     }
@@ -930,8 +906,8 @@ float locked_heading_deg = 0.0f;  // 用來記住起步瞬間的那條直線角�
 void Chassis_SpinLeft(float turn_rpm)
 {
     chassis_motion_state = 0; // 告訴系統現在不是直走
-    pid_left.target_rpm  = -turn_rpm;
-    pid_right.target_rpm =  turn_rpm;
+    pid_left.target_rpm  =  turn_rpm;
+    pid_right.target_rpm = -turn_rpm;
     pid_left.integral = 0.0f; // 轉向時順便清空 PID 誤差積分
     pid_right.integral = 0.0f;
 }
@@ -939,8 +915,8 @@ void Chassis_SpinLeft(float turn_rpm)
 void Chassis_SpinRight(float turn_rpm)
 {
     chassis_motion_state = 0; // 告訴系統現在不是直走
-    pid_left.target_rpm  =  turn_rpm;
-    pid_right.target_rpm = -turn_rpm;
+    pid_left.target_rpm  = -turn_rpm;
+    pid_right.target_rpm =  turn_rpm;
     pid_left.integral = 0.0f; // 轉向時順便清空 PID 誤差積分
     pid_right.integral = 0.0f;
 }
@@ -959,8 +935,17 @@ void Chassis_Stop(void)
     pid_right.error_last = 0.0f;
 }
 
+// [Sean 2026-10-30] 連續轉向用：只設目標轉速，不清積分 (SpinLeft/Right 每次呼叫都清積分，連續呼叫會讓積分永遠起不來)
+void Chassis_SteerP(float left_rpm, float right_rpm)
+{
+    chassis_motion_state = 0;
+    pid_left.target_rpm  = left_rpm;
+    pid_right.target_rpm = right_rpm;
+}
+
 // 🚀 新增：記錄當前斜坡轉速的靜態變數
 float current_ramp_rpm = 0.0f;
+uint32_t ramp_last_tick = 0; // [Sean 2026-10-30] 斜坡照時間爬
 
 void Chassis_Forward(float forward_rpm)
 {
@@ -976,14 +961,19 @@ void Chassis_Forward(float forward_rpm)
 
         // 🚀 關鍵 1：不要從 0 開始跳變，從安全的低速 15 RPM 柔和起跑！
         current_ramp_rpm = 15.0f;
+        ramp_last_tick = HAL_GetTick();
     }
 
     // 🚀 關鍵 2：斜坡加速 (Soft Start)
     // 每次收到前進指令時，如果還沒到目標速度，就以每幀 8 RPM 平滑爬升！
     // 這能把原本 0 -> 70 RPM 的「瞬間暴力跳變」，化為 200 毫秒的「舒適推背感加速」
+    // [Sean 2026-10-30] 原本每次呼叫 +8，但主迴圈每圈都呼叫，等於瞬間跳到目標；改成每 20ms +8 (15->120 約 0.26 s)
     if (current_ramp_rpm < forward_rpm) {
-        current_ramp_rpm += 8.0f;
-        if (current_ramp_rpm > forward_rpm) current_ramp_rpm = forward_rpm;
+        if (HAL_GetTick() - ramp_last_tick >= 20) {
+            ramp_last_tick = HAL_GetTick();
+            current_ramp_rpm += 8.0f;
+            if (current_ramp_rpm > forward_rpm) current_ramp_rpm = forward_rpm;
+        }
     } else {
         current_ramp_rpm = forward_rpm;
     }
@@ -999,13 +989,15 @@ void Chassis_Forward(float forward_rpm)
         if (comp < -8.0f) comp = -8.0f;
     }
 
+
     // 將柔和爬升中的 current_ramp_rpm 餵給馬達
-    pid_left.target_rpm  = current_ramp_rpm - comp;
-    pid_right.target_rpm = current_ramp_rpm + comp;
+    // [Sean 2026-10-30] 正負號對調：里程計改成 (左距離-右距離)/輪距 後，原本 (-comp, +comp) 會越修越偏 (實測修正連續 10 s 卡在 ±8)
+    pid_left.target_rpm  = current_ramp_rpm + comp;
+    pid_right.target_rpm = current_ramp_rpm - comp;
 }
 /**
   * @brief 閉迴路精準轉向：轉動到指定的相對角度
-  * @param target_angle_change 要轉動的角度 (正數為左轉/逆時針，負數為右轉/順時針)
+  * @param float delta_theta_rad 要轉動的角度 (正數為左轉/逆時針，負數為右轉/順時針)
   * @param spin_rpm            旋轉速度 (建議設定在 80~120 RPM)
   */
 void Chassis_TurnPrecise(float target_angle_change, float spin_rpm)
@@ -1013,6 +1005,10 @@ void Chassis_TurnPrecise(float target_angle_change, float spin_rpm)
     // 1. 記錄起轉前的初始角度，並計算最終目標角度
     float start_angle = chassis_angle_deg;
     float target_angle = start_angle + target_angle_change;
+    // [Sean 2026-10-30] 逾時保護：實測轉向時輪子不動，主迴圈卡死 140 s 以上
+    uint32_t turn_start_tick = HAL_GetTick();
+    float turn_abs = (target_angle_change > 0.0f) ? target_angle_change : -target_angle_change;
+    uint32_t turn_timeout_ms = 2000 + (uint32_t)(turn_abs * 15.0f);
 
     // 2. 判斷轉向方向並啟動旋轉
     if (target_angle_change > 0) {
@@ -1026,13 +1022,16 @@ void Chassis_TurnPrecise(float target_angle_change, float spin_rpm)
     {
         float current_error = target_angle - chassis_angle_deg;
 
-        // 如果誤差進入 ±2 度以內，代表轉到了！
-        if (current_error <= 2.0f && current_error >= -2.0f) {
+        // [Sean 2026-10-30] 轉到或越過目標就停 (輪子變快後每 10ms 可能跳過 ±2 度區間)
+        if ((target_angle_change > 0.0f) ? (current_error <= 2.0f) : (current_error >= -2.0f)) {
             break; // 跳出迴圈
+        }
+        if (HAL_GetTick() - turn_start_tick > turn_timeout_ms) {
+            break; // 逾時，避免主迴圈永遠卡住
         }
 
         // 短暫延遲避免卡死 CPU，讓背景 TIM6 中斷持續積分角度
-        Telemetry_Poll(); // [Sean 2026-10-12] 轉向中主迴圈被卡住，這裡補送
+        Telemetry_Poll(); // [Sean] 轉向中主迴圈被卡住，這裡補送
         HAL_Delay(10);
     }
 
@@ -1041,12 +1040,6 @@ void Chassis_TurnPrecise(float target_angle_change, float spin_rpm)
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1) // [Sean 2026-10-12] 陀螺儀
-    {
-        Gyro_ParseByte(gyro_rx_byte);
-        HAL_UART_Receive_IT(&huart1, &gyro_rx_byte, 1);
-        return;
-    }
     if (huart->Instance == USART2)
     {
         if (command_ready == 0)
@@ -1080,94 +1073,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
     }
 }
-// ========================================================
-// [Sean 2026-10-12] GY-BNO08X UART-RVC 陀螺儀
-// 接線：VCC->3V3、GND->GND、SDA/MISO/TX->PA10(D2)、PS0->3V3、PS1->GND
-// 封包 19 bytes：0xAA 0xAA, index, yaw(int16, 0.01度), pitch, roll, ax, ay, az, MI, MR, 保留, checksum
-// checksum = byte[2]..byte[17] 加總取低 8 位
-// ========================================================
-void Gyro_ParseByte(uint8_t b)
-{
-    static uint8_t buf[19];
-    static uint8_t idx = 0;
-
-    if (idx == 0) { if (b == 0xAA) buf[idx++] = b; return; }
-    if (idx == 1) { if (b == 0xAA) buf[idx++] = b; else idx = 0; return; }
-    buf[idx++] = b;
-    if (idx < 19) return;
-    idx = 0;
-
-    uint8_t sum = 0;
-    for (int i = 2; i < 18; i++) sum += buf[i];
-    if (sum != buf[18]) { gyro_checksum_errors++; return; }
-
-    float yaw = (float)(int16_t)(buf[3] | (buf[4] << 8)) * 0.01f;
-    if (gyro_packet_count > 0)
-    {
-        float d = yaw - gyro_yaw_raw_deg;
-        if (d > 180.0f)  d -= 360.0f;
-        if (d < -180.0f) d += 360.0f;
-        gyro_angle_deg += d;
-    }
-    gyro_yaw_raw_deg = yaw;
-    gyro_last_tick = HAL_GetTick();
-    gyro_packet_count++;
-}
-
-void Gyro_Init(void)
-{
-    GPIO_InitTypeDef g = {0};
-    __HAL_RCC_USART1_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    g.Pin = GPIO_PIN_10;              // USART1_RX；PA9(TX) 給 TIM1 編碼器用，不動
-    g.Mode = GPIO_MODE_AF_PP;
-    g.Pull = GPIO_PULLUP;
-    g.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    g.Alternate = GPIO_AF7_USART1;
-    HAL_GPIO_Init(GPIOA, &g);
-
-    huart1.Instance = USART1;
-    huart1.Init.BaudRate = 115200;
-    huart1.Init.WordLength = UART_WORDLENGTH_8B;
-    huart1.Init.StopBits = UART_STOPBITS_1;
-    huart1.Init.Parity = UART_PARITY_NONE;
-    huart1.Init.Mode = UART_MODE_RX;
-    huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-    if (HAL_UART_Init(&huart1) != HAL_OK) return;
-
-    HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);
-    HAL_NVIC_EnableIRQ(USART1_IRQn);
-    HAL_UART_Receive_IT(&huart1, &gyro_rx_byte, 1);
-}
-
-void USART1_IRQHandler(void)
-{
-    HAL_UART_IRQHandler(&huart1);
-}
-
-// 收資料出錯 (例如 overrun) 時 HAL 會停止接收，這裡重新開始，避免陀螺儀資料從此中斷
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-    if (huart->Instance == USART1)
-    {
-        HAL_UART_Receive_IT(&huart1, &gyro_rx_byte, 1);
-    }
-}
-
-// 每 100ms 回傳一行，非阻塞；上一筆還沒送完就跳過這次
-// GYRO,時間ms,陀螺儀角度,編碼器角度,陀螺儀正常(0/1),左目標rpm,左實際rpm,右目標rpm,右實際rpm
+// [Sean] 輪速回傳：每 50ms 一行，非阻塞；上一筆還沒送完就跳過這次
+// 格式對應 D 程式 drain_rpm_telemetry → <TEST_NAME>_rpm.csv
+// RPM,時間ms,左目標rpm,左實際rpm,右目標rpm,右實際rpm   (實際 = PID 用的低通濾波後轉速)
 void Telemetry_Poll(void)
 {
     static uint32_t last_ms = 0;
-    static char tx[112];
+    static char tx[80];
     uint32_t now = HAL_GetTick();
-    if (now - last_ms < 100) return;
+    if (now - last_ms < 50) return;
     if (huart2.gState != HAL_UART_STATE_READY) return;
     last_ms = now;
-    int ok = (gyro_packet_count > 0) && (now - gyro_last_tick < 200);
-    int n = sprintf(tx, "GYRO,%lu,%.2f,%.2f,%d,%.1f,%.1f,%.1f,%.1f\n",
-                    now, gyro_angle_deg, chassis_angle_deg, ok,
+    int n = sprintf(tx, "RPM,%lu,%.2f,%.2f,%.2f,%.2f\n", now,
                     pid_left.target_rpm, rpm_left_filter, pid_right.target_rpm, rpm_right_filter);
     HAL_UART_Transmit_IT(&huart2, (uint8_t *)tx, n);
 }
