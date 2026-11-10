@@ -97,7 +97,7 @@ uint8_t avoiding = 0;          // 避線狀態標誌 (1: 正在避線, 0: 正常
 uint32_t avoid_start_time = 0; // 避線煞車的起始時間
 uint8_t has_ball = 0;          // 記錄目前畫面上是否有球 (1: 有, 0: 沒有)
 // [Sean 2026-10-30] 連續 P 轉向參數 (9/21 舊車實測：Kp=0.3 平均 7.6 s 無 overshoot，Kp=0.6 約 3.5 s)
-const float STEER_KP = 0.4f;          // rpm / 度 [Sean 2026-11] 0.6 在新車修正過頭、overshoot 後馬達反轉反而變慢，降為 0.4
+const float STEER_KP = 1.0f;          // rpm / 度 [Sean 2026-11-10] 網球場地板比實驗室粗糙，0.4 → 1.0 (之前: 0.6 在實驗室修正過頭降為 0.4)
 const float STEER_WHEEL_MAX = 45.0f;  // 單輪 rpm 上限
 // [Sean 2026-10-30] 速度集中在這裡調。修好加減速後輪子真的會跑到目標，B 原本的 120/125 太快；
 // 改回修正前實測真正跑到的速度 (直走 40~58、原地轉約 35 rpm)
@@ -226,6 +226,9 @@ int main(void)
         uint8_t was_seeing_ball = 0; // 💡 新增：用來記錄上一刻是否還有看到球
         uint32_t last_seen_time = 0; // 🚀 新增宣告：記錄最後一次看到球的時間
         float current_avoid_angle = -360.0f;
+        int8_t last_avoid_dir = 0;          // [Sean 11/9] 上一次避線轉向方向 (+1 左轉, -1 右轉, 0 = 還沒轉過)
+        uint32_t last_turn_end_time = 0;    // [Sean 11/9] 上一次避線轉完的時間
+        uint8_t same_dir_used = 0;          // [Sean 11/10] 這一串連續 1 秒內的 EDGE 已經用過一次同向轉
       while (1)
       {
                 Telemetry_Poll(); // [Sean] 每 50ms 回傳左右輪目標/實際轉速
@@ -300,6 +303,17 @@ int main(void)
                                 else {
                                     current_avoid_angle = -360.0f; // CENTER 或 UNKNOWN，維持原本設定
                                 }
+                                // [Sean 11/9] 轉完 1 秒內又看到邊界 → 跟上一次同方向轉 (角度大小照上面規則)
+                                // [Sean 11/10] 連續的情況只同向一次：第 2 次以後照正常規則，超過 1 秒才重新算
+                                uint8_t within_1s = (last_avoid_dir != 0 && (HAL_GetTick() - last_turn_end_time) <= 1000);
+                                if (within_1s && same_dir_used == 0) {
+                                    float avoid_mag = (current_avoid_angle > 0.0f) ? current_avoid_angle : -current_avoid_angle;
+                                    current_avoid_angle = (last_avoid_dir > 0) ? avoid_mag : -avoid_mag;
+                                    same_dir_used = 1;
+                                }
+                                else if (!within_1s) {
+                                    same_dir_used = 0;
+                                }
                             }
                         }
                     }
@@ -348,6 +362,8 @@ int main(void)
                     {
                         // 🚀 改為套用動態決定的角度 current_avoid_angle
                         Chassis_TurnPrecise(current_avoid_angle, SPEED_TURN);
+                        last_avoid_dir = (current_avoid_angle > 0.0f) ? 1 : -1; // [Sean 11/9] 記下這次方向與轉完時間
+                        last_turn_end_time = HAL_GetTick();
                         avoiding = 0;
                         command_ready = 0;
                         rx_index = 0;
